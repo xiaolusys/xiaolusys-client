@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>发货单</title>
+<meta http-equiv="Content-Type" content="text/html;charset=gbk" />
+</head>
+<body>
+	{% for trade in trades %}
+	<fieldset width='800px' height='700px'>
+		<br><br><br><br><br><br>
+		<legend><center><h3>{{ trade.seller_nick }}<br>发货单</h3></center></legend>
+		<p>
+			<label>单据编号:</label><span>{{ trade.trade_serial }}</span>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+			<label>发货日期:</label><span>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</span>
+		</p>
+		<table width='740px' height='250px' >
+			<tr border="1px">
+				<td  colspan='2'>卖家昵称：{{ trade.buyer_nick }}</td>
+				<td colspan='2'>收货人：{{ trade.receiver_name }}</td>
+				<td colspan='2'>手机：{{ trade.receiver_mobile }}</td>
+				<td colspan='2'>电话：{{ trade.receiver_phone }}</td>
+			</tr>
+			<tr border="1px">
+				<td colspan='8'>收货地址：{{ trade.receiver_state }} {{ trade.receiver_city }} 
+					{{ trade.receiver_district }} {{ trade.receiver_address }}</td>
+				</tr>
+		</table>
+		<table border="1px" width='740px' height='300px'>
+			<tr border="1px">
+				<td>序号</td>
+				<td>商品编码</td>
+				<td>货品名称</td>
+				<td>规格</td>
+				<td>数量</td>
+				<td>单价</td>
+				<td>折扣</td>
+				<td>合计</td>
+			</tr>
+			{% for order in trade.orders %}
+			<tr border="1px">
+				<td>{{ loop.index }}</td>
+				<td>{{ order.outer_iid }}</td>
+				<td>植物纤维睡袋</td>
+				<td>{{ order.properties }}</td>
+				<td>{{ order.num }}</td>
+				<td>{{ order.price }}</td>
+				<td>{{ order.discount_fee }}</td>
+				<td>{{ order.payment }}</td>
+			</tr>
+			{% endfor %}
+			<tr>
+				<td colspan='4'>合计 </td>
+				<td >{{ trade.order_nums }}</td>
+				<td >{{ trade.total_fee }}</td>
+				<td >{{ trade.discount_fee }}</td>
+				<td >{{ trade.payment }}</td>
+			</tr>
+		</table>
+		<p><label>买家留言：</label><span>{{ trade.buyer_memo }}</span></p>
+		<br><br>
+		<p><label>卖家留言：</label><span>{{ trade.seller_memo }}</span></p>
+		{{ trade.orders|print_wraps(max_num=44) }}
+		
+	</fieldset>
+	
+	{% endfor %}
+</body>
+</html>

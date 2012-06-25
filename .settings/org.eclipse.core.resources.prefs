@@ -1,0 +1,8 @@
+eclipse.preferences.version=1
+encoding//src/taobao/dao/models.py=utf-8
+encoding//src/taobao/main.py=utf-8
+encoding//src/taobao/picking/pickingframe.py=utf-8
+encoding//src/taobao/picking/send_sms.py=utf-8
+encoding//src/taobao/picking/wxpick.py=utf-8
+encoding//src/taobao/tasks/tasks.py=utf-8
+encoding//src/test/testsms/sendsms.py=utf-8

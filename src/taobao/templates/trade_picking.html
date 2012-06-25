@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>发货单</title>
+<meta http-equiv="Content-Type" content="text/html;charset=gbk" />
+</head>
+<body>
+	<table border="1px">
+		<tr border="1px">
+			<td>交易号/买家名/付款时间</td>
+			<td>卖家备注</td>
+			<td>商品名称</td>
+			<td>商品数</td>
+			<td>订单属性/套餐内容</td>
+			<td>物流方式</td>
+		</tr>
+		{% for trade in trades %} {% for order in trade.orders %}
+		<tr border="1px">
+			{% if loop.first %}
+			<td rowspan='{{ trade.orders|length }}' >
+				{{ trade.id }}<br>
+				{{ trade.buyer_nick }}<br>
+				{{ trade.pay_time|datetimeformat(format='%Y-%m-%d %H:%M:%S') }}<br>
+			</td>
+			<td rowspan='{{ trade.orders|length }}' >
+				{{ trade.seller_memo|slice_string(split_len=10) }}
+			</td>
+			{% endif %}
+			<td >
+				{{ order.title|slice_string(split_len=10)}}
+			</td>
+			<td >{{ order.num }}</td>
+			<td >
+				<div>
+				{{ order.sku_properties_name|slice_string(split_len=10) }}<br>
+				{{ order.item_meal_name|slice_string(split_len=10) }}
+				</div>
+			</td>
+			<td >中通快递</td>
+		</tr>
+		{% endfor %} {% endfor %}
+	</table>
+</body>
+</html>
