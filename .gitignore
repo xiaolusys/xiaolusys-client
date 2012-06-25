@@ -1,0 +1,11 @@
+ve
+celerybeat-schedule
+*.db
+*.pyc
+*.iml
+.idea/
+*~
+migrations
+.settings/
+.project
+.pydevproject
