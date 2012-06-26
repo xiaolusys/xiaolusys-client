@@ -50,7 +50,7 @@ class Order(Base):
     buyer_nick   = Column(String(32),nullable=True,index=True)
 
     refund_status = Column(String(40),nullable=True)
-    outer_iid    = Column(String(64),nullable=True)
+    outer_id     = Column(String(64),nullable=True)
 
     cid    = Column(BigInteger,nullable=True)
     status = Column(String(32),nullable=True)
@@ -60,8 +60,7 @@ class Order(Base):
         
     def __repr__(self):
         return "<Order('%s','%s','%s')>" % (self.oid, self.seller_nick, self.buyer_nick)
-    
-    
+        
 
 
 class Trade(Base):
@@ -163,7 +162,7 @@ class Item(Base):
     
     num_iid   =  Column(String(64),primary_key=True)
     
-    outer_iid =  Column(String(64),nullable=True)
+    outer_id =  Column(String(64),nullable=True)
     num       =  Column(Integer,nullable=True)
     
     seller_cids    = Column(String(126),nullable=True)
@@ -195,7 +194,7 @@ class Item(Base):
     skus      =  Column(String(1500),nullable=True)
     
     def __repr__(self):
-        return self.num_iid+'--'+self.outer_iid+'--'+self.title
+        return self.num_iid+'--'+self.outer_id+'--'+self.title
     
     
     
@@ -223,6 +222,7 @@ class TradeRule(Base):
         return self.formula_desc+'--'+self.memo
     
     
+    
 class RuleFieldType(Base):
     __tablename__ =  'shop_app_rulefieldtype'
     
@@ -236,18 +236,19 @@ class RuleFieldType(Base):
         return self.field_name+'--'+self.field_type
     
     
+    
 class ProductRuleField(Base):
     __tablename__ = 'shop_app_productrulefield'
     
     id        = Column(Integer,primary_key=True)
-    out_iid   = Column(String(64),index=True)
+    outer_id  = Column(String(64),index=True)
     field_id  = Column(String(64), ForeignKey('shop_app_rulefieldtype.field_name'))
     
-    custom_alias  = Column(String(256),default=True)
-    custom_default= Column(String(256),default=True)
+    custom_alias   = Column(String(256),default=True)
+    custom_default = Column(String(256),default=True)
     
     def __repr__(self):
-        return self.out_iid+'--'+self.field
+        return self.outer_id+'--'+self.field
        
 
 

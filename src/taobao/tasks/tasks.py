@@ -93,7 +93,7 @@ def getTradePickingData():
             trade_data['post_date']    = dt
             trade_data['buyer_nick']        = trade.buyer_nick
             
-            trade_data['order_nums']      = 0
+            trade_data['order_nums']   = 0
             trade_data['total_fee']    = trade.total_fee
             trade_data['discount_fee'] = 0
             trade_data['payment']      = trade.payment
@@ -102,9 +102,9 @@ def getTradePickingData():
             trade_data['receiver_phone']    = trade.receiver_phone
             trade_data['receiver_mobile']   = trade.receiver_mobile
             
-            trade_data['receiver_state']  = trade.receiver_state
-            trade_data['receiver_city']  = trade.receiver_city
-            trade_data['receiver_district']  = trade.receiver_district
+            trade_data['receiver_state']    = trade.receiver_state
+            trade_data['receiver_city']     = trade.receiver_city
+            trade_data['receiver_district'] = trade.receiver_district
             trade_data['receiver_address']  = trade.receiver_address
             trade_data['buyer_memo']   = trade.buyer_memo
             trade_data['orders']       = [] 
@@ -124,7 +124,7 @@ def getTradePickingData():
                 
                 trade_data['discount_fee'] += float(order.discount_fee)
                 trade_data['order_nums']   += order.num
-                order_data['outer_iid'] = order.outer_iid
+                order_data['outer_id']  = order.outer_id
                 order_data['item_name'] = item.title
                 order_data['num']       = order.num
                 order_data['price']     = order.price
@@ -132,7 +132,7 @@ def getTradePickingData():
                 order_data['payment']   = order.payment
                 
                 #商品备注需要的自定义字段
-                fields = session.query(ProductRuleField).filter_by(out_iid=order.outer_iid)
+                fields = session.query(ProductRuleField).filter_by(outer_id=order.outer_id)
                 #该交易客服备注的订单属性 
                 property = get_order_property_memo(order.oid,item_data) 
                 #判断交易备注是否与定义的字段匹配，否则该不能发货
@@ -176,8 +176,8 @@ def getTradePickingData():
 def sendSmsToUnmemoBuyerTask(limit_times=10000):
     
     session = get_session()
-    item_outer_iids = session.query(ProductRuleField.out_iid)\
-                .distinct('shop_app_productrulefield_out_iid').all()
+    item_outer_iids = session.query(ProductRuleField.outer_id)\
+                .distinct('shop_app_productrulefield_outer_id').all()
     trades  = session.query(Trade).filter_by(status='WAIT_SELLER_SEND_GOODS')
     template = get_template('send_sms_template.txt',encoding='utf8')
     
@@ -185,7 +185,7 @@ def sendSmsToUnmemoBuyerTask(limit_times=10000):
     for trade in trades:
         trade_extra_info = get_or_create_model(session,TradeExtraInfo,tid=trade.id)
         for order in trade.orders:
-            if order.outer_iid in item_outer_iids \
+            if order.outer_id in item_outer_iids \
                 and not trade.buyer_memo \
                 and not trade_extra_info.is_send_sms:
                 
