@@ -208,16 +208,16 @@ class PrintFrameworkSample(wx.Frame):
         printer = wx.Printer(data)
         text = self.tc.GetValue()
         printout = TextDocPrintout(text, "title", self.margins)
-        useSetupDialog = True
+        useSetupDialog = False
         if not printer.Print(self, printout, useSetupDialog) \
           and  printer.GetLastError() == wx.PRINTER_ERROR:
             wx.MessageBox(
                 "There was a problem printing.\n"
                 "Perhaps your current printer is not set correctly?",
                 "Printing Error", wx.OK)
-        else:
-            data = printer.GetPrintDialogData()
-            self.pdata = wx.PrintData(data.GetPrintData()) # force a copy
+#        else:
+#            data = printer.GetPrintDialogData()
+#            self.pdata = wx.PrintData(data.GetPrintData()) # force a copy
         printout.Destroy()
 
 

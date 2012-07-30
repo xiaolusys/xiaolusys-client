@@ -15,13 +15,14 @@ env = Environment(loader=PackageLoader('taobao.templates',package_path='../../ta
 
 env.filters['datetimeformat'] = datetimeformat
 
-template = env.get_template('trade_picking_template.html')
+#template = env.get_template('trade_picking_template.html')
 session = get_session()
 trades = session.query(Trade).filter_by(status='WAIT_SELLER_SEND_GOODS')
 
+print type(trades)
+print 'trade count:',trades.count()
 print 'nick:',trades[0].seller_nick
-print 'sku name:',trades[0].orders[0].sku_properties_name
-print 'meal name:',trades[0].orders[0].item_meal_name
+
 
 #tempdate = template.render(trades=trades)
 

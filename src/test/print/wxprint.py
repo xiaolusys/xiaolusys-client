@@ -223,6 +223,7 @@ class PrintFrameworkSample(wx.Frame):
             data = printer.GetPrintDialogData()
             print data
             self.pdata = wx.PrintData(data.GetPrintData()) # force a copy
+            print 'message success'
         printout.Destroy()
 
 
@@ -230,3 +231,4 @@ app = wx.PySimpleApp()
 frm = PrintFrameworkSample()
 frm.Show()
 app.MainLoop() 
+

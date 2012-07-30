@@ -4,8 +4,9 @@ Created on 2012-6-5
 
 @author: user1
 '''
-import wx
 import os
+import datetime
+import wx
 from wx.html import HtmlEasyPrinting 
 from taobao.common.environment import get_template
 from taobao.dao.models import Trade
