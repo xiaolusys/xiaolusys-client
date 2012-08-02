@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//src/taobao/auimain.py=utf8
 encoding//src/taobao/common/paginator.py=utf8
 encoding//src/taobao/common/utils.py=utf-8
+encoding//src/taobao/dao/configparams.py=utf8
 encoding//src/taobao/dao/models.py=utf-8
 encoding//src/taobao/frames/panels/deliverypanel.py=utf8
 encoding//src/taobao/frames/panels/gridpanel.py=utf8

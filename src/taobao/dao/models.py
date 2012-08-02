@@ -14,6 +14,49 @@ Base = declarative_base()
 #unuse 
 #memo_compile = re.compile('^\((?P<key>\w+),(?P<value>[\w\W]+),(?P<memo>[\w\W]+)\)$')
 
+class SystemConfig(Base):
+    __tablename__ = 'shop_monitor_systemconfig'
+    
+    id  = Column(Integer,primary_key=True)
+    is_rule_auto = Column(Boolean,default=False)
+    is_sms_auto  = Column(Boolean,default=False)
+    is_confirm_delivery_auto = Column(Boolean,default=False)
+    
+    def __repr__(self):
+        return "<SystemConfig('%s')>" % (str(self.id))
+    
+
+class User(Base):
+    __tablename__ = 'shop_users_user'
+        
+    id       = Column(BigInteger,primary_key=True)
+    top_session = Column(String(56),default='')
+    top_appkey = Column(String(24),default='')
+    top_parameters = Column(String(1000),default='')
+    
+    visitor_id  = Column(String(32),default='')
+    nick        = Column(String(32),default='')
+    
+    type        = Column(String(2),default='')
+    item_img_num  = Column(Integer,nullable=True)
+    item_img_size = Column(Integer,nullable=True)
+    
+    prop_img_num = Column(Integer,nullable=True)
+    prop_img_size = Column(Integer,nullable=True)
+    auto_repost   = Column(String(16),default='')
+    promoted_type = Column(String(32),default='')
+    
+    alipay_bind   = Column(String(10),default='')
+    alipay_account = Column(String(48),default='')
+    alipay_no      = Column(String(20),default='')
+    created_at = Column(DateTime,nullable=True)
+    status = Column(String(12),default='')
+    
+    def __repr__(self):
+        return "<User('%s','%s','%s')>" % (str(self.id),self.visitor_id,self.nick)
+    
+    
+
 class Category(Base):
     __tablename__ = 'shop_categorys_category'
     
@@ -98,7 +141,7 @@ class Order(Base):
 
     seller_nick  = Column(String(32),nullable=True,index=True)
     buyer_nick   = Column(String(32),nullable=True,index=True)
-
+    
     refund_status = Column(String(40),nullable=True)
     outer_id     = Column(String(64),nullable=True)
 
@@ -250,7 +293,7 @@ class TradeExtraInfo(Base):
 class MergeTrade(Base):   
     __tablename__ = 'shop_trades_mergetrade'
     
-    id           =  Column(BigInteger, primary_key=True)
+    tid           =  Column(BigInteger, primary_key=True)
 
     seller_id    =  Column(String(64),index=True,nullable=True)
     seller_nick  =  Column(String(64),nullable=True)
@@ -259,6 +302,7 @@ class MergeTrade(Base):
     type         =  Column(String(32),nullable=True)
     shipping_type    =  Column(String(12),default='')
     
+    total_num    =  Column(Integer,nullable=True)
     payment      =  Column(String(10),nullable=True)
     discount_fee =  Column(String(10),nullable=True)
     adjust_fee   =  Column(String(10),nullable=True)
@@ -286,7 +330,9 @@ class MergeTrade(Base):
     buyer_message    =  Column(String(1000),nullable=True)
     buyer_memo       =  Column(String(1000),nullable=True)
     seller_memo      =  Column(String(1000),nullable=True)
-
+    
+    out_sid          =  Column(String(64),nullable=True)
+    logistics_company_code =  Column(String(64),nullable=True)
     logistics_company_name = Column(String(64),nullable=True)
     receiver_name    =  Column(String(64),default='')
     receiver_state   =  Column(String(8),default='')
@@ -298,11 +344,14 @@ class MergeTrade(Base):
     receiver_mobile  =  Column(String(20),default='')
     receiver_phone   =  Column(String(20),default='')
 
+    reverse_audit_times  = Column(Integer,nullable=True)
+    reverse_audit_reason = Column(String(1000),default='')
     status        =  Column(String(32),nullable=True)
     
     is_picking_print = Column(Boolean,default=False)
     is_express_print = Column(Boolean,default=False)
-    is_send_print    = Column(Boolean,default=False)
+    is_send_sms    = Column(Boolean,default=False)
+    has_refund    = Column(Boolean,default=False)
         
     sys_status   =  Column(String(32),nullable=True)    
     def __repr__(self):
