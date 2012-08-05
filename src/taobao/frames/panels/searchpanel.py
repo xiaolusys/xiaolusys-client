@@ -14,22 +14,22 @@ class SearchPanel(wx.Panel):
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,-1)
         
-        self.search_params = {
-            'trade_id':None,
-            'trade_type':None,
-            'trade_status':None,
-            'seller_id':None,
-            'buyer_nick':None,
-            'start_time':None,
-            'end_time':None,
-            'logistics_id':None,
-            'out_sid':None,
-            'logistics_company':None,
-            'is_picking_print':None,
-            'is_express_print':None,
-            'is_sms_send':None,
-            'has_refund':None
-        }
+#        self.search_params = {
+#            'trade_id':None,
+#            'trade_type':None,
+#            'trade_status':None,
+#            'seller_id':None,
+#            'buyer_nick':None,
+#            'start_time':None,
+#            'end_time':None,
+#            'logistics_id':None,
+#            'out_sid':None,
+#            'logistics_company':None,
+#            'is_picking_print':None,
+#            'is_express_print':None,
+#            'is_sms_send':None,
+#            'has_refund':None
+#        }
         
         self.session = parent.session
         self.order_label = wx.StaticText(self,-1,'订单号')
@@ -131,21 +131,24 @@ class SearchPanel(wx.Panel):
     
     def OnSearch(self,evt):
         datasource = self.Parent.grid.datasource
-        search_params = self.get_search_data()
-        trade_id   = search_params['trade_id']
-        trade_type = search_params['trade_type']
-        trade_status = search_params['trade_status']
-        seller_id = search_params['seller_id']
-        buyer_nick = search_params['buyer_nick']
-        start_time = search_params['start_time']
-        end_time = search_params['end_time']
-        logistics_id = search_params['logistics_id']
-        shipping_type = search_params['shipping_type']
-        logistics_company = search_params['logistics_company']
-        is_picking_print = search_params['is_picking_print']
-        is_express_print = search_params['is_express_print']
-        is_sms_send = search_params['is_sms_send']
-        has_refund = search_params['has_refund']
+        trade_id   = self.order_text.GetValue()
+        trade_type = self.order_type_select.GetValue()
+        trade_status = self.taobao_status_select.GetValue()
+        seller_id = self.seller_select.GetValue()
+        buyer_nick = self.buyer_text.GetValue()
+        
+        start_time = self.start_time_select.GetValue()
+        end_time   = self.end_time_select.GetValue()
+        
+        start_time = wxdate2pydate(start_time)
+        end_time = wxdate2pydate(end_time)
+        logistics_id = self.logistics_text.GetValue()
+        shipping_type = self.shipping_type_select.GetValue()
+        logistics_company = self.logistics_company_select.GetValue()
+        is_picking_print = self.delivery_pick_check.IsChecked()
+        is_express_print = self.logistics_pick_check.IsChecked()
+        is_sms_send = self.send_sms_check.IsChecked()
+        has_refund = self.has_refund_check.IsChecked()
         
         if trade_id:
             datasource = datasource.filter_by(tid=trade_id.decode('utf8'))
@@ -184,24 +187,5 @@ class SearchPanel(wx.Panel):
         self.Parent.grid.setSearchData(datasource)
         
         
-    def get_search_data(self):
-        self.search_params['trade_id']=self.order_text.GetValue()
-        self.search_params['trade_type']=self.order_type_select.GetValue()
-        self.search_params['trade_status']=self.taobao_status_select.GetValue()
-        self.search_params['seller_id']=self.seller_select.GetValue()     
-        self.search_params['buyer_nick']=self.buyer_text.GetValue()
-        start_time = self.start_time_select.GetValue()
-        end_time   = self.end_time_select.GetValue()
-        self.search_params['start_time']=wxdate2pydate(start_time)
-        self.search_params['end_time']=wxdate2pydate(end_time)
-        self.search_params['logistics_id']=self.logistics_text.GetValue()
-        self.search_params['shipping_type']=self.shipping_type_select.GetValue()
-        self.search_params['logistics_company']=self.logistics_company_select.GetValue()
-        self.search_params['is_picking_print']=self.delivery_pick_check.IsChecked()
-        self.search_params['is_express_print']=self.delivery_pick_check.IsChecked()
-        self.search_params['is_sms_send']=self.send_sms_check.IsChecked()
-        self.search_params['has_refund']=self.has_refund_check.IsChecked()
-        
-        return self.search_params
-        
+
     

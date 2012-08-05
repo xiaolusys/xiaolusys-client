@@ -4,16 +4,20 @@ Created on 2012-7-13
 
 @author: user1
 '''
+import re
 import weakref
 import wx, wx.grid as grd
 from taobao.frames.tables.gridtable import GridTable,SimpleGridTable
 from taobao.frames.panels.itempanel import ItemPanel
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
-from taobao.dao.models import Order,SubPurchaseOrder
-from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS
-from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
+from taobao.dao.models import Order,SubPurchaseOrder,Refund,MergeTrade,LogisticsCompany
+from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
+from taobao.dao.configparams import SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
     SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID
+from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
+from taobao.frames.prints.expressprinter import ExpressPrinter
+
 
 edit_trade_item_btn_id = wx.NewId()
 audit_pass_btn_id = wx.NewId()
@@ -26,6 +30,10 @@ scan_weight_btn_id = wx.NewId()
 confirm_delivery_btn_id = wx.NewId()
 reaudit_btn_id = wx.NewId()
 invalid_btn_id = wx.NewId()
+
+fill_sid_btn2_id = wx.NewId()
+reverse_audit_btn2_id = wx.NewId()
+invalid_btn2_id = wx.NewId()
 class GridPanel(wx.Panel):
     def __init__(self, parent, id= -1, colLabels=None, rowLabels=None): 
         wx.Panel.__init__(self, parent, id) 
@@ -44,10 +52,12 @@ class GridPanel(wx.Panel):
         self.pt1 = wx.StaticText(self, -1, ",第")
         self.pt2 = wx.StaticText(self, -1, "/")
         self.pt3 = wx.StaticText(self, -1, "页(共")
-        self.pt5 = wx.StaticText(self, -1, "条记录),每页")
+        self.pt5 = wx.StaticText(self, -1, "条记录,已选中 ") 
+        self.pt6 = wx.StaticText(self,-1,"条),每页")
         self.lblPageIndex = wx.StaticText(self, -1, "0")
         self.lblPageCount = wx.StaticText(self, -1, "0")
         self.lblTotalCount = wx.StaticText(self, -1, "0")
+        self.selected_counts = wx.StaticText(self,-1,'0')
         self.page_size_select = wx.ComboBox(self,-1,choices=('20','50','100','200','500','1000','5000'),value='50')
         self.btnFirst = wx.Button(self, -1, label='首页', style=0)
         self.btnLast = wx.Button(self, -1, label='尾页', style=0)
@@ -55,15 +65,15 @@ class GridPanel(wx.Panel):
         self.btnNext = wx.Button(self, -1, label='下一页', style=0)
    
         self.edit_trade_item_btn  = wx.Button(self, edit_trade_item_btn_id, label='修改订单',name='修改交易订单属性')
-        self.audit_pass_btn = wx.Button(self, audit_pass_btn_id, label='审核',name='订单信息完整无误，可以准备发货')
+        self.audit_pass_btn = wx.Button(self, audit_pass_btn_id, label='审核通过',name='订单信息完整无误，可以准备发货')
         self.reverse_audit_btn = wx.Button(self, reverse_audit_btn_id, label='反审核',name='订单暂时不能准备发货，需重审再确定')
-        self.fill_sid_btn = wx.Button(self, fill_sid_btn_id, label='填写物流单号',name='打印发货单前，需将物流单号与订单绑定')
+        self.fill_sid_btn = wx.Button(self, fill_sid_btn_id, label='填物流单号',name='打印发货单前，需将物流单号与订单绑定')
         self.picking_print_btn = wx.Button(self, picking_print_btn_id, label='打印发货单',name='打印发货单，进行配货')
         self.express_print_btn = wx.Button(self,express_print_btn_id,label='打印物流单',name='打印物流单，为扫描称重准备')
         self.prepare_finish_btn = wx.Button(self,prepare_finish_btn_id,label='准备完成',name='发货准备完成')
         self.scan_weight_btn = wx.Button(self,scan_weight_btn_id,label='扫描称重',name='对发货包裹进行称重，物流结算')
         self.confirm_delivery_btn = wx.Button(self,confirm_delivery_btn_id,label='确认发货',name='确定订单可以发货，同步淘宝后台')
-        self.reaudit_btn = wx.Button(self,reaudit_btn_id,label='重审',name='审核未通过的订单，重新准备发货')
+        self.reaudit_btn = wx.Button(self,reaudit_btn_id,label='重审通过',name='审核未通过的订单，重新准备发货')
         self.invalid_btn = wx.Button(self,invalid_btn_id,label='作废',name='订单已经无效，作废处理')
         
         self.button_array = []
@@ -74,13 +84,14 @@ class GridPanel(wx.Panel):
         self.fill_sid_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(200,-1))
         self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,'自动自增物流单号')
         self.fill_sid_checkbox1   = wx.CheckBox(self.fill_sid_panel,-1)
-        self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,-1,'确定')
+        self.preview_btn      = wx.Button(self.fill_sid_panel,-1,'预览')
+        self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,'确定')
         self.fill_sid_btn3   = wx.Button(self.fill_sid_panel,-1,'取消')
 
         self.reverse_audit_panel   = wx.Panel(self.inner_panel,-1)
         self.reverse_audit_label  = wx.StaticText(self.reverse_audit_panel,-1,'反审核理由')
         self.reverse_audit_text  = wx.TextCtrl(self.reverse_audit_panel,-1,size=(900,-1))
-        self.reverse_audit_btn2   = wx.Button(self.reverse_audit_panel,-1,'确定')
+        self.reverse_audit_btn2   = wx.Button(self.reverse_audit_panel,reverse_audit_btn2_id,'确定')
         self.reverse_audit_btn3   = wx.Button(self.reverse_audit_panel,-1,'取消')
         
         self.invalid_panel   = wx.Panel(self.inner_panel,-1)
@@ -95,12 +106,12 @@ class GridPanel(wx.Panel):
         
         self.itempanel = ItemPanel(self, -1)
         
+        self.updateTableAndPaginator()
         self.__set_properties()
         self.__do_layout()
-        
-        self.updateTableAndPaginator()
-
         self.__bind_evt()
+        
+        
         
     def __set_properties(self):
         self.SetName('grid_panel')
@@ -128,6 +139,8 @@ class GridPanel(wx.Panel):
         self.button_array.append(self.confirm_delivery_btn)
         self.button_array.append(self.reaudit_btn)
         self.button_array.append(self.invalid_btn)
+        
+        self.fill_sid_btn2.Enable(False)
 
     
 
@@ -145,32 +158,33 @@ class GridPanel(wx.Panel):
         fg.Add(self.pt3, 0, 4)
         fg.Add(self.lblTotalCount, 0, 5)
         fg.Add(self.pt5, 0, 6)
-        fg.Add(self.page_size_select,0,7)
-        fg.Add(self.btnFirst, 0, 8)
-        fg.Add(self.btnPrev, 0, 9)
-        fg.Add(self.btnNext, 0, 10)
-        fg.Add(self.btnLast, 0, 11) 
-        fg.Add(wx.StaticText(self,-1,'    '),0,12)
-        fg.Add(wx.StaticText(self,-1,'    '),0,13)
-        fg.Add(self.edit_trade_item_btn, 0, 14)
-        fg.Add(self.audit_pass_btn, 0, 15) 
-        fg.Add(self.fill_sid_btn, 0, 16)
-        fg.Add(self.picking_print_btn, 0, 17) 
-        fg.Add(self.express_print_btn, 0, 18)
-        fg.Add(self.prepare_finish_btn,0,19)
-        fg.Add(self.scan_weight_btn, 0, 19)
-        fg.Add(self.confirm_delivery_btn, 0, 20) 
-        fg.Add(self.reaudit_btn, 0, 21)
-        fg.Add(self.reverse_audit_btn, 0, 21)
-        fg.Add(self.invalid_btn,0,22)
+        fg.Add(self.selected_counts,0,7)
+        fg.Add(self.pt6,0,8)
+        fg.Add(self.page_size_select,0,9)
+        fg.Add(self.btnFirst, 0, 10)
+        fg.Add(self.btnPrev, 0, 11)
+        fg.Add(self.btnNext, 0, 12)
+        fg.Add(self.btnLast, 0, 13) 
+        fg.Add(self.edit_trade_item_btn, 0, 16)
+        fg.Add(self.audit_pass_btn, 0, 17) 
+        fg.Add(self.fill_sid_btn, 0, 18)
+        fg.Add(self.picking_print_btn, 0, 19) 
+        fg.Add(self.express_print_btn, 0, 20)
+        fg.Add(self.prepare_finish_btn,0,21)
+        fg.Add(self.scan_weight_btn, 0, 22)
+        fg.Add(self.confirm_delivery_btn, 0, 23) 
+        fg.Add(self.reaudit_btn, 0, 24)
+        fg.Add(self.reverse_audit_btn, 0, 25)
+        fg.Add(self.invalid_btn,0,26)
         
         self.fill_sid_sizer = wx.FlexGridSizer(hgap=15, vgap=15)
         self.fill_sid_sizer.Add(self.fill_sid_label1,0,0)
         self.fill_sid_sizer.Add(self.fill_sid_text,0,1)
         self.fill_sid_sizer.Add(self.fill_sid_label2,0,2)
         self.fill_sid_sizer.Add(self.fill_sid_checkbox1,0,3)
-        self.fill_sid_sizer.Add(self.fill_sid_btn2,0,4)
-        self.fill_sid_sizer.Add(self.fill_sid_btn3,0,5)
+        self.fill_sid_sizer.Add(self.preview_btn,0,4)
+        self.fill_sid_sizer.Add(self.fill_sid_btn2,0,5)
+        self.fill_sid_sizer.Add(self.fill_sid_btn3,0,6)
         self.fill_sid_panel.SetSizer(self.fill_sid_sizer)
         
         self.reverse_audit_sizer = wx.FlexGridSizer(hgap=10, vgap=10)
@@ -206,6 +220,7 @@ class GridPanel(wx.Panel):
         self.Bind(grd.EVT_GRID_CELL_LEFT_CLICK, self.onMouse, self.grid)
         self.Bind(grd.EVT_GRID_SELECT_CELL, self.onCellSelected, self.grid)
         self.Bind(grd.EVT_GRID_EDITOR_CREATED, self.onEditorCreated, self.grid)
+        self.Bind(grd.EVT_GRID_CELL_RIGHT_CLICK,self.showPopupMenu,self.grid)
         
         self.Bind(wx.EVT_CHECKBOX,self.onSelectAllCheckbox,self.select_all_check)
         self.Bind(wx.EVT_COMBOBOX,self.onComboBox,self.page_size_select)
@@ -224,7 +239,22 @@ class GridPanel(wx.Panel):
         
         self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_down)
         
+        self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell,self.preview_btn)
+        
+        
+        #分页栏，订单操作事件
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.edit_trade_item_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.audit_pass_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.reverse_audit_btn2)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn2)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.picking_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.express_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.prepare_finish_btn)
+        #self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.confirm_delivery_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.confirm_delivery_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.reaudit_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.invalid_btn2)
         
     
     def setDataSource(self, datasource):
@@ -264,9 +294,26 @@ class GridPanel(wx.Panel):
         if hasattr(self.grid,'cb'):
             self.grid.cb.Value = not self.grid.cb.Value
             self.afterCheckBox(self.grid.cb.Value,row)
-
+    
+    def showPopupMenu(self,evt):
+        if not hasattr(self,"popupID1"):
+            self.popupID1 = wx.NewId()
+        menu = wx.Menu()
+        item = wx.MenuItem(menu,self.popupID1,'刷新')
+        menu.AppendItem(item)
+        self.grid.PopupMenu(menu)
+        menu.Destroy()
+        self.Bind(wx.EVT_MENU,self.onMenuRefreshTable)
+        
+    
+    def onMenuRefreshTable(self,evt):
+        eventid = evt.GetId()
+        if eventid == self.popupID1:
+            self.refreshTable()
+    
     def onCellSelected(self, evt):
         if evt.Col == 0:
+            self.grid._curow = evt.Row
             wx.CallAfter(self.grid.EnableCellEditControl)
         evt.Skip()
 
@@ -281,6 +328,7 @@ class GridPanel(wx.Panel):
     def onCheckBox(self, evt):
         row = self.grid._curow
         self.afterCheckBox(evt.IsChecked(),row)
+        evt.Skip()
     
     def onComboBox(self, evt):
         size = self.page_size_select.GetValue()
@@ -307,15 +355,13 @@ class GridPanel(wx.Panel):
         evt.Skip()
      
     def afterCheckBox(self, isChecked,row):
-        self.grid._curow = row   #为checkbox的onCheckBox事件重复点击触发提供行号
+        self.grid._curow = row
         if isChecked:
-            value = self.grid.GetCellValue(row,1)
             self._selectedRows.add(row)
+            value = self.grid.GetCellValue(row,1)
             self.itempanel.setData(value)
             for btn in self.button_array:
                 btn.Enable(True)
-            if len(self._selectedRows) >1:
-                self.edit_trade_item_btn.Enable(False)
         else:
             try:
                 self._selectedRows.remove(row)
@@ -324,10 +370,26 @@ class GridPanel(wx.Panel):
             if len(self._selectedRows) <1:
                 for btn in self.button_array:
                     btn.Enable(False)
-            elif len(self._selectedRows) ==1:
-                self.edit_trade_item_btn.Enable(True)
+        self.updateGridCheckBoxValue()
+        self.grid.ForceRefresh()
+        self.selected_counts.SetLabel(str(len(self._selectedRows)))
         self.Layout()
 
+    
+    def updateGridCheckBoxValue(self):
+        rows  = self.grid.GetRowSize(0)
+        for row in xrange(0,rows):
+            if row in self._selectedRows:
+                self.grid.SetCellValue(row,0,'1')
+            else:
+                self.grid.SetCellValue(row,0,'')
+    
+    def setSelectedRowBlue(self):
+        """ 改变选中行的颜色 """
+        for row in self._selectedRows:
+            col = self.grid.GetColSize(row)
+            for j in xrange(1,col):
+                self.grid.SetCellBackgroundColour(row,j,'navy')
     
     def onSelectAllCheckbox(self,evt):
         rows = self.grid.NumberRows
@@ -335,11 +397,17 @@ class GridPanel(wx.Panel):
             for i in xrange(0,rows):
                 self.grid.SetCellValue(i,0,'1')
                 self._selectedRows.add(i)
+            for btn in self.button_array:
+                btn.Enable(True)
         else: 
             for i in xrange(0,rows):
                 self.grid.SetCellValue(i,0,'')
             self._selectedRows.clear()
-        self.grid.ForceRefresh() 
+            for btn in self.button_array:
+                btn.Enable(False)
+
+        self.grid.ForceRefresh()
+        self.selected_counts.SetLabel(str(len(self._selectedRows))) 
 
     
     def onClickStaticButton(self,evt):
@@ -353,25 +421,134 @@ class GridPanel(wx.Panel):
             self.isSearchPanelShow = True
         self.Layout()    
             
+    def fillOutSidToCell(self,evt):
+        start_out_sid = self.fill_sid_text.GetValue()
+        is_auto_fill  = self.fill_sid_checkbox1.IsChecked()
+        if start_out_sid.isdigit() and is_auto_fill:
+            start_out_sid = int(start_out_sid)
+            for row in self._selectedRows:
+                self.grid.SetCellValue(row,13,str(start_out_sid))
+                start_out_sid += 1
+        elif start_out_sid.isdigit():
+            min_row_num = min(self._selectedRows)
+            self.grid.SetCellValue(min_row_num ,13,start_out_sid)
+        self.fill_sid_btn2.Enable(True)
+        self.fill_sid_text.Clear()
+        self.grid.ForceRefresh()
+        evt.Skip()
+    
     
     def onClickActiveButton(self,evt):
         eventid = evt.GetId()
         if eventid == edit_trade_item_btn_id:
             self.itempanel.refreshData()
+        elif eventid in(audit_pass_btn_id,reaudit_btn_id):
+            for row in self._selectedRows:
+                trade_id = self.grid.GetCellValue(row,1)
+                self.session.query(MergeTrade).filter_by(tid=trade_id)\
+                    .update({'sys_status':SYS_STATUS_PREPARESEND})
+            self.refreshTable()
+            
+        elif eventid == reverse_audit_btn2_id:
+            reason = self.reverse_audit_text.GetValue()
+            for row in self._selectedRows:
+                trade_id = self.grid.GetCellValue(row,1)
+                trade = self.session.query(MergeTrade).filter_by(tid=trade_id).first()
+                trade.reverse_audit_times += 1
+                trade.reverse_audit_reason += reason+','
+                self.session.query(MergeTrade).filter_by(tid=trade_id)\
+                    .update({'sys_status':SYS_STATUS_AUDITFAIL,
+                             'reverse_audit_reason':trade.reverse_audit_reason,
+                             'reverse_audit_times':trade.reverse_audit_times})
+            self.refreshTable()
+                    
+        elif eventid == fill_sid_btn2_id:
+            for row in self._selectedRows:
+                trade_id = self.grid.GetCellValue(row,1)
+                out_sid = self.grid.GetCellValue(row,13)
+                
+                trade = self.session.query(MergeTrade).filter_by(tid=trade_id).first()
+                company_code = trade.logistics_company_code if trade else None
+                company = self.session.query(LogisticsCompany).filter_by(code=company_code).first()
+                company_regex = company.reg_mail_no if company else ''
+                id_compile = re.compile(company_regex)
+                if id_compile.match(out_sid):
+                    self.session.query(MergeTrade).filter_by(tid=trade_id)\
+                        .update({'out_sid':out_sid})
+
+            self.refreshTable()
+            self.fill_sid_btn2.Enable(False)
+        elif eventid == picking_print_btn_id:
+            trade_ids = []
+            for row in self._selectedRows:
+                trade_ids.append(self.grid.GetCellValue(row,1))
+            DeliveryPrinter(parent=self,trade_ids=trade_ids).Show()
+        
+        elif eventid == express_print_btn_id:
+            trade_ids = []
+            for row in self._selectedRows:
+                trade_ids.append(self.grid.GetCellValue(row,1))
+            ExpressPrinter(parent=self,trade_ids=trade_ids).Show()
+        
+        elif eventid == prepare_finish_btn_id:
+            for row in self._selectedRows:
+                trade_id = self.grid.GetCellValue(row,1)
+                self.session.query(MergeTrade).filter_by(tid=trade_id)\
+                    .update({'sys_status':SYS_STATUS_SCANWEIGHT})
+            self.refreshTable()
+        
+        elif eventid == scan_weight_btn_id:
+            pass
+        
+        elif eventid == confirm_delivery_btn_id:
+            for row in self._selectedRows:
+                trade_id = self.grid.GetCellValue(row,1)
+                self.session.query(MergeTrade).filter_by(tid=trade_id)\
+                    .update({'sys_status':SYS_STATUS_CONFIRMSEND})
+            self.refreshTable()
+            
+        elif eventid == invalid_btn2_id:
+            invalid_reason = self.invalid_text.GetValue()
+            for row in self._selectedRows:
+                trade_id = self.grid.GetCellValue(row,1)
+                trade = self.session.query(MergeTrade).filter_by(tid=trade_id).first()
+                trade.reverse_audit_times += 1
+                trade.reverse_audit_reason += invalid_reason+','
+                self.session.query(MergeTrade).filter_by(tid=trade_id)\
+                    .update({'sys_status':SYS_STATUS_INVALID,
+                             'reverse_audit_reason':trade.reverse_audit_reason,
+                             'reverse_audit_times':trade.reverse_audit_times})
+            self.refreshTable()
+        
+        
+        
     
     def setupPager(self):
         self.lblPageIndex.SetLabel(str(self.page.number) if self.page else '0')
         self.lblPageCount.SetLabel(str(self.page.paginator.num_pages) if self.page else '0') 
         self.lblTotalCount.SetLabel(str(self.page.paginator.count) if self.page else '0')
+        self.selected_counts.SetLabel(str(len(self._selectedRows)))
         self.btnFirst.Enable(self.page.paginator.num_pages >= 1 if self.page else False)
         self.btnPrev.Enable(self.page.has_previous() if self.page else False)
         self.btnNext.Enable(self.page.has_next() if self.page else False)
         self.btnLast.Enable(self.page.paginator.num_pages > 1 if self.page else False)
-        
+    
+    def refreshTable(self):
+        #修改状态后 ，刷新当前表单
+        self.session.commit()  
+        if self.page:
+            self.page = self.paginator.page(self.page.number)
+            object_list = self.parseObjectToList(self.page.object_list)
+        else:
+            object_list = ()
+        gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels))
+        self.grid.SetTable(gridtable())
+        self.grid.SetColSize(0, 20)
+        self.grid.SetRowLabelSize(40)  
+        self.grid.ForceRefresh() 
     
     def updateTableAndPaginator(self):
         self._selectedRows.clear()
-        
         if self.page:
             object_list = self.parseObjectToList(self.page.object_list)
         else:
@@ -458,7 +635,6 @@ class SimpleGridPanel(wx.Panel):
         self.rowLabels = rowLabels
         self.colLabels = colLabels
         self.grid =  grd.Grid(self, -1)
-        self.grid.DisableCellEditControl()
         self.setData(None)
         self.__set_properties()
         self.__do_layout()
@@ -476,22 +652,35 @@ class SimpleGridPanel(wx.Panel):
     def __evt_bind(self):
         self.Bind(grd.EVT_GRID_CELL_CHANGE,self.cellContentChange,self.grid)
         
-        
     def cellContentChange(self,evt):
-        print evt.GetId()
+        col = evt.Col
+        if col == 6:
+            row = evt.Row
+            order_id = self.grid.GetCellValue(row,1)
+            cell_value = self.grid.GetCellValue(row,col)
+            
+            if self.Parent.trade.type == 'fenxiao':
+                self.session.query(SubPurchaseOrder).filter_by(fenxiao_id=order_id).update({'sku_properties':cell_value})
+            else:
+                self.session.query(Order).filter_by(oid=int(order_id)).update({'sku_properties_name':cell_value})
+            self.Parent.Parent.is_changeable = False
+            wx.CallAfter(self.grid.EnableEditing,False)
+        evt.Skip()
         
     
-
     def setData(self,trade):
         object_list = self.parseObjectToList(trade)
         gridtable = weakref.ref(SimpleGridTable(object_list, self.rowLabels, self.colLabels))
         self.grid.SetTable(gridtable(),True)
         self.grid.AutoSize()
-        self.grid.SetColSize(0, 90)
+        self.grid.SetColSize(0,50)
         for i in range(0,len(object_list)):
-            self.grid.SetRowSize(i,90)
-        
+            self.grid.SetRowSize(i,50)
         self.grid.ForceRefresh()
+        if self.Parent.Parent.is_changeable:
+            self.grid.EnableEditing(True)
+        else:
+            self.grid.EnableEditing(False)
         self.Layout()
     
     def parseObjectToList(self,trade):
@@ -516,6 +705,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
         for object in orders:
             object_array = []
             object_array.append(object.snapshot_url if is_fenxiao else object.pic_path)
+            object_array.append(object.fenxiao_id if is_fenxiao else str(object.oid))
             object_array.append(object.item_id if is_fenxiao else object.num_iid)
             object_array.append(object.title)
             
@@ -528,10 +718,18 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
             object_array.append(object.price)
             object_array.append(object.buyer_payment if is_fenxiao else object.payment)
             
-            refund = None
-            object_array.append('' if is_fenxiao else object.refund_id )
-            object_array.append(object.refund_fee if is_fenxiao else '')
-            object_array.append('' if is_fenxiao else object.refund_status)
+            if is_fenxiao:
+                refund = self.session.query(Refund).filter_by(refund_id=object.refund_id).first()
+            else:
+                refund = self.session.query(Refund).filter_by(oid=object.oid).first()
+            refund_id    = ('' if is_fenxiao else object.refund_id) if not refund else refund.refund_id
+            refund_fee    = (object.refund_fee if is_fenxiao else '') if not refund else refund.refund_fee
+            refund_status = ('' if is_fenxiao else object.refund_status) if not refund else refund.status
+            refund_reason = refund.reason if refund else ''
+            object_array.append(refund_id )
+            object_array.append(refund_fee)
+            object_array.append(REFUND_STATUS.get(refund_status,''))
+            object_array.append(refund_reason)
             object_array.append(TRADE_STATUS.get(object.status,'其他'))
 
             array_object.append(object_array)

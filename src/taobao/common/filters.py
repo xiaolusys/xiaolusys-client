@@ -12,9 +12,18 @@ def trans_string(string,decoding='utf8',encoding='gbk'):
     return string.decode(decoding).encode(encoding)
 
 
-def print_wraps(orders,max_num=45):
-    remain_nums = max_num - len(orders)
-    return '<br>'*remain_nums
+def print_wraps(orders,max_num=45,split_len=10):
+    remain_nums = max_num - len(orders)*1.15
+    row_lens = 0 
+    for order in orders :
+        item_name_len = len(order['item_name'])
+        properties_len = len(order['properties'])
+        item_name_rows = item_name_len/split_len if item_name_len%split_len==0 else item_name_len/split_len+1
+        properties_rows = properties_len/split_len if properties_len%split_len==0 else properties_len/split_len+1
+        row_len = max(item_name_rows,properties_rows)
+        row_lens += row_len-1
+    remain_nums -= row_lens*0.65
+    return '<br>'*int(round(remain_nums,0))
 
 def parse_val(value,parser='str(round(%d,%d))',decimal=2):
     if type(value) == float :

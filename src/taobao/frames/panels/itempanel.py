@@ -5,7 +5,7 @@ Created on 2012-7-16
 @author: user1
 '''
 import wx
-from taobao.dao.models import MergeTrade
+from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS
 
 class BasicPanel(wx.Panel):
@@ -30,15 +30,15 @@ class BasicPanel(wx.Panel):
         self.delivery_pick_check  = wx.CheckBox(self,-1)
            
         self.order_label6  = wx.StaticText(self,-1,'商品数量')
-        self.order_content6  = wx.SpinCtrl(self,-1,'0')
+        self.order_content6  = wx.SpinCtrl(self,-1)
         self.order_label7  = wx.StaticText(self,-1,'订单金额')
-        self.order_content7  = wx.TextCtrl(self,-1,'0')
+        self.order_content7  = wx.TextCtrl(self,-1)
         self.order_label8 = wx.StaticText(self,-1,'支付金额')
-        self.order_content8  = wx.TextCtrl(self,-1,'0')
+        self.order_content8  = wx.TextCtrl(self,-1)
         self.order_label9  = wx.StaticText(self,-1,'物流公司代码')
-        self.order_content9  = wx.TextCtrl(self,-1,'0')
+        self.order_content9  = wx.TextCtrl(self,-1)
         self.order_label10  = wx.StaticText(self,-1,'让利金额')
-        self.order_content10  = wx.TextCtrl(self,-1,'0')
+        self.order_content10  = wx.TextCtrl(self,-1)
         self.buyer_cod_label = wx.StaticText(self,-1,'买家货到付款服务费')
         self.buyer_cod_text  = wx.TextCtrl(self,-1)
         self.logistics_pick_label = wx.StaticText(self,-1,'已打印物流单')
@@ -49,7 +49,7 @@ class BasicPanel(wx.Panel):
         self.order_label12  = wx.StaticText(self,-1,'物流费用')
         self.order_content12  = wx.TextCtrl(self,-1,'0')
         self.order_label13  = wx.StaticText(self,-1,'物流公司')
-        self.order_content13  = wx.TextCtrl(self,-1)
+        self.order_content13  = wx.ComboBox(self,-1)
         self.order_label14  = wx.StaticText(self,-1,'物流单号')
         self.order_content14  = wx.TextCtrl(self,-1)
         self.order_label15  = wx.StaticText(self,-1,'发货日期')
@@ -61,11 +61,11 @@ class BasicPanel(wx.Panel):
         
         
         self.order_label16  = wx.StaticText(self,-1,'称重重量')
-        self.order_content16  = wx.TextCtrl(self,-1,'0')
+        self.order_content16  = wx.TextCtrl(self,-1)
         self.order_label17  = wx.StaticText(self,-1,'物流成本')
-        self.order_content17  = wx.TextCtrl(self,-1,'0')
+        self.order_content17  = wx.TextCtrl(self,-1)
         self.order_label18  = wx.StaticText(self,-1,'订单状态')
-        self.order_content18  = wx.TextCtrl(self,-1,'0')
+        self.order_content18  = wx.TextCtrl(self,-1)
         self.order_label19  = wx.StaticText(self,-1,'系统状态')
         self.order_content19  = wx.TextCtrl(self,-1)
         self.order_label20  = wx.StaticText(self,-1,'反审核次数')
@@ -83,6 +83,8 @@ class BasicPanel(wx.Panel):
         self.order_content23  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
         self.order_label24  = wx.StaticText(self,-1,'反审核理由')
         self.order_content24  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
+        self.order_label25  = wx.StaticText(self,-1,'系统订单备注')
+        self.order_content25  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
         
         self.change_btn     = wx.Button(self,-1,'确认修改',size=(-1,40))
         
@@ -118,6 +120,7 @@ class BasicPanel(wx.Panel):
         self.control_array.append(self.order_content22)
         self.control_array.append(self.order_content23)
         self.control_array.append(self.order_content24)
+        self.control_array.append(self.order_content25)
         self.control_array.append(self.seller_cod_text)
         self.control_array.append(self.delivery_pick_check)
         self.control_array.append(self.buyer_cod_text)
@@ -127,9 +130,14 @@ class BasicPanel(wx.Panel):
         self.control_array.append(self.send_sms_check)
         self.control_array.append(self.cod_status_text)
         self.control_array.append(self.has_refund_check)
+        
+        logistics_companies = self.session.query(LogisticsCompany).all()
+        self.order_content13.AppendItems([company.name for company in logistics_companies])
         for control in self.control_array:
             control.Enable(False)
-        self.change_btn.Show()
+        self.change_btn.Hide()
+        
+        
             
     def __do_layout(self):
         
@@ -202,6 +210,8 @@ class BasicPanel(wx.Panel):
         base_order_sizer.Add(self.order_content23,pos=(4,5),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.order_label24,pos=(4,6),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.order_content24,pos=(4,7),span=(1,1),flag=wx.EXPAND)
+        base_order_sizer.Add(self.order_label25,pos=(4,8),span=(1,1),flag=wx.EXPAND)
+        base_order_sizer.Add(self.order_content25,pos=(4,9),span=(1,1),flag=wx.EXPAND)
         
         base_order_sizer.Add(self.change_btn,pos=(4,11))
         base_order_sizer.Layout()
@@ -212,13 +222,18 @@ class BasicPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON,self.onClickChangeBtn,self.change_btn)
         
     def onClickChangeBtn(self,evt):
-        self.trade.is_picking_print = self.delivery_pick_check.IsChecked()
-        self.trade.is_express_print = self.logistics_pick_check.IsChecked()
-        self.trade.is_send_sms     = self.send_sms_check.IsChecked()
-        self.trade.has_refund      = self.has_refund_check.IsChecked()
-        self.trade.logistics_company_name = self.order_content13.GetValue()
-        self.trade.out_sid         = self.order_content14.GetValue()
-        self.session.commit()
+        company_name = self.order_content13.GetValue()
+        company = self.session.query(LogisticsCompany).filter_by(name=company_name).first()
+        self.session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
+            'is_picking_print':self.delivery_pick_check.IsChecked(),
+            'is_express_print':self.logistics_pick_check.IsChecked(),
+            'is_send_sms':self.send_sms_check.IsChecked(),
+            'has_refund':self.has_refund_check.IsChecked(),
+            'logistics_company_name':company_name,
+            'out_sid':self.order_content14.GetValue(),
+            'sys_memo':self.order_content25.GetValue(),
+            'logistics_company_code': company.code if company else ''
+            })
         for control in self.control_array:
             control.Enable(False)
         self.Parent.is_changeable = False
@@ -256,6 +271,7 @@ class BasicPanel(wx.Panel):
         self.order_content22.SetValue(trade.seller_memo)
         self.order_content23.SetValue(trade.buyer_message)
         self.order_content24.SetValue(trade.reverse_audit_reason)
+        self.order_content25.SetValue(trade.sys_memo)
         
         self.seller_cod_text.SetValue(trade.seller_cod_fee)
         self.buyer_cod_text.SetValue(trade.buyer_cod_fee)
@@ -276,9 +292,11 @@ class BasicPanel(wx.Panel):
             self.has_refund_check.Enable(True)
             self.order_content13.Enable(True)
             self.order_content14.Enable(True)
+            self.order_content25.Enable(True)
             self.change_btn.Show()
         else :
             self.change_btn.Hide()
+        self.Layout()
         
         
    
@@ -287,9 +305,10 @@ class DetailPanel(wx.Panel):
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,id)
         self.session = parent.session
-        
+        self.trade = None
         from taobao.frames.panels.gridpanel import SimpleOrdersGridPanel
-        colLabels = ('商品图片','商品ID','商品名称','商品简称','规格编码','规格','订购数量','实际单价','实付金额','退款单号','退款费用','退款状态','订单状态')
+        colLabels = ('商品图片','子订单ID','商品ID','商品名称','商品简称','规格编码','规格','订购数量','实际单价','实付金额',
+                     '退款单号','退款费用','退款状态','退款原因','订单状态')
         self.ordergridpanel = SimpleOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()
@@ -308,6 +327,7 @@ class DetailPanel(wx.Panel):
     def setData(self,trade):
         if not trade:
             return
+        self.trade = trade
         self.ordergridpanel.setData(trade)
         self.ordergridpanel.Layout()
         
@@ -379,8 +399,8 @@ class ReceiverPanel(wx.Panel):
         base_order_sizer.Add(self.order_content8,1,7)
         
         box_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        box_sizer.Add(self.order_label9,0,flag=wx.EXPAND)
-        box_sizer.Add(self.order_content9,0,flag=wx.EXPAND)
+        box_sizer.Add(self.order_label9,0,flag=wx.EXPAND,border=10)
+        box_sizer.Add(self.order_content9,0,flag=wx.EXPAND,border=10)
         box_sizer.Add(self.change_btn,0,flag=wx.EXPAND)
         
         main_sizer.Add(base_order_sizer)
@@ -391,16 +411,17 @@ class ReceiverPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON,self.onClickChangeBtn,self.change_btn)
         
     def onClickChangeBtn(self,evt):
-        self.trade.receiver_name = self.order_content1.GetValue()
-        self.trade.receiver_phone = self.order_content2.GetValue()
-        self.trade.receiver_mobile = self.order_content3.GetValue()
-        self.trade.receiver_zip = self.order_content4.GetValue()
-        self.trade.receiver_state = self.order_content5.GetValue()
-        self.trade.receiver_city = self.order_content6.GetValue()
-        self.trade.receiver_district = self.order_content7.GetValue()
-        self.trade.alipay_no = self.order_content8.GetValue()
-        self.trade.receiver_address = self.order_content9.GetValue()
-        self.session.commit()
+        self.session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
+            'receiver_name':self.order_content1.GetValue(),
+            'receiver_phone':self.order_content2.GetValue(),
+            'receiver_mobile':self.order_content3.GetValue(),
+            'receiver_zip':self.order_content4.GetValue(),
+            'receiver_state':self.order_content5.GetValue(),
+            'receiver_city':self.order_content6.GetValue(),
+            'receiver_district':self.order_content7.GetValue(),
+            'alipay_no':self.order_content8.GetValue(),
+            'receiver_address':self.order_content9.GetValue(),
+        })
         self.Parent.is_changeable = False
         self.enable_controls(False)
         

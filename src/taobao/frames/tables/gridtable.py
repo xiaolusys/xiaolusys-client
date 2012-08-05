@@ -20,7 +20,7 @@ class GridTable(grd.PyGridTableBase):
         '''
         grd.PyGridTableBase.__init__(self)
         self.data={}
-        self.colLabels = ('S',)
+        self.colLabels = ('√',)
         if colLabels:
             self.colLabels += colLabels
         self.rowLabels = rowLabels
@@ -32,6 +32,7 @@ class GridTable(grd.PyGridTableBase):
         attr.SetRenderer(grd.GridCellBoolRenderer())
          
         self.boolattr = grd.GridCellAttr()
+        self.boolattr.SetReadOnly()
         self.boolattr.SetEditor(grd.GridCellBoolEditor())
         self.boolattr.SetRenderer(grd.GridCellBoolRenderer())
          
@@ -48,8 +49,11 @@ class GridTable(grd.PyGridTableBase):
             i+=1
             
         self.cell=grd.GridCellAttr()
+        #self.cell.SetReadOnly()
         self.cell.SetOverflow(False)
-    
+        
+        self.sid_attr=grd.GridCellAttr()
+        self.sid_attr.SetOverflow(True)
         
     # these five are the required methods
     def GetNumberRows(self):
@@ -93,6 +97,9 @@ class GridTable(grd.PyGridTableBase):
             attr.IncRef()
         elif col in (8,9,10,11):
             attr = self.boolattr
+            attr.IncRef()
+        elif col == 13:
+            attr = self.sid_attr
             attr.IncRef()
         else:
             attr = self.cell

@@ -11,6 +11,7 @@ from taobao.frames.panels.gridpanel import QueryObjectGridPanel
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
     SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID
 
+
 all_trade_id = wx.NewId()
 wait_audit_id = wx.NewId()
 prapare_send_id  = wx.NewId()
@@ -29,7 +30,7 @@ class TradePanel(wx.Panel):
         
         self.all_trade_btn = wx.Button(self,all_trade_id,'全部')
         self.wait_audit_btn = wx.Button(self,wait_audit_id,'待审核',)
-        self.prapare_send_btn = wx.Button(self,prapare_send_id,'待准备发货',)
+        self.prapare_send_btn = wx.Button(self,prapare_send_id,'待发货准备',)
         self.scan_weight_btn = wx.Button(self,scan_weight_id,'待扫描称重')
         self.wait_delivery_btn = wx.Button(self,wait_delivery_id,'待确认发货')
         self.has_send_btn = wx.Button(self,has_send_id,'已发货')

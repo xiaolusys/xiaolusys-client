@@ -34,7 +34,7 @@ class BitmapRenderer(wx.grid.PyGridCellRenderer):
                 fp.close()
             except:
                 pass
-        img = img.Scale(80,80,wx.IMAGE_QUALITY_HIGH)
+        img = img.Scale(50,50,wx.IMAGE_QUALITY_NORMAL)
         return wx.BitmapFromImage(img)
     
             
