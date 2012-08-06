@@ -1,0 +1,153 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<style type='text/css'>
+body {
+	backgroup-color: #9cc2a9;
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+}
+
+table {
+	backgroud-color: #ffffff;
+	border-collapse: collapse;
+	padding: 0px;
+	margin: 0px;
+	width: 100%;
+}
+
+td {
+	padding: 0px;
+	margin: 0px;
+	vertical-align: top;
+}
+
+.delivery {
+	width: 900px;
+	height: 500px;
+}
+
+.seller-nick {
+	clear: both;
+	margin-top: 100px;
+}
+
+.base-info {
+	width: 100%;
+}
+
+.left-label {
+	float: left;
+	display: inline;
+}
+
+.right-label {
+	float: right;
+	display: inline;
+}
+
+.seller-info {
+	clear: left;
+	height: 40px;
+	padding: 2px;
+	margin: 0px;
+}
+
+.seller-info td {
+	border: 1px dashed #c3c3c3;
+}
+
+.order-info {
+	height: 200px;
+	padding: 2px;
+	margin: 0px;
+}
+
+.order-info td {
+	border: 1px dashed #c3c3c3;
+}
+
+.memo-style {
+	text-align: left;
+	width: 100%;
+	height: 40px;
+}
+</style>
+</head>
+<body>
+	{% for trade in trades %}
+	<div class='delivery'>
+
+		<div class='seller-nick'>
+			<h3>
+				{{ trade.seller_nick }}<br>发货单
+			</h3>
+		</div>
+		<div class='base-info'>
+			<div class='left-label'>
+				<label>物流编号（公司）:</label><span>{{ trade.out_sid
+					}}（{{trade.company_name}}）</span>
+			</div>
+			<div class='right-label'>
+				<label>发货日期:</label><span>{{
+					trade.post_date|datetimeformat(format='%Y-%m-%d') }}</span>
+			</div>
+		</div>
+		<div class='seller-info'>
+			<table>
+				<tr>
+					<td colspan='2'>卖家昵称：{{ trade.buyer_nick }}</td>
+					<td colspan='2'>收货人：{{ trade.receiver_name }}</td>
+					<td colspan='2'>手机：{{ trade.receiver_mobile }}</td>
+					<td colspan='2'>电话：{{ trade.receiver_phone }}</td>
+				</tr>
+				<tr>
+					<td colspan='8'>收货地址：{{ trade.receiver_state }} {{
+						trade.receiver_city }} {{ trade.receiver_district }} {{
+						trade.receiver_address }}</td>
+				</tr>
+			</table>
+		</div>
+		<div class='order-info'>
+			<table>
+				<tr border="1px">
+					<td>序号</td>
+					<td>商品编码</td>
+					<td>货品名称</td>
+					<td>规格</td>
+					<td>数量</td>
+					<td>单价</td>
+					<td>折扣</td>
+					<td>实付</td>
+				</tr>
+				{% for order in trade.orders %}
+				<tr>
+					<td>{{ loop.index }}</td>
+					<td>{{ order.outer_id }}</td>
+					<td>{{ order.item_name|slice_string(split_len=16)}}</td>
+					<td>{{ order.properties|slice_string(split_len=16)}}</td>
+					<td>{{ order.num }}</td>
+					<td>{{ order.price }}</td>
+					<td>{{ order.discount_fee }}</td>
+					<td>{{ order.payment }}</td>
+				</tr>
+				{% endfor %}
+				<tr>
+					<td colspan='4'>合计</td>
+					<td>{{ trade.order_nums }}</td>
+					<td>{{ trade.total_fee }}</td>
+					<td>{{ trade.discount_fee }}</td>
+					<td>{{ trade.payment }}</td>
+				</tr>
+			</table>
+		</div>
+		<div class='memo-style'>
+			<label>留言：</label><span>{{ trade.seller_memo }}</span>
+		</div>
+		<!-- trade.orders|print_wraps(max_num=43,split_len=16)  -->
+
+	</div>
+	{% endfor %}
+</body>
+</html>

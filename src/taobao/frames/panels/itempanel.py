@@ -131,7 +131,7 @@ class BasicPanel(wx.Panel):
         self.control_array.append(self.cod_status_text)
         self.control_array.append(self.has_refund_check)
         
-        logistics_companies = self.session.query(LogisticsCompany).all()
+        logistics_companies = self.session.query(LogisticsCompany).order_by('priority desc').all()
         self.order_content13.AppendItems([company.name for company in logistics_companies])
         for control in self.control_array:
             control.Enable(False)
@@ -380,7 +380,7 @@ class ReceiverPanel(wx.Panel):
     def __do_layout(self):
         
         main_sizer = wx.BoxSizer(wx.VERTICAL)
-        base_order_sizer  = wx.FlexGridSizer(cols=8,hgap=5,vgap=5)
+        base_order_sizer  = wx.FlexGridSizer(cols=8,hgap=10,vgap=10)
         base_order_sizer.Add(self.order_label1,0,0)
         base_order_sizer.Add(self.order_content1,0,1)
         base_order_sizer.Add(self.order_label2,0,2)
@@ -403,8 +403,8 @@ class ReceiverPanel(wx.Panel):
         box_sizer.Add(self.order_content9,0,flag=wx.EXPAND,border=10)
         box_sizer.Add(self.change_btn,0,flag=wx.EXPAND)
         
-        main_sizer.Add(base_order_sizer)
-        main_sizer.Add(box_sizer)
+        main_sizer.Add(base_order_sizer,flag=wx.EXPAND,border=10)
+        main_sizer.Add(box_sizer,flag=wx.EXPAND,border=10)
         self.SetSizer(main_sizer)
         
     def __evt_bind(self):

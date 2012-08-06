@@ -7,14 +7,14 @@ Created on 2012-7-13
 import re
 import weakref
 import wx, wx.grid as grd
-from taobao.frames.tables.gridtable import GridTable,SimpleGridTable
+from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable
 from taobao.frames.panels.itempanel import ItemPanel
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.dao.models import Order,SubPurchaseOrder,Refund,MergeTrade,LogisticsCompany
 from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
 from taobao.dao.configparams import SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
-    SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID
+    SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_SYSTEMSEND
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
 
@@ -53,7 +53,7 @@ class GridPanel(wx.Panel):
         self.pt2 = wx.StaticText(self, -1, "/")
         self.pt3 = wx.StaticText(self, -1, "页(共")
         self.pt5 = wx.StaticText(self, -1, "条记录,已选中 ") 
-        self.pt6 = wx.StaticText(self,-1,"条),每页")
+        self.pt6 = wx.StaticText(self,-1," 条),每页")
         self.lblPageIndex = wx.StaticText(self, -1, "0")
         self.lblPageCount = wx.StaticText(self, -1, "0")
         self.lblTotalCount = wx.StaticText(self, -1, "0")
@@ -241,7 +241,6 @@ class GridPanel(wx.Panel):
         
         self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell,self.preview_btn)
         
-        
         #分页栏，订单操作事件
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.edit_trade_item_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.audit_pass_btn)
@@ -250,8 +249,7 @@ class GridPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.picking_print_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.express_print_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.prepare_finish_btn)
-        #self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.confirm_delivery_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.confirm_delivery_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.reaudit_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.invalid_btn2)
@@ -456,7 +454,8 @@ class GridPanel(wx.Panel):
                 trade = self.session.query(MergeTrade).filter_by(tid=trade_id).first()
                 trade.reverse_audit_times += 1
                 trade.reverse_audit_reason += reason+','
-                self.session.query(MergeTrade).filter_by(tid=trade_id)\
+                self.session.query(MergeTrade).filter(MergeTrade.sys_status.in_(SYS_STATUS_CONFIRMSEND,
+                     SYS_STATUS_UNAUDIT,SYS_STATUS_SCANWEIGHT,SYS_STATUS_PREPARESEND)).filter_by(tid=trade_id)\
                     .update({'sys_status':SYS_STATUS_AUDITFAIL,
                              'reverse_audit_reason':trade.reverse_audit_reason,
                              'reverse_audit_times':trade.reverse_audit_times})
@@ -498,13 +497,14 @@ class GridPanel(wx.Panel):
             self.refreshTable()
         
         elif eventid == scan_weight_btn_id:
-            pass
-        
+            self.Parent.Parent._mgr.GetPane("scan_weight_content").Show()
+            self.Parent.Parent._mgr.Update()
+            
         elif eventid == confirm_delivery_btn_id:
             for row in self._selectedRows:
                 trade_id = self.grid.GetCellValue(row,1)
-                self.session.query(MergeTrade).filter_by(tid=trade_id)\
-                    .update({'sys_status':SYS_STATUS_CONFIRMSEND})
+                self.session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_CONFIRMSEND)\
+                    .update({'sys_status':SYS_STATUS_SYSTEMSEND})
             self.refreshTable()
             
         elif eventid == invalid_btn2_id:
@@ -734,7 +734,59 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
 
             array_object.append(object_array)
         return array_object
+      
             
+class WeightGridPanel(wx.Panel):
+    def __init__(self, parent, id= -1): 
+        wx.Panel.__init__(self, parent, id) 
+        
+        self.grid = grd.Grid(self,-1)
+        colLabels = ('来源单号','店铺简称','订单类型','会员名称','订单状态','系统状态','物流类型','称重重量','物流成本','实付邮费',
+                     '收货人','收货人固定电话','收货人手机','收货邮编','所在省','所在市','所在地区','收货地址')
+        gridtable = weakref.ref(WeightGridTable(colLabels=colLabels))
+        self.grid.SetTable(gridtable(),True)  
+        self.grid.SetRowLabelSize(40)
+        
+        box_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        box_sizer.Add(self.grid,flag=wx.EXPAND)
+        
+        self.grid.SetMinSize((1300,500))
+        self.SetSizer(box_sizer)
+        self.Layout()
+        
+    def InsertTradeRows(self,trade):
+        
+        items = self.getTradeItems(trade)
+        for index,item in enumerate(items):
+            self.grid.SetCellValue(0,index,item)
             
+        self.grid.InsertRows(0,1,True)
+        self.grid.ProcessTableMessage(grd.GridTableMessage(self.grid.Table,grd.GRIDTABLE_NOTIFY_ROWS_INSERTED,0,1))
             
+        self.grid.ForceRefresh()
+
+    def getTradeItems(self,trade):
+        items = []
+        items.append(str(trade.tid))
+        items.append(trade.seller_nick)
+        items.append(TRADE_TYPE.get(trade.type,'其它'))
+        items.append(trade.buyer_nick)
+        items.append(TRADE_STATUS.get(trade.status,'其它'))
+        items.append(SYS_STATUS.get(trade.sys_status,'其它'))
+        items.append(SHIPPING_TYPE.get(trade.shipping_type,'其它'))
+        items.append(trade.weight)
+        items.append(trade.post_cost)
+        
+        items.append(trade.post_fee)
+        items.append(trade.receiver_name)
+        items.append(trade.receiver_phone)
+        items.append(trade.receiver_mobile)
+        items.append(trade.receiver_zip)
+        items.append(trade.receiver_state)
+        items.append(trade.receiver_city)
+        items.append(trade.receiver_district)
+        items.append(trade.receiver_address)
+        
+        return items
+      
         

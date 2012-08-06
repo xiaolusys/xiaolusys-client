@@ -323,7 +323,7 @@ class MergeTrade(Base):
     seller_memo = Column(String(1000), nullable=True)
 
     created = Column(DateTime, index=True, nullable=True)
-    pay_time = Column(DateTime, nullable=True)
+    pay_time = Column(DateTime,index=True, nullable=True)
     modified = Column(DateTime, index=True, nullable=True)
     consign_time = Column(DateTime, index=True, nullable=True)
 
@@ -332,7 +332,7 @@ class MergeTrade(Base):
     seller_memo = Column(String(1000), default='')
     sys_memo = Column(String(1000), default='')
     
-    out_sid = Column(String(64), nullable=True)
+    out_sid = Column(String(64),index=True, nullable=True)
     logistics_company_code = Column(String(64), nullable=True)
     logistics_company_name = Column(String(64), nullable=True)
     receiver_name = Column(String(64), default='')
@@ -356,7 +356,7 @@ class MergeTrade(Base):
         
     sys_status = Column(String(32), nullable=True)    
     def __repr__(self):
-        return "<MergeTrade('%s','%s','%s')>" % (str(self.id), self.seller_nick, self.buyer_nick)
+        return "<MergeTrade('%s','%s','%s')>" % (str(self.tid), self.seller_nick, self.buyer_nick)
     
   
 class Refund(Base):

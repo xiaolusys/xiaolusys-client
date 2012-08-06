@@ -9,7 +9,7 @@ from taobao.dao.models import MergeTrade
 from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.frames.panels.gridpanel import QueryObjectGridPanel
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
-    SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID
+    SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_SYSTEMSEND
 
 
 all_trade_id = wx.NewId()
@@ -17,6 +17,7 @@ wait_audit_id = wx.NewId()
 prapare_send_id  = wx.NewId()
 scan_weight_id = wx.NewId()
 wait_delivery_id = wx.NewId()
+sync_status_id = wx.NewId()
 has_send_id   = wx.NewId()
 audit_fail_id = wx.NewId()
 invalid_id   = wx.NewId()
@@ -33,6 +34,7 @@ class TradePanel(wx.Panel):
         self.prapare_send_btn = wx.Button(self,prapare_send_id,'待发货准备',)
         self.scan_weight_btn = wx.Button(self,scan_weight_id,'待扫描称重')
         self.wait_delivery_btn = wx.Button(self,wait_delivery_id,'待确认发货')
+        self.sync_status_btn = wx.Button(self,sync_status_id,'待更新发货状态')
         self.has_send_btn = wx.Button(self,has_send_id,'已发货')
         self.audit_fail_btn = wx.Button(self,audit_fail_id,'审核未通过')
         self.invalid_btn = wx.Button(self,invalid_id,'已作废')
@@ -62,16 +64,16 @@ class TradePanel(wx.Panel):
         main_sizer.Add(self.search_panel,flag=wx.EXPAND)
          
         main_sizer.Add(self.static_button_up,flag=wx.EXPAND)
-        
         trade_naming_sizer = wx.FlexGridSizer(hgap=2,vgap=2)
         trade_naming_sizer.Add(self.all_trade_btn,0,0)
         trade_naming_sizer.Add(self.wait_audit_btn,0,1)
         trade_naming_sizer.Add(self.prapare_send_btn,0,2)
         trade_naming_sizer.Add(self.scan_weight_btn,0,3)
         trade_naming_sizer.Add(self.wait_delivery_btn,0,4)
-        trade_naming_sizer.Add(self.has_send_btn,0,5)
-        trade_naming_sizer.Add(self.audit_fail_btn,0,6)
-        trade_naming_sizer.Add(self.invalid_btn,0,7)
+        trade_naming_sizer.Add(self.sync_status_btn,0,6)
+        trade_naming_sizer.Add(self.has_send_btn,0,6)
+        trade_naming_sizer.Add(self.audit_fail_btn,0,7)
+        trade_naming_sizer.Add(self.invalid_btn,0,8)
         main_sizer.Add(trade_naming_sizer,flag=wx.EXPAND)
         main_sizer.Add(self.grid,1,flag=wx.EXPAND)
         main_sizer.Layout()
@@ -85,6 +87,7 @@ class TradePanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.prapare_send_btn)
         self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.scan_weight_btn)
         self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.wait_delivery_btn)
+        self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.sync_status_btn)
         self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.has_send_btn)
         self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.audit_fail_btn)
         self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.invalid_btn)
@@ -109,6 +112,9 @@ class TradePanel(wx.Panel):
         elif eventid == wait_delivery_id:
             trades = self.datasource.filter_by(sys_status=SYS_STATUS_CONFIRMSEND)
             trades.status_type = SYS_STATUS_CONFIRMSEND  
+        elif eventid == sync_status_id:
+            trades = self.datasource.filter_by(sys_status=SYS_STATUS_SYSTEMSEND) 
+            trades.status_type = SYS_STATUS_SYSTEMSEND
         elif eventid == has_send_id:
             trades = self.datasource.filter_by(sys_status=SYS_STATUS_FINISHED) 
             trades.status_type = SYS_STATUS_FINISHED 
@@ -124,6 +130,7 @@ class TradePanel(wx.Panel):
         self.prapare_send_btn.Enable(not eventid==prapare_send_id)
         self.scan_weight_btn.Enable(not eventid==scan_weight_id)
         self.wait_delivery_btn.Enable(not eventid==wait_delivery_id)
+        self.sync_status_btn.Enable(not eventid==sync_status_id)
         self.has_send_btn.Enable(not eventid==has_send_id)
         self.audit_fail_btn.Enable(not eventid==audit_fail_id)
         self.invalid_btn.Enable(not eventid==invalid_id)

@@ -74,7 +74,7 @@ class MainFrame(wx.Frame):
         
     
     def OnChangeContentPane(self, event):
-
+        
         self._mgr.GetPane("order_grid_content").Show(event.GetId() == ID_TradeMainPage)
         self._mgr.GetPane("scan_weight_content").Show(event.GetId() == ID_ScanWeight)
         self._mgr.Update()    

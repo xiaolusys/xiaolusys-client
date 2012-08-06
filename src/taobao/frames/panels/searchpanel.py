@@ -76,7 +76,7 @@ class SearchPanel(wx.Panel):
     def __set_properties(self):
         self.SetName('search_panel')
         users = self.session.query(User).all()
-        logistics_companies = self.session.query(LogisticsCompany).all()
+        logistics_companies = self.session.query(LogisticsCompany).order_by('priority desc').all()
         self.seller_select.AppendItems([user.nick for user in users])
         self.order_type_select.AppendItems([ v for k,v in TRADE_TYPE.items()])
         self.taobao_status_select.AppendItems([ v for k,v in TRADE_STATUS.items()])
