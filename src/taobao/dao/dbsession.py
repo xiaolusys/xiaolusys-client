@@ -13,7 +13,6 @@ import taobao
 def get_session():
     cf = ConfigParser.ConfigParser()
     config_path = os.path.abspath(os.path.dirname(taobao.__file__))
-    
     cf.read(config_path+'/system.conf')
  
     db_host = cf.get('db','db_host')

@@ -443,8 +443,8 @@ class GridPanel(wx.Panel):
         elif eventid in(audit_pass_btn_id,reaudit_btn_id):
             for row in self._selectedRows:
                 trade_id = self.grid.GetCellValue(row,1)
-                self.session.query(MergeTrade).filter_by(tid=trade_id)\
-                    .update({'sys_status':SYS_STATUS_PREPARESEND})
+                self.session.query(MergeTrade).filter(MergeTrade.sys_status.in_(SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL))\
+                    .filter_by(tid=trade_id).update({'sys_status':SYS_STATUS_PREPARESEND})
             self.refreshTable()
             
         elif eventid == reverse_audit_btn2_id:
@@ -474,9 +474,9 @@ class GridPanel(wx.Panel):
                 if id_compile.match(out_sid):
                     self.session.query(MergeTrade).filter_by(tid=trade_id)\
                         .update({'out_sid':out_sid})
-
             self.refreshTable()
             self.fill_sid_btn2.Enable(False)
+            
         elif eventid == picking_print_btn_id:
             trade_ids = []
             for row in self._selectedRows:
@@ -492,7 +492,7 @@ class GridPanel(wx.Panel):
         elif eventid == prepare_finish_btn_id:
             for row in self._selectedRows:
                 trade_id = self.grid.GetCellValue(row,1)
-                self.session.query(MergeTrade).filter_by(tid=trade_id)\
+                self.session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_PREPARESEND)\
                     .update({'sys_status':SYS_STATUS_SCANWEIGHT})
             self.refreshTable()
         

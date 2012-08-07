@@ -15,7 +15,7 @@ import wx
 import taobao
 
 FONT_PATH = 'c:\Windows\Fonts\simsun.ttc'
-IMAGE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\images\\'
+IMAGE_ROOT = os.path.abspath(os.path.dirname(taobao.__file__))+'\\images\\'
 def parse_datetime(dt):
     return datetime.datetime(*(time.strptime(dt,'%m/%d/%Y %H:%M:%S')[0:6]))
 

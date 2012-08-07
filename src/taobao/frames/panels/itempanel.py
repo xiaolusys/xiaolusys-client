@@ -234,6 +234,7 @@ class BasicPanel(wx.Panel):
             'sys_memo':self.order_content25.GetValue(),
             'logistics_company_code': company.code if company else ''
             })
+        self.order_content9.SetValue(company.code if company else '')
         for control in self.control_array:
             control.Enable(False)
         self.Parent.is_changeable = False
