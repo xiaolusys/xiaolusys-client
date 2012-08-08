@@ -1,4 +1,6 @@
 eclipse.preferences.version=1
+encoding//src/auimain.py=utf8
+encoding//src/setup.py=gbk
 encoding//src/taobao/auimain.py=utf8
 encoding//src/taobao/common/paginator.py=utf8
 encoding//src/taobao/common/utils.py=utf-8
@@ -19,6 +21,7 @@ encoding//src/test/frames/PickingFrame.py=utf-8
 encoding//src/test/frames/PostedFrame.py=utf-8
 encoding//src/test/frames/erpclient.py=utf-8
 encoding//src/test/mytemp/testframe1.py=utf8
+encoding//src/test/pyexe/setup.py=gb2312
 encoding//src/test/testdao/testrules.py=utf8
 encoding//src/test/testframe/auiframe.py=utf8
 encoding//src/test/testframe/gridpanel.py=utf8
