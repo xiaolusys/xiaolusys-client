@@ -87,7 +87,6 @@ class MainFrame(wx.Frame):
         return delivery_panel
     
     
-       
 app = wx.PySimpleApp()
 frm = MainFrame(None)
 frm.Show()

@@ -1,7 +1,10 @@
-#-*- coding:gbk -*-
+#encoding:utf8
+import sys
 from distutils.core import setup
 import py2exe
 
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 
 includes = ['taobao']
 options ={"py2exe":
@@ -16,8 +19,8 @@ options ={"py2exe":
 
 setup(
     version = "0.1.0",
-    description = u'\u91d1\u521a\u7535\u5b50\u5546\u52a1ERP\u5ba2\u6237\u7aef',
-    name = u'\u91d1\u521aERP\u5ba2\u6237\u7aef',
+    description = '金刚ERP客户端',
+    name = '金刚',
     options=options,
     zipfile=None,
     windows=[{"script":"auimain.py"}],
