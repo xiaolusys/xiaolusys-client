@@ -78,9 +78,9 @@ class ExpressPrinter(wx.Frame):
         that contains the information to display the snapshot
         '''
  
-        trades = self.getTradePickingData(trade_ids)
-
-        template = get_template('logistics_template.html') 
+        trades = self.getLogisticsData(trade_ids)
+        template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
+        template = get_template(template_name) 
         html =template.render(trades=trades)
 
         return html
@@ -105,7 +105,7 @@ class ExpressPrinter(wx.Frame):
         session = get_session()
         send_trades  = session.query(MergeTrade).filter(MergeTrade.tid.in_(trade_ids))
         
-        picking_data_list = []
+        express_data_list = []
         for trade in send_trades:
             trade_data = {}
             dt         = datetime.datetime.now() 
@@ -116,22 +116,20 @@ class ExpressPrinter(wx.Frame):
             trade_data['buyer_nick']        = trade.buyer_nick
             trade_data['out_sid']      = trade.out_sid
             trade_data['company_name'] = trade.logistics_company_name
-            trade_data['order_nums']   = 0
-            trade_data['total_fee']    = trade.total_fee
-            trade_data['discount_fee'] = 0
-            trade_data['payment']      = trade.payment
+            trade_data['company_code'] = trade.logistics_company_code
             
             trade_data['receiver_name']     = trade.receiver_name
             trade_data['receiver_phone']    = trade.receiver_phone
             trade_data['receiver_mobile']   = trade.receiver_mobile
+            trade_data['receiver_zip']      = trade.receiver_zip
             
             trade_data['receiver_state']    = trade.receiver_state
             trade_data['receiver_city']     = trade.receiver_city
             trade_data['receiver_district'] = trade.receiver_district
             trade_data['receiver_address']  = trade.receiver_address
-            trade_data['sys_memo']   = trade.sys_memo
-            trade_data['orders']       = [] 
+            
+            express_data_list.append(trade_data)
                                
-        return picking_data_list    
+        return express_data_list    
     
 

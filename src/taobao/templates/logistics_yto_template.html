@@ -1,0 +1,133 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<style type='text/css'>
+body {
+	backgroup-color: #9cc2a9;
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+}
+
+div{
+	margin: 0;
+	padding: 0;
+}
+
+.express {
+	width: 900px;
+	height: 450px;
+}
+
+.head-panel{
+	width:900px;
+	height:165px;
+	margin-top:55px;
+}
+
+.left-panel{
+	float:left;
+	height:158px;
+	width:440px;
+	display:inline;
+}
+
+.right-panel {
+	float:right;
+	height:158px;
+	width:440px;
+	display:inline;
+	text-align:left;
+}
+
+.receiver-name{
+	height:25px;
+	width:150px;
+	margin-top:10px;
+	margin-left:100px;
+}
+.receiver-addr{
+	height:60px;
+	width:330px;
+	margin-top:10px;
+	margin-left:100px;
+}
+
+.receiver-info{
+	height:30px;
+	width:330px;
+	margin-left:100px;
+}
+
+.receiver-state{
+	height:30px;
+	width:120px;
+	display:inline;
+}
+
+.receiver-city{
+	height:30px;
+	width:60px;
+	margin-left:40px;
+	display:inline;
+}
+
+.receiver-district{
+	height:30px;
+	width:60px;
+	margin-left:40px;
+	display:inline;
+}
+
+.receiver-address{
+	height:25px;
+	width:330px;
+	margin-top:5px;
+}
+
+.left-panel-bottom{
+	height:25px;
+	width:330px;
+	margin-top:10px;
+	margin-left:130px;
+}
+
+.receiver-mobile {
+	float:left;
+	display:inline;
+	width: 90px;
+}
+
+.receiver-phone {
+	float:right;
+	display:inline;
+	width:100px;
+	margin-left:10px;
+}
+
+.botton-panel{
+	clear:left;
+	width:940px;
+	height:220px;
+}
+</style>
+</head>
+<body>
+	{% for trade in trades %}
+	<div class='express'>
+		<div class='head-panel'>
+			<div class='left-panel'></div>
+			<div class='right-panel'>
+				<div class='receiver-name'>{{ trade.receiver_name }}</div>
+				<div class='receiver-info'></div>
+				<div class='receiver-addr'><div class='receiver-state'>{{ trade.receiver_state }}</div><div class='receiver-city'>{{ trade.receiver_city }}</div><div class='receiver-district'>{{ trade.receiver_district }}</div><div class='receiver-address'>{{ trade.receiver_address }}</div></div>
+				<div class='left-panel-bottom'><div class='receiver-mobile'>{{ trade.receiver_mobile }}</div><div class='receiver-phone'>{{ trade.receiver_phone }}</div></div>
+			</div>
+		</div>
+		<div class='bottom-panel'>
+			
+		</div>
+	</div>
+	{% endfor %}
+</body>
+</html>
