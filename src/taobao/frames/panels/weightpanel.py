@@ -6,7 +6,7 @@ Created on 2012-7-27
 '''
 import weakref
 import wx,wx.grid
-from taobao.dao.dbsession import get_session
+from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
@@ -17,10 +17,7 @@ class ScanWeightPanel(wx.Panel):
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,id)
         
-        if hasattr(parent,'session'):
-            self.session = parent.session
-        else:
-            self.session = get_session()
+        self.Session = parent.Session
         self.is_auto_save = False
         self.trade = None
         self.company_label = wx.StaticText(self,-1,'快递公司')
@@ -90,7 +87,8 @@ class ScanWeightPanel(wx.Panel):
     def __set_properties(self):
         self.SetName('weight panel')
         
-        logistics_companies = self.session.query(LogisticsCompany).order_by('priority desc').all()
+        with create_session(self.Parent) as session: 
+            logistics_companies = session.query(LogisticsCompany).order_by('priority desc').all()
         self.company_select.AppendItems([company.name for company in logistics_companies])
         self.out_sid_text.SetFocus()
 
@@ -204,7 +202,8 @@ class ScanWeightPanel(wx.Panel):
         
         trades = None
         if company_name and len(out_sid) >=10:
-            trades = self.session.query(MergeTrade).filter_by(out_sid=out_sid,
+            
+            trades = self.Session().query(MergeTrade).filter_by(out_sid=out_sid,
                                                               logistics_company_name=company_name)
         count = trades.count() if trades else 0   
         if count>1 :
@@ -227,11 +226,12 @@ class ScanWeightPanel(wx.Panel):
         out_sid      = self.out_sid_text.GetValue() 
 
         trades = None
-        if company_name and len(out_sid) >=10:
-            trades = self.session.query(MergeTrade).filter_by(out_sid=out_sid,
-                                                              logistics_company_name=company_name)
-        elif len(out_sid) >=10:
-            trades = self.session.query(MergeTrade).filter_by(out_sid=out_sid) 
+        with create_session(self.Parent) as session:
+            if company_name and len(out_sid) >=10:
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
+                                                                  logistics_company_name=company_name)
+            elif len(out_sid) >=10:
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid) 
             
         count = trades.count() if trades else 0   
         if count>1 :
@@ -286,8 +286,9 @@ class ScanWeightPanel(wx.Panel):
         
     def save_weight_to_trade(self,trade,weight):
         if trade.sys_status not in ('',SYS_STATUS_INVALID,SYS_STATUS_FINISHED) :
-            self.session.query(MergeTrade).filter_by(tid=trade.tid)\
-                    .update({'weight':weight,'sys_status':SYS_STATUS_CONFIRMSEND})
+            with create_session(self.Parent) as session: 
+                session.query(MergeTrade).filter_by(tid=trade.tid)\
+                        .update({'weight':weight,'sys_status':SYS_STATUS_CONFIRMSEND},synchronize_session='fetch')
             self.gridpanel.InsertTradeRows(trade)
     
         

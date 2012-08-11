@@ -6,14 +6,16 @@ Created on 2012-7-13
 '''
 import re
 import weakref
+import time
 import wx, wx.grid as grd
 from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable
 from taobao.frames.panels.itempanel import ItemPanel
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
+from taobao.common.utils import create_session
 from taobao.dao.models import Order,SubPurchaseOrder,Refund,MergeTrade,LogisticsCompany
 from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
-from taobao.dao.configparams import SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
+from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
     SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_SYSTEMSEND
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
@@ -38,7 +40,7 @@ class GridPanel(wx.Panel):
     def __init__(self, parent, id= -1, colLabels=None, rowLabels=None): 
         wx.Panel.__init__(self, parent, id) 
         
-        self.session = parent.session
+        self.Session = parent.Session
         self.datasource = None
         self.paginator = self.page = None
         self.page_size = 50
@@ -135,7 +137,6 @@ class GridPanel(wx.Panel):
         self.button_array.append(self.picking_print_btn)
         self.button_array.append(self.express_print_btn)
         self.button_array.append(self.prepare_finish_btn)
-        #self.button_array.append(self.scan_weight_btn)
         self.button_array.append(self.confirm_delivery_btn)
         self.button_array.append(self.reaudit_btn)
         self.button_array.append(self.invalid_btn)
@@ -254,13 +255,15 @@ class GridPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.reaudit_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.invalid_btn2)
         
-    
-    def setDataSource(self, datasource):
+    def setDataSource(self, status_type): 
+        with create_session(self.Parent) as session: 
+            datasource     = session.query(MergeTrade)
+            if status_type and status_type != SYS_STATUS_ALL:
+                datasource = datasource.filter_by(sys_status=status_type)
         self.datasource = datasource
         self.paginator = paginator = Paginator(datasource, self.page_size)
         self.page = paginator.page(1)
         
-        status_type = self.datasource.status_type
         self.edit_trade_item_btn.Show(status_type in (SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,))
         self.audit_pass_btn.Show(status_type in (SYS_STATUS_UNAUDIT))
         self.reverse_audit_btn.Show(status_type in (SYS_STATUS_UNAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND))
@@ -438,87 +441,96 @@ class GridPanel(wx.Panel):
     
     def onClickActiveButton(self,evt):
         eventid = evt.GetId()
-        if eventid == edit_trade_item_btn_id:
-            self.itempanel.refreshData()
-        elif eventid in(audit_pass_btn_id,reaudit_btn_id):
-            for row in self._selectedRows:
-                trade_id = self.grid.GetCellValue(row,1)
-                self.session.query(MergeTrade).filter(MergeTrade.sys_status.in_((SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL))).filter_by(tid=trade_id)\
-                    .update({'sys_status':SYS_STATUS_PREPARESEND},synchronize_session='fetch')
-            self.refreshTable()
-            
-        elif eventid == reverse_audit_btn2_id:
-            reason = self.reverse_audit_text.GetValue()
-            for row in self._selectedRows:
-                trade_id = self.grid.GetCellValue(row,1)
-                trade = self.session.query(MergeTrade).filter_by(tid=trade_id).first()
-                trade.reverse_audit_times += 1
-                trade.reverse_audit_reason += reason+','
-                self.session.query(MergeTrade).filter(MergeTrade.sys_status.in_((SYS_STATUS_CONFIRMSEND,
-                     SYS_STATUS_UNAUDIT,SYS_STATUS_SCANWEIGHT,SYS_STATUS_PREPARESEND))).filter_by(tid=trade_id)\
-                    .update({'sys_status':SYS_STATUS_AUDITFAIL,
-                             'reverse_audit_reason':trade.reverse_audit_reason,
-                             'reverse_audit_times':trade.reverse_audit_times})
-            self.refreshTable()
-                    
-        elif eventid == fill_sid_btn2_id:
-            for row in self._selectedRows:
-                trade_id = self.grid.GetCellValue(row,1)
-                out_sid = self.grid.GetCellValue(row,13)
+        with create_session(self.Parent) as session: 
+            if eventid == edit_trade_item_btn_id:
+                self.itempanel.refreshData()
                 
-                trade = self.session.query(MergeTrade).filter_by(tid=trade_id).first()
-                company_code = trade.logistics_company_code if trade else None
-                company = self.session.query(LogisticsCompany).filter_by(code=company_code).first()
-                company_regex = company.reg_mail_no if company else ''
-                id_compile = re.compile(company_regex)
-                if id_compile.match(out_sid):
-                    self.session.query(MergeTrade).filter_by(tid=trade_id)\
-                        .update({'out_sid':out_sid})
-            self.refreshTable()
-            self.fill_sid_btn2.Enable(False)
+            elif eventid in(audit_pass_btn_id,reaudit_btn_id):
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,1)
+                    session.query(MergeTrade).filter(MergeTrade.sys_status.in_((SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL))).filter_by(tid=trade_id)\
+                        .update({'sys_status':SYS_STATUS_PREPARESEND},synchronize_session='fetch')
+                self.refreshTable()
+                
+            elif eventid == reverse_audit_btn2_id:
+                reason = self.reverse_audit_text.GetValue()
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,1)
+                    trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
+                    trade.reverse_audit_times += 1
+                    trade.reverse_audit_reason += reason+','
+                    session.query(MergeTrade).filter(MergeTrade.sys_status.in_((SYS_STATUS_CONFIRMSEND,
+                         SYS_STATUS_UNAUDIT,SYS_STATUS_SCANWEIGHT,SYS_STATUS_PREPARESEND))).filter_by(tid=trade_id)\
+                        .update({'sys_status':SYS_STATUS_AUDITFAIL,
+                                 'reverse_audit_reason':trade.reverse_audit_reason,
+                                 'reverse_audit_times':trade.reverse_audit_times},synchronize_session='fetch')
+                self.refreshTable()
+                        
+            elif eventid == fill_sid_btn2_id:
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,1)
+                    out_sid = self.grid.GetCellValue(row,13)
+                    
+                    trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
+                    company_code = trade.logistics_company_code if trade else None
+                    company = session.query(LogisticsCompany).filter_by(code=company_code).first()
+                    company_regex = company.reg_mail_no if company else ''
+                    id_compile = re.compile(company_regex)
+                    if id_compile.match(out_sid):
+                        session.query(MergeTrade).filter_by(tid=trade_id)\
+                            .update({'out_sid':out_sid},synchronize_session='fetch')
+                self.refreshTable()
+                self.fill_sid_btn2.Enable(False)
+                
+            elif eventid == picking_print_btn_id:
+                trade_ids = []
+                for row in self._selectedRows:
+                    trade_ids.append(self.grid.GetCellValue(row,1))
+                DeliveryPrinter(parent=self,trade_ids=trade_ids).Show()
             
-        elif eventid == picking_print_btn_id:
-            trade_ids = []
-            for row in self._selectedRows:
-                trade_ids.append(self.grid.GetCellValue(row,1))
-            DeliveryPrinter(parent=self,trade_ids=trade_ids).Show()
-        
-        elif eventid == express_print_btn_id:
-            trade_ids = []
-            for row in self._selectedRows:
-                trade_ids.append(self.grid.GetCellValue(row,1))
-            ExpressPrinter(parent=self,trade_ids=trade_ids).Show()
-        
-        elif eventid == prepare_finish_btn_id:
-            for row in self._selectedRows:
-                trade_id = self.grid.GetCellValue(row,1)
-                self.session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_PREPARESEND)\
-                    .update({'sys_status':SYS_STATUS_SCANWEIGHT})
-            self.refreshTable()
-        
-        elif eventid == scan_weight_btn_id:
-            self.Parent.Parent._mgr.GetPane("scan_weight_content").Show()
-            self.Parent.Parent._mgr.Update()
+            elif eventid == express_print_btn_id:
+                trade_ids = []
+                pre_company_name = ''
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,1)
+                    company_name = self.grid.GetCellValue(row,12)
+                    if pre_company_name and pre_company_name !=company_name:
+                        return
+                    pre_company_name = company_name
+                    trade_ids.append(trade_id)
+                    
+                ExpressPrinter(parent=self,trade_ids=trade_ids).Show()
             
-        elif eventid == confirm_delivery_btn_id:
-            for row in self._selectedRows:
-                trade_id = self.grid.GetCellValue(row,1)
-                self.session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_CONFIRMSEND)\
-                    .update({'sys_status':SYS_STATUS_SYSTEMSEND})
-            self.refreshTable()
+            elif eventid == prepare_finish_btn_id:
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,1)
+                    session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_PREPARESEND)\
+                        .update({'sys_status':SYS_STATUS_SCANWEIGHT},synchronize_session='fetch')
+                self.refreshTable()
             
-        elif eventid == invalid_btn2_id:
-            invalid_reason = self.invalid_text.GetValue()
-            for row in self._selectedRows:
-                trade_id = self.grid.GetCellValue(row,1)
-                trade = self.session.query(MergeTrade).filter_by(tid=trade_id).first()
-                trade.reverse_audit_times += 1
-                trade.reverse_audit_reason += invalid_reason+','
-                self.session.query(MergeTrade).filter_by(tid=trade_id)\
-                    .update({'sys_status':SYS_STATUS_INVALID,
-                             'reverse_audit_reason':trade.reverse_audit_reason,
-                             'reverse_audit_times':trade.reverse_audit_times})
-            self.refreshTable()
+            elif eventid == scan_weight_btn_id:
+                self.Parent.Parent._mgr.GetPane("scan_weight_content").Show()
+                self.Parent.Parent._mgr.Update()
+                
+            elif eventid == confirm_delivery_btn_id:
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,1)
+                    session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_CONFIRMSEND)\
+                        .update({'sys_status':SYS_STATUS_SYSTEMSEND},synchronize_session='fetch')
+                self.refreshTable()
+                
+            elif eventid == invalid_btn2_id:
+                invalid_reason = self.invalid_text.GetValue()
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,1)
+                    trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
+                    trade.reverse_audit_times += 1
+                    trade.reverse_audit_reason += invalid_reason+','
+                    session.query(MergeTrade).filter_by(tid=trade_id)\
+                        .update({'sys_status':SYS_STATUS_INVALID,
+                                 'reverse_audit_reason':trade.reverse_audit_reason,
+                                 'reverse_audit_times':trade.reverse_audit_times},synchronize_session='fetch')
+                self.refreshTable()
         
         
         
@@ -534,8 +546,7 @@ class GridPanel(wx.Panel):
         self.btnLast.Enable(self.page.paginator.num_pages > 1 if self.page else False)
     
     def refreshTable(self):
-        #修改状态后 ，刷新当前表单
-        self.session.commit()  
+        #修改状态后 ，刷新当前表单  
         if self.page:
             self.page = self.paginator.page(self.page.number)
             object_list = self.parseObjectToList(self.page.object_list)
@@ -566,6 +577,7 @@ class GridPanel(wx.Panel):
         self.inner_panel.Layout()
         self.Layout()
         self.grid.ForceRefresh()
+    
      
     def parseObjectToList(self, object_list):
         raise NotImplement("parseObjectToList-该方法没有实现") 
@@ -596,7 +608,7 @@ class ListArrayGridPanel(GridPanel):
     
    
 class QueryObjectGridPanel(GridPanel):
-    
+
     def parseObjectToList(self, object_list):
         array_object = []
         for object in object_list:
@@ -631,7 +643,7 @@ class SimpleGridPanel(wx.Panel):
     def __init__(self, parent, id= -1, colLabels=None, rowLabels=None): 
         wx.Panel.__init__(self, parent, id) 
         
-        self.session = parent.session
+        self.Session = parent.Session
         self.rowLabels = rowLabels
         self.colLabels = colLabels
         self.grid =  grd.Grid(self, -1)
@@ -655,14 +667,15 @@ class SimpleGridPanel(wx.Panel):
     def cellContentChange(self,evt):
         col = evt.Col
         if col == 6:
-            row = evt.Row
-            order_id = self.grid.GetCellValue(row,1)
-            cell_value = self.grid.GetCellValue(row,col)
-            
-            if self.Parent.trade.type == 'fenxiao':
-                self.session.query(SubPurchaseOrder).filter_by(fenxiao_id=order_id).update({'sku_properties':cell_value})
-            else:
-                self.session.query(Order).filter_by(oid=int(order_id)).update({'sku_properties_name':cell_value})
+            with create_session(self.Parent) as session: 
+                row = evt.Row
+                order_id = self.grid.GetCellValue(row,1)
+                cell_value = self.grid.GetCellValue(row,col)
+                
+                if self.Parent.trade.type == 'fenxiao':
+                    session.query(SubPurchaseOrder).filter_by(fenxiao_id=order_id).update({'sku_properties':cell_value})
+                else:
+                    session.query(Order).filter_by(oid=int(order_id)).update({'sku_properties_name':cell_value})
             self.Parent.Parent.is_changeable = False
             wx.CallAfter(self.grid.EnableEditing,False)
         evt.Skip()
@@ -695,44 +708,45 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
             return array_object
         is_fenxiao = trade.type =='fenxiao'
         
-        if is_fenxiao =='fenxiao':
-            orders = self.session.query(SubPurchaseOrder).filter_by(id=trade.tid)
-        else:
-            orders = self.session.query(Order).filter_by(trade_id=trade.tid)
-        
-        from taobao.dao.models import Product
-        array_object = [] 
-        for object in orders:
-            object_array = []
-            object_array.append(object.snapshot_url if is_fenxiao else object.pic_path)
-            object_array.append(object.fenxiao_id if is_fenxiao else str(object.oid))
-            object_array.append(object.item_id if is_fenxiao else object.num_iid)
-            object_array.append(object.title)
-            
-            product = self.session.query(Product).filter_by(outer_id=object.outer_id).first()
-            object_array.append(product.name if product else '')
-            
-            object_array.append(object.sku_outer_id if is_fenxiao else object.outer_sku_id)
-            object_array.append(object.sku_properties if is_fenxiao else object.sku_properties_name)
-            object_array.append(object.num)
-            object_array.append(object.price)
-            object_array.append(object.buyer_payment if is_fenxiao else object.payment)
-            
-            if is_fenxiao:
-                refund = self.session.query(Refund).filter_by(refund_id=object.refund_id).first()
+        with create_session(self.Parent) as session:
+            if is_fenxiao =='fenxiao':
+                orders = session.query(SubPurchaseOrder).filter_by(id=trade.tid)
             else:
-                refund = self.session.query(Refund).filter_by(oid=object.oid).first()
-            refund_id    = ('' if is_fenxiao else object.refund_id) if not refund else refund.refund_id
-            refund_fee    = (object.refund_fee if is_fenxiao else '') if not refund else refund.refund_fee
-            refund_status = ('' if is_fenxiao else object.refund_status) if not refund else refund.status
-            refund_reason = refund.reason if refund else ''
-            object_array.append(refund_id )
-            object_array.append(refund_fee)
-            object_array.append(REFUND_STATUS.get(refund_status,''))
-            object_array.append(refund_reason)
-            object_array.append(TRADE_STATUS.get(object.status,'其他'))
-
-            array_object.append(object_array)
+                orders = session.query(Order).filter_by(trade_id=trade.tid)
+            
+            from taobao.dao.models import Product
+            array_object = [] 
+            for object in orders:
+                object_array = []
+                object_array.append(object.snapshot_url if is_fenxiao else object.pic_path)
+                object_array.append(object.fenxiao_id if is_fenxiao else str(object.oid))
+                object_array.append(object.item_id if is_fenxiao else object.num_iid)
+                object_array.append(object.title)
+                
+                product = session.query(Product).filter_by(outer_id=object.outer_id).first()
+                object_array.append(product.name if product else '')
+                
+                object_array.append(object.sku_outer_id if is_fenxiao else object.outer_sku_id)
+                object_array.append(object.sku_properties if is_fenxiao else object.sku_properties_name)
+                object_array.append(object.num)
+                object_array.append(object.price)
+                object_array.append(object.buyer_payment if is_fenxiao else object.payment)
+                
+                if is_fenxiao:
+                    refund = session.query(Refund).filter_by(refund_id=object.refund_id).first()
+                else:
+                    refund = session.query(Refund).filter_by(oid=object.oid).first()
+                refund_id    = ('' if is_fenxiao else object.refund_id) if not refund else refund.refund_id
+                refund_fee    = (object.refund_fee if is_fenxiao else '') if not refund else refund.refund_fee
+                refund_status = ('' if is_fenxiao else object.refund_status) if not refund else refund.status
+                refund_reason = refund.reason if refund else ''
+                object_array.append(refund_id )
+                object_array.append(refund_fee)
+                object_array.append(REFUND_STATUS.get(refund_status,''))
+                object_array.append(refund_reason)
+                object_array.append(TRADE_STATUS.get(object.status,'其他'))
+    
+                array_object.append(object_array)
         return array_object
       
             
@@ -761,7 +775,8 @@ class WeightGridPanel(wx.Panel):
             self.grid.SetCellValue(0,index,item)
             
         self.grid.InsertRows(0,1,True)
-        self.grid.ProcessTableMessage(grd.GridTableMessage(self.grid.Table,grd.GRIDTABLE_NOTIFY_ROWS_INSERTED,0,1))
+        self.grid.ProcessTableMessage(grd.GridTableMessage(
+                                    self.grid.Table,grd.GRIDTABLE_NOTIFY_ROWS_INSERTED,0,1))
             
         self.grid.ForceRefresh()
 

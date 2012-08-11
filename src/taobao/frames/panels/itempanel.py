@@ -5,6 +5,7 @@ Created on 2012-7-16
 @author: user1
 '''
 import wx
+from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS
 
@@ -12,7 +13,7 @@ class BasicPanel(wx.Panel):
     def __init__(self, parent,id=-1):
         wx.Panel.__init__(self,parent,id)
         
-        self.session = parent.session
+        self.Session = parent.Session
         self.trade = None
         self.order_label1  = wx.StaticText(self,-1,'店铺简称')
         self.order_content1  = wx.TextCtrl(self,-1)
@@ -131,8 +132,9 @@ class BasicPanel(wx.Panel):
         self.control_array.append(self.cod_status_text)
         self.control_array.append(self.has_refund_check)
         
-        logistics_companies = self.session.query(LogisticsCompany).order_by('priority desc').all()
-        self.order_content13.AppendItems([company.name for company in logistics_companies])
+        with create_session(self.Parent) as session:
+            logistics_companies = session.query(LogisticsCompany).order_by('priority desc').all()
+            self.order_content13.AppendItems([company.name for company in logistics_companies])
         for control in self.control_array:
             control.Enable(False)
         self.change_btn.Hide()
@@ -222,18 +224,19 @@ class BasicPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON,self.onClickChangeBtn,self.change_btn)
         
     def onClickChangeBtn(self,evt):
-        company_name = self.order_content13.GetValue()
-        company = self.session.query(LogisticsCompany).filter_by(name=company_name).first()
-        self.session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
-            'is_picking_print':self.delivery_pick_check.IsChecked(),
-            'is_express_print':self.logistics_pick_check.IsChecked(),
-            'is_send_sms':self.send_sms_check.IsChecked(),
-            'has_refund':self.has_refund_check.IsChecked(),
-            'logistics_company_name':company_name,
-            'out_sid':self.order_content14.GetValue(),
-            'sys_memo':self.order_content25.GetValue(),
-            'logistics_company_code': company.code if company else ''
-            })
+        with create_session(self.Parent) as session:
+            company_name = self.order_content13.GetValue()
+            company = session.query(LogisticsCompany).filter_by(name=company_name).first()
+            session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
+                'is_picking_print':self.delivery_pick_check.IsChecked(),
+                'is_express_print':self.logistics_pick_check.IsChecked(),
+                'is_send_sms':self.send_sms_check.IsChecked(),
+                'has_refund':self.has_refund_check.IsChecked(),
+                'logistics_company_name':company_name,
+                'out_sid':self.order_content14.GetValue(),
+                'sys_memo':self.order_content25.GetValue(),
+                'logistics_company_code': company.code if company else ''
+                })
         self.order_content9.SetValue(company.code if company else '')
         for control in self.control_array:
             control.Enable(False)
@@ -305,7 +308,7 @@ class DetailPanel(wx.Panel):
     
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,id)
-        self.session = parent.session
+        self.Session = parent.Session
         self.trade = None
         from taobao.frames.panels.gridpanel import SimpleOrdersGridPanel
         colLabels = ('商品图片','子订单ID','商品ID','商品名称','商品简称','规格编码','规格','订购数量','实际单价','实付金额',
@@ -338,7 +341,7 @@ class ReceiverPanel(wx.Panel):
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,id)
         
-        self.session = parent.session
+        self.Session = parent.Session
         self.trade = None
         self.order_label1  = wx.StaticText(self,-1,'收货人')
         self.order_content1  = wx.TextCtrl(self,-1)
@@ -412,7 +415,8 @@ class ReceiverPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON,self.onClickChangeBtn,self.change_btn)
         
     def onClickChangeBtn(self,evt):
-        self.session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
+        with create_session(self.Parent) as session:
+            session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
             'receiver_name':self.order_content1.GetValue(),
             'receiver_phone':self.order_content2.GetValue(),
             'receiver_mobile':self.order_content3.GetValue(),
@@ -422,7 +426,7 @@ class ReceiverPanel(wx.Panel):
             'receiver_district':self.order_content7.GetValue(),
             'alipay_no':self.order_content8.GetValue(),
             'receiver_address':self.order_content9.GetValue(),
-        })
+            })
         self.Parent.is_changeable = False
         self.enable_controls(False)
         
@@ -458,8 +462,7 @@ class ItemPanel(wx.Panel):
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,id)
         
-        self.session = parent.session
-        self.parent = parent
+        self.Session = parent.Session
         self.selected_trade = None
         
         self.is_changeable = False
@@ -531,8 +534,8 @@ class ItemPanel(wx.Panel):
         
     def setData(self,trade_id):
         self.is_changeable = False
-        session = self.parent.session
-        self.selected_trade = session.query(MergeTrade).filter_by(tid=trade_id).one()
+        with create_session(self.Parent) as session: 
+            self.selected_trade = session.query(MergeTrade).filter_by(tid=trade_id).one()
         self.base_trade_panel.setData(self.selected_trade)
         self.detail_trade_panel.setData(self.selected_trade)
         self.receiver_trade_panel.setData(self.selected_trade)

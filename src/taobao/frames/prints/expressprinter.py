@@ -15,6 +15,7 @@ import datetime
 from wx.html import HtmlEasyPrinting,HtmlWindow 
 from taobao.common.environment import get_template
 from taobao.dao.dbsession import get_session
+from taobao.common.utils import create_session
 from taobao.dao.models import Trade, MergeTrade,Item,Order,SubPurchaseOrder,FenxiaoProduct
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS
 
@@ -47,6 +48,7 @@ class ExpressPrinter(wx.Frame):
     def __init__(self,parent=None, title='打印发货单',trade_ids=[]):
         wx.Frame.__init__(self, parent, wx.ID_ANY, title, size=(850,500))
  
+        self.trade_ids = trade_ids
         self.panel = wx.Panel(self, wx.ID_ANY)
         self.printer = HtmlPrinter(name='打印', parentWindow=None)
  
@@ -57,15 +59,18 @@ class ExpressPrinter(wx.Frame):
  
         mention = wx.StaticText(self.panel,wx.ID_ANY,'(请点击鼠标右键选择打印预览)')
         cancelBtn = wx.Button(self.panel, wx.ID_ANY, '取消打印')
- 
+        expressBtn = wx.Button(self.panel, wx.ID_ANY, '更新已打印物流单状态')
+        
         self.Bind(wx.EVT_BUTTON, self.onCancel, cancelBtn)
- 
+        self.Bind(wx.EVT_BUTTON, self.onUpdateExpressStatus, expressBtn)
+        
         sizer = wx.BoxSizer(wx.VERTICAL)
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
  
         sizer.Add(self.html, 1, wx.GROW)
         btnSizer.Add(mention, 0, wx.ALL, 5)
         btnSizer.Add(cancelBtn, 0, wx.ALL, 5)
+        btnSizer.Add(expressBtn, 1, wx.ALL|wx.RIGHT, 5)
         sizer.Add(btnSizer)
  
         self.panel.SetSizer(sizer)
@@ -101,9 +106,15 @@ class ExpressPrinter(wx.Frame):
         self.Close()
  
     #----------------------------------------------------------------------
+    def onUpdateExpressStatus(self,event):
+        with create_session(self.Parent) as session: 
+            session.query(MergeTrade).filter(MergeTrade.tid.in_(self.trade_ids))\
+                .update({'is_express_print':True},synchronize_session='fetch')
+    
+    #----------------------------------------------------------------------
     def getLogisticsData(self ,trade_ids=[]):
-        session = get_session()
-        send_trades  = session.query(MergeTrade).filter(MergeTrade.tid.in_(trade_ids))
+        with create_session(self.Parent) as session: 
+            send_trades  = session.query(MergeTrade).filter(MergeTrade.tid.in_(trade_ids))
         
         express_data_list = []
         for trade in send_trades:

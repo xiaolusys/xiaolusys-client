@@ -45,6 +45,43 @@ def gen_string_image(font_path,code_string):
 #    im.save(buf,'jpg')
     return im
 
+class create_session():
+    def __init__(self,parent):
+        self.parent = parent
+        self.session = parent.Session
+  
+    def __enter__(self):
+        from taobao.dao.models import SystemConfig
+        from taobao.dao.dbsession import get_session
+        try:
+            self.session.query(SystemConfig).first()
+        except:
+            self.session = get_session()
+            self.parent.Session = self.session
+        return self.session
+
+    def __exit__(self,type,value,traceback):
+        
+        if self.session:
+            try:
+                self.session.commit()
+            except:
+                try:
+                    self.session.rollback()
+                except:
+                    pass
+
+
+def logtime(tag=''):
+    def outer(func):
+        def wrap(*args,**kwargs):
+            start_time = time.time()
+            response = func(*args,**kwargs)
+            end_time   = time.time()
+            print 'tag(%s) consume seconds:'%tag,end_time-start_time
+            return response
+        return wrap
+    return outer
 
 #if __name__ == "__main__":
 #    app = wx.PySimpleApp(0)

@@ -10,6 +10,7 @@ import ConfigParser
 import taobao
 
 
+
 def get_session():
     cf = ConfigParser.ConfigParser()
     config_path = os.path.abspath(os.path.dirname(taobao.__file__))
@@ -23,7 +24,5 @@ def get_session():
     engine = create_engine('mysql://%s:%s@%s:%s/%s?charset=utf8'%(db_user,db_pwd,db_host,db_port,db_name), encoding='utf8', echo=False)
 
     Session = sessionmaker(bind=engine)
-    session = Session()
-    return session
+    return Session()
 
-print 

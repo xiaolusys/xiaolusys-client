@@ -15,6 +15,7 @@ table {
 	padding:0px;
 	margin:0px;
 	width:100%;
+	font-size:16px;
 }
 
 td{
@@ -30,7 +31,8 @@ td{
 
 .seller-nick {
 	clear:both;
-	margin-top:80px;
+	margin-top:70px;
+
 }
 .base-info {
 	width:100%;
@@ -74,7 +76,7 @@ td{
 	{% for trade in trades %}
 	<div  class='delivery' >
 		
-		<div class='seller-nick'><h3>{{ trade.seller_nick }}<br>发货单</h3></div>
+		<div class='seller-nick'><h2>{{ trade.seller_nick }}<br>发货单</h2></div>
 		<div class='base-info'>
 			<div class='left-label'><label>物流编号（公司）:</label><span>{{ trade.out_sid }}（{{trade.company_name}}）</span></div>
 			<div class='right-label'><label>发货日期:</label><span>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</span></div>

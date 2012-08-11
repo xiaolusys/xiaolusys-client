@@ -7,7 +7,7 @@ Created on 2012-7-19
 import datetime
 import wx
 from taobao.dao.models import Trade,User,LogisticsCompany
-from taobao.common.utils import wxdate2pydate
+from taobao.common.utils import wxdate2pydate,create_session
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE
 
 class SearchPanel(wx.Panel):
@@ -31,7 +31,7 @@ class SearchPanel(wx.Panel):
 #            'has_refund':None
 #        }
         
-        self.session = parent.session
+        self.Session = parent.Session
         self.order_label = wx.StaticText(self,-1,'订单号')
         self.order_text = wx.TextCtrl(self,-1)
         self.order_type_label = wx.StaticText(self,-1,'订单类型')
@@ -64,9 +64,7 @@ class SearchPanel(wx.Panel):
         self.logistics_pick_check  = wx.CheckBox(self,-1)
         self.has_refund_label = wx.StaticText(self,-1,'有退款')
         self.has_refund_check  = wx.CheckBox(self,-1)
-        
-        
-        
+
         self.search_btn = wx.Button(self,-1,'搜索')
         
         self.__set_properties()
@@ -75,14 +73,15 @@ class SearchPanel(wx.Panel):
         
     def __set_properties(self):
         self.SetName('search_panel')
-        users = self.session.query(User).all()
-        logistics_companies = self.session.query(LogisticsCompany).order_by('priority desc').all()
+        with create_session(self.Parent) as session: 
+            users = session.query(User).all()
+            logistics_companies = session.query(LogisticsCompany).order_by('priority desc').all()
         self.seller_select.AppendItems([user.nick for user in users])
+        self.logistics_company_select.AppendItems([company.name for company in logistics_companies])
+        
         self.order_type_select.AppendItems([ v for k,v in TRADE_TYPE.items()])
         self.taobao_status_select.AppendItems([ v for k,v in TRADE_STATUS.items()])
-        self.shipping_type_select.AppendItems([v for k,v in SHIPPING_TYPE.items()])
-        self.logistics_company_select.AppendItems([company.name for company in logistics_companies])
-             
+        self.shipping_type_select.AppendItems([v for k,v in SHIPPING_TYPE.items()])       
         
     def __do_layout(self):    
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)
@@ -118,14 +117,12 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.has_refund_check, pos=(1,13), span=(1,1), flag=wx.EXPAND)
         
         gridbagsizer.Add(self.search_btn,pos=(1,14),span=(1,1),flag=wx.EXPAND)
-        
         gridbagsizer.Layout()
         
         self.SetSizer(gridbagsizer)
         
     def __bind_evt(self):
-#        self.Bind(wx.EVT_DATE_CHANGED, self.OnDateChanged, self.start_time_select)
-#        self.Bind(wx.EVT_DATE_CHANGED, self.OnDateChanged, self.end_time_select)
+
         self.Bind(wx.EVT_BUTTON, self.OnSearch, self.search_btn)
         
     

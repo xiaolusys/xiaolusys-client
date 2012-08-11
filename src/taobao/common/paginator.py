@@ -5,6 +5,7 @@ Created on 2012-7-12
 @author: user1
 '''
 from math import ceil
+from taobao.common.utils import logtime
 
 class InvalidPage(Exception):
     pass
@@ -22,9 +23,8 @@ class Paginator(object):
         self.orphans     = orphans
         self.allow_empty_first_page = allow_empty_first_page
         self._num_pages  = self._count =None
-        
-    def validate_number(self,number):
-        
+       
+    def validate_number(self,number):  
         try:
             number = int(number)
         except ValueError:
@@ -54,7 +54,7 @@ class Paginator(object):
                 self._count = len(self.object_list)
         return self._count
     count = property(_get_count)
-    
+
     def _get_num_pages(self):
         if self._num_pages is None:
             if self.count == 0 and not self.allow_empty_first_page:
@@ -64,7 +64,7 @@ class Paginator(object):
                 self._num_pages = int(ceil(hits/float(self.per_page)))
         return self._num_pages
     num_pages = property(_get_num_pages)
-    
+
     def _get_page_range(self):
         return range(1,self.num_pages+1)
     
@@ -78,7 +78,7 @@ class Page(object):
         
     def __repr__(self):
         return '<Page %s of %s>'%(self.number,self.paginator.num_pages)
-    
+
     def has_next(self):
         return self.number < self.paginator.num_pages
     
@@ -93,12 +93,12 @@ class Page(object):
     
     def previous_page_number(self):
         return self.number-1
-    
+
     def start_index(self):
         if self.paginator.count == 0:
             return 0
         return (self.paginator.per_page*(self.number-1))+1
-    
+
     def end_index(self):
         if self.number == self.paginator.num_pages:
             return self.paginator.count

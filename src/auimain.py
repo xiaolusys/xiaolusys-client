@@ -5,10 +5,7 @@ Created on 2012-7-11
 @author: user1
 '''
 import wx
-import wx.grid
-import wx.html
 import wx.aui
-import cStringIO
 from taobao.dao.dbsession import get_session
 from taobao.frames.panels.tradepanel import TradePanel
 from taobao.frames.panels.weightpanel import ScanWeightPanel
@@ -25,7 +22,7 @@ class MainFrame(wx.Frame):
 
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
         
-        self.session = get_session()
+        self.Session = get_session()
         # tell FrameManager to manage this frame        
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
@@ -76,8 +73,7 @@ class MainFrame(wx.Frame):
         self._mgr.GetPane("order_grid_content").Show(event.GetId() == ID_TradeMainPage)
         self._mgr.GetPane("scan_weight_content").Show(event.GetId() == ID_ScanWeight)
         self._mgr.Update()    
-    
-                      
+                
     def CreateOrderGrid(self):
         trade_operation_panel = TradePanel(self,-1) 
         return trade_operation_panel

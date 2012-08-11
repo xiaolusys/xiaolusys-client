@@ -1,7 +1,6 @@
 eclipse.preferences.version=1
 encoding//src/auimain.py=utf8
 encoding//src/setup.py=utf8
-encoding//src/taobao/auimain.py=utf8
 encoding//src/taobao/common/paginator.py=utf8
 encoding//src/taobao/common/utils.py=utf-8
 encoding//src/taobao/dao/configparams.py=utf8
@@ -15,7 +14,6 @@ encoding//src/taobao/frames/prints/deliveryprinter.py=utf8
 encoding//src/taobao/frames/prints/expressprinter.py=utf8
 encoding//src/taobao/frames/prints/send_sms.py=utf-8
 encoding//src/taobao/frames/tables/renderer.py=utf8
-encoding//src/taobao/tasks/tasks.py=utf-8
 encoding//src/test/frames/MainMenuBar.py=utf-8
 encoding//src/test/frames/PickingFrame.py=utf-8
 encoding//src/test/frames/PostedFrame.py=utf-8

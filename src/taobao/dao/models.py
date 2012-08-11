@@ -332,9 +332,9 @@ class MergeTrade(Base):
     seller_memo = Column(String(1000), default='')
     sys_memo = Column(String(1000), default='')
     
-    out_sid = Column(String(64),index=True, nullable=True)
-    logistics_company_code = Column(String(64), nullable=True)
-    logistics_company_name = Column(String(64), nullable=True)
+    out_sid = Column(String(64),index=True,default='')
+    logistics_company_code = Column(String(64), default='')
+    logistics_company_name = Column(String(64), default='')
     receiver_name = Column(String(64), default='')
     receiver_state = Column(String(8), default='')
     receiver_city = Column(String(8), default='')
@@ -347,14 +347,14 @@ class MergeTrade(Base):
 
     reverse_audit_times = Column(Integer, nullable=True)
     reverse_audit_reason = Column(String(1000), default='')
-    status = Column(String(32), nullable=True)
+    status = Column(String(32), index=True, nullable=True)
     
     is_picking_print = Column(Boolean, default=False)
     is_express_print = Column(Boolean, default=False)
     is_send_sms = Column(Boolean, default=False)
     has_refund = Column(Boolean, default=False)
         
-    sys_status = Column(String(32), nullable=True)    
+    sys_status = Column(String(32),index=True,default='')    
     def __repr__(self):
         return "<MergeTrade('%s','%s','%s')>" % (str(self.tid), self.seller_nick, self.buyer_nick)
     

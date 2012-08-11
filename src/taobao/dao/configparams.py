@@ -68,6 +68,7 @@ SHIPPING_TYPE ={
 
 
 REFUND_STATUS ={
+    'NO_REFUND':'没有退款',
     'WAIT_SELLER_AGREE':'等待卖家同意',
     'WAIT_BUYER_RETURN_GOODS':'等待买家退货',
     'WAIT_SELLER_CONFIRM_GOODS':'等待买家确认收货',
