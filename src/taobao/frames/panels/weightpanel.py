@@ -10,7 +10,7 @@ from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
-    SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND
+    SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND,TRADE_STATUS_WAIT_SEND_GOODS
 
 class ScanWeightPanel(wx.Panel):
     
@@ -201,10 +201,10 @@ class ScanWeightPanel(wx.Panel):
         out_sid      = self.out_sid_text.GetValue()
         
         trades = None
-        if company_name and len(out_sid) >=10:
-            
-            trades = self.Session().query(MergeTrade).filter_by(out_sid=out_sid,
-                                                              logistics_company_name=company_name)
+        if company_name:
+            with create_session(self.Parent) as session:
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
+                         logistics_company_name=company_name,status=TRADE_STATUS_WAIT_SEND_GOODS)
         count = trades.count() if trades else 0   
         if count>1 :
             self.error_text.SetLabel('该快递单号已重复，请反审核后修改')
@@ -227,13 +227,13 @@ class ScanWeightPanel(wx.Panel):
 
         trades = None
         with create_session(self.Parent) as session:
-            if company_name and len(out_sid) >=10:
+            if company_name :
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                                                                  logistics_company_name=company_name)
-            elif len(out_sid) >=10:
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid) 
-            
-        count = trades.count() if trades else 0   
+                       logistics_company_name=company_name,status=TRADE_STATUS_WAIT_SEND_GOODS)
+            else:
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid)
+                 
+        count = trades.count() if trades else 0 
         if count>1 :
             self.error_text.SetLabel('该快递单号已重复，请反审核后修改')
             self.error_text.SetForegroundColour('black')
