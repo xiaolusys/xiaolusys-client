@@ -20,6 +20,8 @@ from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_UNAUDIT,SYS_STATUS
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
 
+TRADE_ID_CELL_COL = 1
+OUT_SID_CELL_COL = 13
 
 edit_trade_item_btn_id = wx.NewId()
 audit_pass_btn_id = wx.NewId()
@@ -84,7 +86,7 @@ class GridPanel(wx.Panel):
         self.fill_sid_panel   = wx.Panel(self.inner_panel,-1)
         self.fill_sid_label1  = wx.StaticText(self.fill_sid_panel,-1,'起始物流单号')
         self.fill_sid_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(200,-1))
-        self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,'自动自增物流单号')
+        self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,'自增物流单号')
         self.fill_sid_checkbox1   = wx.CheckBox(self.fill_sid_panel,-1)
         self.preview_btn      = wx.Button(self.fill_sid_panel,-1,'预览')
         self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,'确定')
@@ -378,7 +380,7 @@ class GridPanel(wx.Panel):
 
     
     def updateGridCheckBoxValue(self):
-        rows  = self.grid.GetRowSize(0)
+        rows  = self.grid.GetNumberRows()
         for row in xrange(0,rows):
             if row in self._selectedRows:
                 self.grid.SetCellValue(row,0,'1')
@@ -547,6 +549,7 @@ class GridPanel(wx.Panel):
     
     def refreshTable(self):
         #修改状态后 ，刷新当前表单  
+        trade_ids = self.getSelectTradeIds(self._selectedRows)
         if self.page:
             self.page = self.paginator.page(self.page.number)
             object_list = self.parseObjectToList(self.page.object_list)
@@ -556,7 +559,25 @@ class GridPanel(wx.Panel):
         self.grid.SetTable(gridtable())
         self.grid.SetColSize(0, 20)
         self.grid.SetRowLabelSize(40)  
+        self.updateCellBySelectedTradeIds(trade_ids)
         self.grid.ForceRefresh() 
+    
+    def updateCellBySelectedTradeIds(self,trade_ids):
+        self._selectedRows.clear()
+        rows  = self.grid.GetNumberRows()
+        for row in xrange(0,rows):
+            trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+            if trade_id in trade_ids:
+                self._selectedRows.add(row)
+
+        self.updateGridCheckBoxValue()
+            
+    def getSelectTradeIds(self,selectRows):
+        trade_ids = []
+        for row in selectRows:
+            trade_id = self.grid.GetCellValue(int(row),TRADE_ID_CELL_COL)
+            trade_ids.append(trade_id)
+        return trade_ids
     
     def updateTableAndPaginator(self):
         self._selectedRows.clear()
@@ -709,23 +730,28 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
         is_fenxiao = trade.type =='fenxiao'
         
         with create_session(self.Parent) as session:
-            if is_fenxiao =='fenxiao':
+            if is_fenxiao:
                 orders = session.query(SubPurchaseOrder).filter_by(id=trade.tid)
             else:
                 orders = session.query(Order).filter_by(trade_id=trade.tid)
             
-            from taobao.dao.models import Product
+            from taobao.dao.models import Product,FenxiaoProduct
             array_object = [] 
             for object in orders:
                 object_array = []
-                object_array.append(object.snapshot_url if is_fenxiao else object.pic_path)
+                
+                product = None
+                if is_fenxiao:
+                    product = session.query(FenxiaoProduct).filter_by(pid=object.item_id).first()
+                else:
+                    product = session.query(Product).filter_by(outer_id=object.outer_id).first()
+                pic_url = (product.pictures if product else '') if is_fenxiao else object.pic_path
+                object_array.append(pic_url)
                 object_array.append(object.fenxiao_id if is_fenxiao else str(object.oid))
                 object_array.append(object.item_id if is_fenxiao else object.num_iid)
                 object_array.append(object.title)
                 
-                product = session.query(Product).filter_by(outer_id=object.outer_id).first()
                 object_array.append(product.name if product else '')
-                
                 object_array.append(object.sku_outer_id if is_fenxiao else object.outer_sku_id)
                 object_array.append(object.sku_properties if is_fenxiao else object.sku_properties_name)
                 object_array.append(object.num)
@@ -733,7 +759,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(object.buyer_payment if is_fenxiao else object.payment)
                 
                 if is_fenxiao:
-                    refund = session.query(Refund).filter_by(refund_id=object.refund_id).first()
+                    refund = session.query(Refund).filter_by(oid=object.tc_order_id).first()
                 else:
                     refund = session.query(Refund).filter_by(oid=object.oid).first()
                 refund_id    = ('' if is_fenxiao else object.refund_id) if not refund else refund.refund_id

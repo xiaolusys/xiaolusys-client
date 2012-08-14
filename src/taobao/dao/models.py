@@ -93,6 +93,25 @@ class Product(Base):
     def __repr__(self):
         return "<Product('%s','%s','%s')>" % (str(self.outer_id), str(self.name), str(self.collect_num))   
 
+class FenxiaoProduct(Base):
+    __tablename__ = 'shop_fenxiao_product'
+    pid            = Column(String(64), primary_key=True)
+    name           = Column(String(64), default='')
+    productcat_id  = Column(String(64), default='')
+    
+    user_id        = Column(BigInteger, nullable=True)
+    trade_type     = Column(String(7), default='')
+    standard_price = Column(String(10), default='')
+    
+    item_id        = Column(String(10), default='')
+    cost_price     = Column(String(10), default='')
+    outer_id       = Column(String(64), default='')
+    
+    pictures       = Column(String(1000), default='')          
+    status         = Column(String(10), default='')
+    
+    def __repr__(self):
+        return "<FenxiaoProduct('%s','%s','%s')>" % (str(self.pid), str(self.item_id), str(self.outer_id))
 
 class LogisticsCompany(Base):
     __tablename__ = 'shop_logistics_company'
@@ -434,27 +453,7 @@ class Item(Base):
     
     def __repr__(self):
         return "<Item('%s','%s','%s')>" % (self.num_iid, self.outer_id, self.title)
-    
-
-class FenxiaoProduct(Base):
-    __tablename__ = 'shop_fenxiao_product' 
-    
-    pid = Column(String(64), primary_key=True)
-    name = Column(String(64), default='')
-    
-    item_id = Column(String(64), default='')
-    pdus = Column(String(5000), default='')
-    cost_price = Column(String(10), default='')
-    
-    outer_id = Column(String(64), default='')
-    quantity = Column(Integer, nullable=True)
-    
-    pictures = Column(String(256), default='')
-    
-    skus = Column(String(5000), default='')
-    
-    def __repr__(self):
-        return "<FenxiaoProduct('%s','%s','%s')>" % (self.pid, self.item_id, self.outer_id)   
+     
     
     
 itemrulemap_table = Table('shop_memorule_itemrulemap', Base.metadata,

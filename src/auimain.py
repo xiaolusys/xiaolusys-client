@@ -66,6 +66,7 @@ class MainFrame(wx.Frame):
         
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_TradeMainPage)
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_ScanWeight)
+        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
         
     
     def OnChangeContentPane(self, event):
@@ -82,8 +83,12 @@ class MainFrame(wx.Frame):
         delivery_panel = ScanWeightPanel(self,-1)        
         return delivery_panel
     
+    def OnExit(self,event):
+        self.Close()
+    
     
 app = wx.PySimpleApp()
+wx.InitAllImageHandlers()
 frm = MainFrame(None)
 frm.Show()
 app.MainLoop()    

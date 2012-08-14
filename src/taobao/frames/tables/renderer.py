@@ -7,9 +7,7 @@ Created on 2012-7-23
 import os
 import urllib
 import wx.grid
-import Image
 from cStringIO import StringIO
-import taobao
 from taobao.common.utils import IMAGE_ROOT
 
 class BitmapRenderer(wx.grid.PyGridCellRenderer):
@@ -27,8 +25,11 @@ class BitmapRenderer(wx.grid.PyGridCellRenderer):
             data = fp.read()
             img = wx.ImageFromStream(StringIO(data))
         except:
-            image_path = IMAGE_ROOT+'unavailible.png'
-            img = Image.open(image_path)
+            try:
+                image_path = IMAGE_ROOT+'unavailible.jpg'
+                img = wx.Image(image_path)
+            except :
+                pass
         finally:
             try:
                 fp.close()

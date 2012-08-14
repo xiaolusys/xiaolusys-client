@@ -5,6 +5,7 @@ celerybeat-schedule
 *.iml
 .idea/
 *~
+src/test/
 migrations
 .settings/
 .project

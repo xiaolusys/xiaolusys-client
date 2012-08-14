@@ -147,18 +147,18 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['sys_memo']   = trade.sys_memo
                 trade_data['orders']       = [] 
                 
-                is_fenxiao = trade.type == 'fenxiao'
+                is_fenxiao = (trade.type == 'fenxiao')
                 if is_fenxiao:
-                    orders = session.query(SubPurchaseOrder).filter_by(id=trade.tid,order_200_status=TRADE_STATUS_WAIT_SEND_GOODS)
+                    orders = session.query(SubPurchaseOrder).filter(SubPurchaseOrder.status.in_(
+                        ('WAIT_COMFIRM_WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS','WAIT_SELLER_SEND_GOODS'))).filter_by(id=trade.tid).all()
                 else:
-                    orders = session.query(Order).filter_by(trade_id=trade.tid,refund_status='NO_REFUND')
-                    
+                    orders = session.query(Order).filter_by(trade_id=trade.tid,refund_status='NO_REFUND')  
                 for order in orders:
                     order_data = {} 
                     if is_fenxiao:
                         item = session.query(FenxiaoProduct).filter_by(pid=order.item_id).first()
                         title = item.name
-                    else:
+                    else :
                         item  = session.query(Item).filter_by(num_iid=order.num_iid).first()
                         title = item.title
                     trade_data['order_nums']     += order.num

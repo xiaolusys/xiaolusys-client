@@ -76,11 +76,11 @@ class BasicPanel(wx.Panel):
         self.has_refund_label = wx.StaticText(self,-1,'有退款')
         self.has_refund_check  = wx.CheckBox(self,-1)
         
-        self.order_label21  = wx.StaticText(self,-1,'买家留言')
+        self.order_label21  = wx.StaticText(self,-1,'买家备注')
         self.order_content21  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
         self.order_label22  = wx.StaticText(self,-1,'卖家留言')
         self.order_content22  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
-        self.order_label23  = wx.StaticText(self,-1,'淘宝备注')
+        self.order_label23  = wx.StaticText(self,-1,'买家留言')
         self.order_content23  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
         self.order_label24  = wx.StaticText(self,-1,'反审核理由')
         self.order_content24  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
