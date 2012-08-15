@@ -4,6 +4,7 @@ Created on 2012-7-27
 
 @author: user1
 '''
+import re
 import weakref
 import wx,wx.grid
 from taobao.common.utils import create_session
@@ -11,6 +12,10 @@ from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
     SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND,TRADE_STATUS_WAIT_SEND_GOODS
+
+WEIGHT_PRECISE = {'0.001kg':3,'0.01kg':2,'0.1kg':1,'1kg':0}
+
+weight_regex = '[0-9]+\.[0-9]{%d}$'
 
 class ScanWeightPanel(wx.Panel):
     
@@ -24,8 +29,10 @@ class ScanWeightPanel(wx.Panel):
         self.company_select = wx.ComboBox(self,-1)
         self.out_sid_label = wx.StaticText(self,-1,'快递单号')
         self.out_sid_text  = wx.TextCtrl(self,-1)
-        self.weight_label  = wx.StaticText(self,-1,'称重重量')
+        self.weight_label  = wx.StaticText(self,-1,'称重重量(kg)')
         self.weight_text  = wx.TextCtrl(self,-1)
+        self.precise_label = wx.StaticText(self,-1,'称重精度')
+        self.precise_select = wx.ComboBox(self,-1)
         self.auto_add_label  = wx.StaticText(self,-1,'自动保存') 
         self.auto_add_checkbox = wx.CheckBox(self,-1)
         self.hand_add_button   = wx.Button(self,-1,'保存') 
@@ -91,7 +98,9 @@ class ScanWeightPanel(wx.Panel):
             logistics_companies = session.query(LogisticsCompany).order_by('priority desc').all()
         self.company_select.AppendItems([company.name for company in logistics_companies])
         self.out_sid_text.SetFocus()
-
+        
+        self.precise_select.AppendItems(['0.001kg','0.01kg','0.1kg','1kg'])
+        self.precise_select.SetValue('0.001kg')
         self.control_array = []
         self.control_array.append(self.order_content1)
         self.control_array.append(self.order_content2)
@@ -129,11 +138,13 @@ class ScanWeightPanel(wx.Panel):
         flex_sizer1.Add(self.out_sid_text,0,3)
         flex_sizer1.Add(self.weight_label,0,4)
         flex_sizer1.Add(self.weight_text,0,5)
-        flex_sizer1.Add(self.auto_add_label,0,6)
-        flex_sizer1.Add(self.auto_add_checkbox,0,7)
-        flex_sizer1.Add(self.hand_add_button,0,8)
-        flex_sizer1.Add(self.cancel_button,0,9)
-        flex_sizer1.Add(self.error_text,0,10)
+        flex_sizer1.Add(self.precise_label,0,6)
+        flex_sizer1.Add(self.precise_select,0,7)
+        flex_sizer1.Add(self.auto_add_label,0,8)
+        flex_sizer1.Add(self.auto_add_checkbox,0,9)
+        flex_sizer1.Add(self.hand_add_button,0,10)
+        flex_sizer1.Add(self.cancel_button,0,11)
+        flex_sizer1.Add(self.error_text,0,12)
         
         sbsizer1 = wx.StaticBoxSizer(self.order_box1,wx.VERTICAL)
         bag_sizer1 = wx.GridBagSizer(hgap=5,vgap=5)
@@ -227,17 +238,18 @@ class ScanWeightPanel(wx.Panel):
 
         trades = None
         with create_session(self.Parent) as session:
-            if company_name :
+            if company_name and out_sid:
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
                        logistics_company_name=company_name,status=TRADE_STATUS_WAIT_SEND_GOODS)
-            else:
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid)
+            elif out_sid :
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,status=TRADE_STATUS_WAIT_SEND_GOODS)
                  
         count = trades.count() if trades else 0 
         if count>1 :
             self.error_text.SetLabel('该快递单号已重复，请反审核后修改')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
+            self.clearTradeInfoPanel()
         elif count == 1:
             self.trade = trades.one()
             self.setTradeInfoPanel(self.trade)
@@ -249,7 +261,12 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetLabel('未找到该订单')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
+            self.clearTradeInfoPanel()
         
+    def clearTradeInfoPanel(self):
+        for i in xrange(1,19):
+            content = eval('self.order_content%s'%i)
+            content.Clear()    
         
     def setTradeInfoPanel(self,trade):
  
@@ -277,8 +294,11 @@ class ScanWeightPanel(wx.Panel):
         self.Layout()
         
     def onWeightTextChange(self,evt):
-        weight = self.weight_text.GetValue()
-        if weight and self.is_auto_save:
+        weight = self.weight_text.GetValue().strip()
+        precise = self.precise_select.GetValue()
+        wregex = weight_regex%WEIGHT_PRECISE.get(precise,3)
+        wcompile = re.compile(wregex)
+        if wcompile.match(weight) and self.is_auto_save:
             self.out_sid_text.Clear()
             self.weight_text.Clear()
             self.out_sid_text.SetFocus()

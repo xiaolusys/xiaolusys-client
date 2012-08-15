@@ -131,9 +131,9 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['out_sid']      = trade.out_sid
                 trade_data['company_name'] = trade.logistics_company_name
                 trade_data['order_nums']   = 0
-                trade_data['total_fee']    = trade.total_fee
+                trade_data['total_fee']    = 0
                 trade_data['discount_fee'] = 0
-                trade_data['payment']      = trade.payment
+                trade_data['payment']      = 0
                 
                 
                 trade_data['receiver_name']     = trade.receiver_name
@@ -163,6 +163,8 @@ class DeliveryPrinter(wx.Frame):
                         title = item.title
                     trade_data['order_nums']     += order.num
                     trade_data['discount_fee']   += float(order.discount_fee or 0) if not is_fenxiao else 0
+                    trade_data['total_fee']      += float(order.total_fee or 0) 
+                    trade_data['payment']      += float(order.payment or 0) if not is_fenxiao else float(order.buyer_payment)
                     order_data['outer_id']  = order.item_outer_id if is_fenxiao else order.outer_id 
                     order_data['item_name'] = title
                     order_data['num']       = order.num

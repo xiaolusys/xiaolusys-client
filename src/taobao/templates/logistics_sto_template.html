@@ -41,41 +41,35 @@ div {
 
 .receiver-name {
 	height: 25px;
-	width: 150px;
-	margin-top: 10px;
-	margin-left: 120px;
+	width: 280px;
+	margin-top: 0px;
+	margin-left: 150px;
 }
 
 .receiver-addr {
 	height: 60px;
-	width: 300px;
-	margin-top: 20px;
-	margin-left: 120px;
+	width: 280px;
+	margin-top: 35px;
+	margin-left: 150px;
 }
 
 .receiver-info {
 	height: 30px;
-	width: 300px;
-	margin-left: 120px;
+	width: 280px;
+	margin-left: 150px;
 }
 
 .left-panel-bottom {
-	height: 30px;
-	width: 300px;
-	margin-top: 20px;
-	margin-left: 120px;
+	height: 20px;
+	width: 280px;
+	margin-top: 25px;
+	margin-left: 150px;
 }
 
 .receiver-mobile {
 	float: left;
 	display: inline;
 	width: 160px;
-}
-
-.post-code {
-	float: right;
-	display: inline;
-	width: 100px;
 }
 
 .botton-panel {
@@ -92,16 +86,16 @@ div {
 			<div class='left-panel'></div>
 			<div class='right-panel'>
 				<div class='receiver-name'>{{ trade.receiver_name }}</div>
+				<div class='receiver-info'></div>
 				<div class='receiver-addr'>
 					<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{
 						trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }} <br>
 					<br> {{ trade.receiver_address }}
 					</span>
 				</div>
-				<div class='receiver-info'></div>
+				
 				<div class='left-panel-bottom'>
 					<div class='receiver-mobile'>{{ trade.receiver_mobile }}</div>
-					<div class='post-code'>{{ trade.receiver_zip }}</div>
 				</div>
 			</div>
 		</div>
