@@ -233,9 +233,8 @@ class ScanWeightPanel(wx.Panel):
         
     
     def onOutsidTextChange(self,evt):
-        company_name = self.company_select.GetValue()
-        out_sid      = self.out_sid_text.GetValue() 
-
+        company_name = self.company_select.GetValue().strip()
+        out_sid      = self.out_sid_text.GetValue().strip() 
         trades = None
         with create_session(self.Parent) as session:
             if company_name and out_sid:
