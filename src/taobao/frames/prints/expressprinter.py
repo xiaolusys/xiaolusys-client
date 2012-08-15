@@ -82,12 +82,13 @@ class ExpressPrinter(wx.Frame):
         Creates an html file in the home directory of the application
         that contains the information to display the snapshot
         '''
- 
-        trades = self.getLogisticsData(trade_ids)
-        template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
-        template = get_template(template_name) 
-        html =template.render(trades=trades)
-
+        try:
+            trades = self.getLogisticsData(trade_ids)
+            template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
+            template = get_template(template_name) 
+            html =template.render(trades=trades)
+        except:
+            html = '<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'%trades[0]['company_name']
         return html
 
 
