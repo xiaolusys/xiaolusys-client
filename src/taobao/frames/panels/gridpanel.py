@@ -101,7 +101,7 @@ class GridPanel(wx.Panel):
         self.invalid_panel   = wx.Panel(self.inner_panel,-1)
         self.invalid_label1  = wx.StaticText(self.invalid_panel,-1,'作废理由')
         self.invalid_text  = wx.TextCtrl(self.invalid_panel,-1,size=(900,-1))
-        self.invalid_btn2   = wx.Button(self.invalid_panel,-1,'确定')
+        self.invalid_btn2   = wx.Button(self.invalid_panel,invalid_btn2_id,'确定')
         self.invalid_btn3   = wx.Button(self.invalid_panel,-1,'取消')
         
         
@@ -527,7 +527,7 @@ class GridPanel(wx.Panel):
                     trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
                     trade.reverse_audit_times += 1
                     trade.reverse_audit_reason += '-->已作废('.decode('utf8')+invalid_reason+')'
-                    session.query(MergeTrade).filter_by(tid=trade_id)\
+                    session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_AUDITFAIL)\
                         .update({'sys_status':SYS_STATUS_INVALID,
                                  'reverse_audit_reason':trade.reverse_audit_reason,
                                  'reverse_audit_times':trade.reverse_audit_times},synchronize_session='fetch')

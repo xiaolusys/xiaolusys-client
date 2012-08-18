@@ -52,7 +52,6 @@ class TradePanel(wx.Panel):
                 (prapare_send_id,'待发货准备'),
                 (scan_weight_id,'待扫描称重'),
                 (wait_delivery_id,'待确认发货'),
-                (sync_status_id,'待更新发货状态'),
                 (has_send_id,'已发货'),
                 (audit_fail_id,'问题单'),
                 (invalid_id,'已作废'),

@@ -235,7 +235,6 @@ class ScanWeightPanel(wx.Panel):
     def onOutsidTextChange(self,evt):
         company_name = self.company_select.GetValue().strip()
         out_sid      = self.out_sid_text.GetValue().strip() 
-        print 'outsid:',out_sid
         trades = None
         with create_session(self.Parent) as session:
             if company_name and out_sid:
@@ -262,6 +261,7 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
             self.clearTradeInfoPanel()
+        evt.Skip()
         
     def clearTradeInfoPanel(self):
         for i in xrange(1,19):
@@ -297,13 +297,12 @@ class ScanWeightPanel(wx.Panel):
         weight = self.weight_text.GetValue().strip()
         precise = self.precise_select.GetValue()
         wregex = weight_regex%WEIGHT_PRECISE.get(precise,3)
-        print 'weight:',weight
         wcompile = re.compile(wregex)
         if wcompile.match(weight) and self.is_auto_save:
             self.save_weight_to_trade(self.trade,weight)
             self.out_sid_text.Clear()
             self.weight_text.Clear()
-            self.out_sid_text.SetFocus()
+            self.company_select.SetFocus()
         
     def save_weight_to_trade(self,trade,weight):
         if trade.sys_status not in ('',SYS_STATUS_INVALID,SYS_STATUS_FINISHED) :
