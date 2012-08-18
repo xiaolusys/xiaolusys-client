@@ -54,7 +54,7 @@ class TradePanel(wx.Panel):
                 (wait_delivery_id,'待确认发货'),
                 (sync_status_id,'待更新发货状态'),
                 (has_send_id,'已发货'),
-                (audit_fail_id,'审核未通过'),
+                (audit_fail_id,'问题单'),
                 (invalid_id,'已作废'),
                 )
            

@@ -201,7 +201,6 @@ class Trade(Base):
     consign_time = Column(DateTime, index=True, nullable=True)
 
     buyer_message = Column(String(1000), nullable=True)
-    buyer_memo = Column(String(1000), nullable=True)
     seller_memo = Column(String(1000), nullable=True)
 
     shipping_type = Column(String(12), default='')
@@ -338,7 +337,6 @@ class MergeTrade(Base):
     post_cost = Column(String(10), nullable=True)
 
     buyer_message = Column(String(1000), nullable=True)
-    buyer_memo = Column(String(1000), nullable=True)
     seller_memo = Column(String(1000), nullable=True)
 
     created = Column(DateTime, index=True, nullable=True)
@@ -347,7 +345,6 @@ class MergeTrade(Base):
     consign_time = Column(DateTime, index=True, nullable=True)
 
     buyer_message = Column(String(1000), default='')
-    buyer_memo = Column(String(1000), default='')
     seller_memo = Column(String(1000), default='')
     sys_memo = Column(String(1000), default='')
     
@@ -376,7 +373,15 @@ class MergeTrade(Base):
     sys_status = Column(String(32),index=True,default='')    
     def __repr__(self):
         return "<MergeTrade('%s','%s','%s')>" % (str(self.tid), self.seller_nick, self.buyer_nick)
+  
+
+class MergeBuyerTrade(Base):
+    __tablename__ = 'shop_trades_mergebuyertrade'
+    tid   = Column(BigInteger,primary_key=True)
+    main_tid = Column(BigInteger)
     
+    def __repr__(self):
+        return "<MergeTrade('%s','%s','%s')>" % (str(self.tid), self.seller_nick, self.buyer_nick)
   
 class Refund(Base):
     __tablename__ = 'shop_refunds_refund'

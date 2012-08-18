@@ -13,7 +13,7 @@ from taobao.frames.panels.itempanel import ItemPanel
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session
-from taobao.dao.models import Order,SubPurchaseOrder,Refund,MergeTrade,LogisticsCompany
+from taobao.dao.models import Order,SubPurchaseOrder,Refund,MergeTrade,LogisticsCompany,MergeBuyerTrade
 from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
     SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_SYSTEMSEND
@@ -387,13 +387,6 @@ class GridPanel(wx.Panel):
             else:
                 self.grid.SetCellValue(row,0,'')
     
-    def setSelectedRowBlue(self):
-        """ 改变选中行的颜色 """
-        for row in self._selectedRows:
-            col = self.grid.GetColSize(row)
-            for j in xrange(1,col):
-                self.grid.SetCellBackgroundColour(row,j,'navy')
-    
     def onSelectAllCheckbox(self,evt):
         rows = self.grid.NumberRows
         if evt.IsChecked():
@@ -450,8 +443,10 @@ class GridPanel(wx.Panel):
             elif eventid in(audit_pass_btn_id,reaudit_btn_id):
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,1)
+                    trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
+                    trade.reverse_audit_reason += '-->待准备发货'.decode('utf8')
                     session.query(MergeTrade).filter(MergeTrade.sys_status.in_((SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL))).filter_by(tid=trade_id)\
-                        .update({'sys_status':SYS_STATUS_PREPARESEND},synchronize_session='fetch')
+                        .update({'sys_status':SYS_STATUS_PREPARESEND,'reverse_audit_reason':trade.reverse_audit_reason},synchronize_session='fetch')
                 self.refreshTable()
                 
             elif eventid == reverse_audit_btn2_id:
@@ -460,7 +455,7 @@ class GridPanel(wx.Panel):
                     trade_id = self.grid.GetCellValue(row,1)
                     trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
                     trade.reverse_audit_times += 1
-                    trade.reverse_audit_reason += reason+','
+                    trade.reverse_audit_reason += '-->问题单('.decode('utf8')+reason+')'
                     session.query(MergeTrade).filter(MergeTrade.sys_status.in_((SYS_STATUS_CONFIRMSEND,
                          SYS_STATUS_UNAUDIT,SYS_STATUS_SCANWEIGHT,SYS_STATUS_PREPARESEND))).filter_by(tid=trade_id)\
                         .update({'sys_status':SYS_STATUS_AUDITFAIL,
@@ -506,8 +501,10 @@ class GridPanel(wx.Panel):
             elif eventid == prepare_finish_btn_id:
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,1)
+                    trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
+                    trade.reverse_audit_reason += '-->待扫描称重'.decode('utf8')
                     session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_PREPARESEND)\
-                        .update({'sys_status':SYS_STATUS_SCANWEIGHT},synchronize_session='fetch')
+                        .update({'sys_status':SYS_STATUS_SCANWEIGHT,'reverse_audit_reason':trade.reverse_audit_reason},synchronize_session='fetch')
                 self.refreshTable()
             
             elif eventid == scan_weight_btn_id:
@@ -517,8 +514,10 @@ class GridPanel(wx.Panel):
             elif eventid == confirm_delivery_btn_id:
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,1)
+                    trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
+                    trade.reverse_audit_reason += '-->待更新发货状态'.decode('utf8')
                     session.query(MergeTrade).filter_by(tid=trade_id,sys_status=SYS_STATUS_CONFIRMSEND)\
-                        .update({'sys_status':SYS_STATUS_SYSTEMSEND},synchronize_session='fetch')
+                        .update({'sys_status':SYS_STATUS_SYSTEMSEND,'reverse_audit_reason':trade.reverse_audit_reason,},synchronize_session='fetch')
                 self.refreshTable()
                 
             elif eventid == invalid_btn2_id:
@@ -527,16 +526,14 @@ class GridPanel(wx.Panel):
                     trade_id = self.grid.GetCellValue(row,1)
                     trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
                     trade.reverse_audit_times += 1
-                    trade.reverse_audit_reason += invalid_reason+','
+                    trade.reverse_audit_reason += '-->已作废('.decode('utf8')+invalid_reason+')'
                     session.query(MergeTrade).filter_by(tid=trade_id)\
                         .update({'sys_status':SYS_STATUS_INVALID,
                                  'reverse_audit_reason':trade.reverse_audit_reason,
                                  'reverse_audit_times':trade.reverse_audit_times},synchronize_session='fetch')
                 self.refreshTable()
         
-        
-        
-    
+
     def setupPager(self):
         self.lblPageIndex.SetLabel(str(self.page.number) if self.page else '0')
         self.lblPageCount.SetLabel(str(self.page.paginator.num_pages) if self.page else '0') 

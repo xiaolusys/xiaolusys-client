@@ -11,7 +11,7 @@ from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
-    SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND,TRADE_STATUS_WAIT_SEND_GOODS
+    SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_SCANWEIGHT
 
 WEIGHT_PRECISE = {'0.001kg':3,'0.01kg':2,'0.1kg':1,'1kg':0}
 
@@ -235,6 +235,7 @@ class ScanWeightPanel(wx.Panel):
     def onOutsidTextChange(self,evt):
         company_name = self.company_select.GetValue().strip()
         out_sid      = self.out_sid_text.GetValue().strip() 
+        print 'outsid:',out_sid
         trades = None
         with create_session(self.Parent) as session:
             if company_name and out_sid:
@@ -296,18 +297,21 @@ class ScanWeightPanel(wx.Panel):
         weight = self.weight_text.GetValue().strip()
         precise = self.precise_select.GetValue()
         wregex = weight_regex%WEIGHT_PRECISE.get(precise,3)
+        print 'weight:',weight
         wcompile = re.compile(wregex)
         if wcompile.match(weight) and self.is_auto_save:
+            self.save_weight_to_trade(self.trade,weight)
             self.out_sid_text.Clear()
             self.weight_text.Clear()
             self.out_sid_text.SetFocus()
-            self.save_weight_to_trade(self.trade,weight)
         
     def save_weight_to_trade(self,trade,weight):
         if trade.sys_status not in ('',SYS_STATUS_INVALID,SYS_STATUS_FINISHED) :
+            trade.reverse_audit_reason += '-->待确认发货'.decode('utf8')
             with create_session(self.Parent) as session: 
-                session.query(MergeTrade).filter_by(tid=trade.tid)\
-                        .update({'weight':weight,'sys_status':SYS_STATUS_CONFIRMSEND},synchronize_session='fetch')
+                session.query(MergeTrade).filter_by(tid=trade.tid,sys_status=SYS_STATUS_SCANWEIGHT)\
+                        .update({'weight':weight,'sys_status':SYS_STATUS_CONFIRMSEND,
+                                 'reverse_audit_reason':trade.reverse_audit_reason},synchronize_session='fetch')
             self.gridpanel.InsertTradeRows(trade)
     
         
