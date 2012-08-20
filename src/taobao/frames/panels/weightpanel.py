@@ -265,7 +265,7 @@ class ScanWeightPanel(wx.Panel):
         
     def clearTradeInfoPanel(self):
         for i in xrange(1,19):
-            content = eval('self.order_content%s'%i)
+            content = eval('self.order_content%s'%str(i))
             content.Clear()    
         
     def setTradeInfoPanel(self,trade):

@@ -549,10 +549,10 @@ class GridPanel(wx.Panel):
         trade_ids = self.getSelectTradeIds(self._selectedRows)
         if self.page:
             self.page = self.paginator.page(self.page.number)
-            object_list = self.parseObjectToList(self.page.object_list)
+            object_list = self.parseObjectToList(self.page.object_list,self.Parent.selecttailnums)
         else:
             object_list = ()
-        gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels))
+        gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels, self.Parent.selectedRowColour))
         self.grid.SetTable(gridtable())
         self.grid.SetColSize(0, 20)
         self.grid.SetRowLabelSize(40)  
@@ -579,11 +579,11 @@ class GridPanel(wx.Panel):
     def updateTableAndPaginator(self):
         self._selectedRows.clear()
         if self.page:
-            object_list = self.parseObjectToList(self.page.object_list)
+            object_list = self.parseObjectToList(self.page.object_list,self.Parent.selecttailnums)
         else:
             object_list = ()
            
-        gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels))
+        gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels,self.Parent.selectedRowColour))
         self.grid.SetTable(gridtable())
         self.grid.SetColSize(0, 20)
         self.grid.SetRowLabelSize(40)
@@ -627,33 +627,36 @@ class ListArrayGridPanel(GridPanel):
    
 class QueryObjectGridPanel(GridPanel):
 
-    def parseObjectToList(self, object_list):
+    def parseObjectToList(self, object_list, tailnums=set()):
+        assert isinstance(object_list,(list,tuple))
+        assert isinstance(object_list,(set,list,tuple))
         array_object = []
         for object in object_list:
-            object_array = []
-            object_array.append(object.tid)
-            object_array.append(object.seller_nick)
-            object_array.append(object.buyer_nick)
-            object_array.append(TRADE_TYPE.get(object.type,'其他'))
-            object_array.append(TRADE_STATUS.get(object.status,'其他'))
-            object_array.append(SYS_STATUS.get(object.sys_status,'其他'))
-            object_array.append(SHIPPING_TYPE.get(object.shipping_type,'其他'))
-            object_array.append(object.has_refund)
-            object_array.append(object.is_picking_print)
-            object_array.append(object.is_express_print)
-            object_array.append(object.is_send_sms)
-            object_array.append(object.logistics_company_name)
-            object_array.append(object.out_sid)
-            object_array.append(object.payment)
-            object_array.append(object.post_fee)
-            object_array.append(object.total_fee)
-            object_array.append(str(object.total_num))
-            object_array.append(object.discount_fee)
-            object_array.append(object.adjust_fee)
-            object_array.append(object.pay_time)
-            object_array.append(object.consign_time or '')
-            object_array.append(object.reverse_audit_times)
-            array_object.append(object_array)
+            if not tailnums or object.tid%10 in tailnums:
+                object_array = []
+                object_array.append(object.tid)
+                object_array.append(object.seller_nick)
+                object_array.append(object.buyer_nick)
+                object_array.append(TRADE_TYPE.get(object.type,'其他'))
+                object_array.append(TRADE_STATUS.get(object.status,'其他'))
+                object_array.append(SYS_STATUS.get(object.sys_status,'其他'))
+                object_array.append(SHIPPING_TYPE.get(object.shipping_type,'其他'))
+                object_array.append(object.has_refund)
+                object_array.append(object.is_picking_print)
+                object_array.append(object.is_express_print)
+                object_array.append(object.is_send_sms)
+                object_array.append(object.logistics_company_name)
+                object_array.append(object.out_sid)
+                object_array.append(object.payment)
+                object_array.append(object.post_fee)
+                object_array.append(object.total_fee)
+                object_array.append(str(object.total_num))
+                object_array.append(object.discount_fee)
+                object_array.append(object.adjust_fee)
+                object_array.append(object.pay_time)
+                object_array.append(object.consign_time or '')
+                object_array.append(object.reverse_audit_times)
+                array_object.append(object_array)
         return array_object
     
     

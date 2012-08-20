@@ -400,6 +400,7 @@ class ReceiverPanel(wx.Panel):
         box_sizer.Add(self.change_btn,0,flag=wx.EXPAND)
         
         main_sizer.Add(base_order_sizer,flag=wx.EXPAND,border=10)
+        main_sizer.Add((-1,10))
         main_sizer.Add(box_sizer,flag=wx.EXPAND,border=10)
         self.SetSizer(main_sizer)
         

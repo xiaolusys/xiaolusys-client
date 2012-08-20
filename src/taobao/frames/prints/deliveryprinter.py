@@ -144,6 +144,8 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['receiver_city']     = trade.receiver_city
                 trade_data['receiver_district'] = trade.receiver_district
                 trade_data['receiver_address']  = trade.receiver_address
+                trade_data['buyer_message']   = trade.buyer_message
+                trade_data['seller_memo']   = trade.seller_memo
                 trade_data['sys_memo']   = trade.sys_memo
                 trade_data['orders']       = [] 
                 

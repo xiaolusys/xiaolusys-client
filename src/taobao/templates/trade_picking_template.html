@@ -35,17 +35,25 @@ td{
 
 }
 .base-info {
-	width:100%;
-}
-.left-label {
-	float:left;
-	display:inline;
-}
-.right-label {
-	float:right;
-	display:inline;
+	width:898px;
 }
 
+.left-label {
+	float:left;
+	width:290px;
+	display:inline;
+	text-align:left;
+}
+.middle-label{
+	float:left;
+	width:290px;
+	display:inline;
+}
+.right-label{
+	float:left;
+	width:290px;
+	display:inline;
+}
 .seller-info{
 	clear:left;
 	height:40px;
@@ -78,7 +86,8 @@ td{
 		
 		<div class='seller-nick'><h2>{{ trade.seller_nick }}<br>发货单</h2></div>
 		<div class='base-info'>
-			<div class='left-label'><label>物流编号（公司）:</label><span>{{ trade.out_sid }}（{{trade.company_name}}）</span></div>
+			<div class='left-label'><label>订单编号:</label><span>{{ trade.trade_id }}</span></div>
+			<div class='middle-label'><label>物流编号:</label><span>{{ trade.out_sid }}（{{trade.company_name}}）</span></div>
 			<div class='right-label'><label>发货日期:</label><span>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</span></div>
 		</div>
 		<div class='seller-info'>
@@ -127,7 +136,7 @@ td{
 				</tr>
 			</table>
 		</div>
-		<div class='memo-style'><label>留言：</label><span>{{ trade.seller_memo }}</span></div>
+		<div class='memo-style'><label>留言：</label><span>{{ trade.sys_memo }}<!-- <br>{{trade.seller_memo}}<br>{{trade.buyer_message}} --></span></div>
 		<!-- trade.orders|print_wraps(max_num=43,split_len=16)  --> 
 		
 	</div>

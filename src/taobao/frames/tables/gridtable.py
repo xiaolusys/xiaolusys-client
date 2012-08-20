@@ -10,7 +10,7 @@ import wx.grid as grd
 from taobao.frames.tables.renderer import BitmapRenderer
 
 class GridTable(grd.PyGridTableBase):
-    def __init__(self,datasource,rowLabels=None,colLabels=None):
+    def __init__(self,datasource,rowLabels=None,colLabels=None,selectedcolour="green"):
         '''
         [
             [value1,value2,value3,...],
@@ -20,6 +20,7 @@ class GridTable(grd.PyGridTableBase):
         ]
         '''
         grd.PyGridTableBase.__init__(self)
+        self.selectedcolour = selectedcolour
         self.data={}
         self.colLabels = ('√',)
         if colLabels:
@@ -107,7 +108,7 @@ class GridTable(grd.PyGridTableBase):
             attr = self.cell
             attr.IncRef() #引用加1
         if row_select ==True:
-            attr.SetBackgroundColour('green')
+            attr.SetBackgroundColour(self.selectedcolour)
         else:
             attr.SetBackgroundColour('white')
         return attr

@@ -27,7 +27,10 @@ class TradePanel(wx.Panel):
         wx.Panel.__init__(self,parent,id)
         
         self.Session = parent.Session
-        self.search_panel = SearchPanel(self,-1)       
+        self.selectedRowColour = (0, 128, 0, 255)
+        self.selecttailnums  = set()
+        self.search_panel = SearchPanel(self,-1)
+             
         self.buttons = [] 
         
         for button in self.buttons_tuple:
@@ -40,7 +43,11 @@ class TradePanel(wx.Panel):
         
         self.static_button_up = wx.Button(self,-1,label='^------------^',size=(-1,11))
         self.isSearchPanelShow = True
+        self.istailnumshow = False
         
+        self.filter_number_btn = wx.Button(self,-1,'>',size=(23,23)) 
+        self.colorpicker = wx.ColourPickerCtrl(self,-1)
+   
         self.__set_properties()
         self.__do_layout()   
         self.__evt_bind()
@@ -60,17 +67,32 @@ class TradePanel(wx.Panel):
         
     def __set_properties(self):
         self.SetName('trade_panel') 
-        self.FindWindowById(wait_audit_id).Enable(False)    
+        self.FindWindowById(wait_audit_id).Enable(False)  
+        self.colorpicker.SetToolTip(wx.ToolTip('设置选中行颜色'))
+        self.filter_number_btn.SetToolTip(wx.ToolTip('选择显示的订单尾号'))  
         
     def __do_layout(self):  
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.Add(self.search_panel,flag=wx.EXPAND)
          
         main_sizer.Add(self.static_button_up,flag=wx.EXPAND)
-        trade_naming_sizer = wx.FlexGridSizer(hgap=2,vgap=2)
+        self.trade_naming_sizer =trade_naming_sizer = wx.FlexGridSizer(hgap=2,vgap=2)
         
         for index,button in enumerate(self.buttons_tuple):
             trade_naming_sizer.Add(self.FindWindowById(button[0]),0,index)
+        
+        trade_naming_sizer.Add((150,-1))
+        
+        self.checksizer = wx.FlexGridSizer(hgap=2,vgap=10)
+        self.checkbox_list = []
+        for i in xrange(0,10):
+            check = wx.CheckBox(self,-1,str(i))
+            self.checkbox_list.append(check)
+            self.checksizer.Add(check,0,i)
+        trade_naming_sizer.Add(self.colorpicker,0,index+1)
+        trade_naming_sizer.Add(self.filter_number_btn,0,index+2)
+        trade_naming_sizer.Add(self.checksizer,0,index+3)
+        trade_naming_sizer.Hide(self.checksizer)
         
         main_sizer.Add(trade_naming_sizer,flag=wx.EXPAND)
         main_sizer.Add(self.grid,1,flag=wx.EXPAND)
@@ -83,6 +105,13 @@ class TradePanel(wx.Panel):
         for button in self.buttons_tuple:
             self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.FindWindowById(button[0]))    
         self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_up)
+        
+        self.Bind(wx.EVT_COLOURPICKER_CHANGED, self.onClickColorPickerChange,self.colorpicker)
+        self.Bind(wx.EVT_BUTTON, self.onClickTailNumBtn,self.filter_number_btn)
+        for checkbox in self.checkbox_list:
+            self.Bind(wx.EVT_CHECKBOX, self.onCheckTailNum,checkbox)
+            
+        
          
     def onClickGridBtn(self,evt):
         eventid = evt.GetId()
@@ -120,6 +149,29 @@ class TradePanel(wx.Panel):
             self.static_button_up.SetLabel('^------------^')
             self.isSearchPanelShow = True
         self.Layout() 
+    
+    def onClickColorPickerChange(self,evt):
+        self.selectedRowColour = evt.GetColour()
+        self.grid.refreshTable()
         
+    def onCheckTailNum(self,evt):
+        source = evt.GetEventObject()
+        if evt.IsChecked():
+            self.selecttailnums.add(int(source.GetLabelText()))
+        else :
+            try:
+                self.selecttailnums.remove(int(source.GetLabelText()))
+            except:
+                pass
+        self.grid.updateTableAndPaginator()
 
+        
+    def onClickTailNumBtn(self,evt):
+        if self.istailnumshow:
+            self.trade_naming_sizer.Hide(self.checksizer)
+            self.istailnumshow = False
+        else:
+            self.trade_naming_sizer.Show(self.checksizer)
+            self.istailnumshow = True
+        self.Layout()
         
