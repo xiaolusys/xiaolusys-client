@@ -63,6 +63,8 @@ class ExpressPrinter(wx.Frame):
         
         self.Bind(wx.EVT_BUTTON, self.onCancel, cancelBtn)
         self.Bind(wx.EVT_BUTTON, self.onUpdateExpressStatus, expressBtn)
+        #监听打印预览菜单项
+        #self.panel.Bind(wx.EVT_MENU, self.onSelectMenu)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -90,7 +92,11 @@ class ExpressPrinter(wx.Frame):
         except:
             html = '<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'%trades[0]['company_name']
         return html
-
+    
+    #---------------------------------------------------------------------
+    def onSelectMenu(self,event):
+        print event.GetId()
+        print dir(event)
 
     #----------------------------------------------------------------------
     def onPrint(self, event):

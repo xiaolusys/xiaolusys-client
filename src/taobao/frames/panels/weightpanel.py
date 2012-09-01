@@ -13,9 +13,7 @@ from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
     SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_SCANWEIGHT
 
-WEIGHT_PRECISE = {'0.001kg':3,'0.01kg':2,'0.1kg':1,'1kg':0}
-
-weight_regex = '[0-9]+\.[0-9]{%d}$'
+weight_regex=re.compile('[0-9\.]+\r\n$')
 
 class ScanWeightPanel(wx.Panel):
     
@@ -28,11 +26,9 @@ class ScanWeightPanel(wx.Panel):
         self.company_label = wx.StaticText(self,-1,'快递公司')
         self.company_select = wx.ComboBox(self,-1)
         self.out_sid_label = wx.StaticText(self,-1,'快递单号')
-        self.out_sid_text  = wx.TextCtrl(self,-1)
-        self.weight_label  = wx.StaticText(self,-1,'称重重量(kg)')
-        self.weight_text  = wx.TextCtrl(self,-1)
-        self.precise_label = wx.StaticText(self,-1,'称重精度')
-        self.precise_select = wx.ComboBox(self,-1)
+        self.out_sid_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.weight_label  = wx.StaticText(self,-1,'称重重量(g)')
+        self.weight_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.auto_add_label  = wx.StaticText(self,-1,'自动保存') 
         self.auto_add_checkbox = wx.CheckBox(self,-1)
         self.hand_add_button   = wx.Button(self,-1,'保存') 
@@ -99,8 +95,6 @@ class ScanWeightPanel(wx.Panel):
         self.company_select.AppendItems([company.name for company in logistics_companies])
         self.out_sid_text.SetFocus()
         
-        self.precise_select.AppendItems(['0.001kg','0.01kg','0.1kg','1kg'])
-        self.precise_select.SetValue('0.001kg')
         self.control_array = []
         self.control_array.append(self.order_content1)
         self.control_array.append(self.order_content2)
@@ -138,8 +132,7 @@ class ScanWeightPanel(wx.Panel):
         flex_sizer1.Add(self.out_sid_text,0,3)
         flex_sizer1.Add(self.weight_label,0,4)
         flex_sizer1.Add(self.weight_text,0,5)
-        flex_sizer1.Add(self.precise_label,0,6)
-        flex_sizer1.Add(self.precise_select,0,7)
+
         flex_sizer1.Add(self.auto_add_label,0,8)
         flex_sizer1.Add(self.auto_add_checkbox,0,9)
         flex_sizer1.Add(self.hand_add_button,0,10)
@@ -201,8 +194,8 @@ class ScanWeightPanel(wx.Panel):
     def __evt_bind(self):
         
         self.Bind(wx.EVT_COMBOBOX, self.onComboboxSelect, self.company_select)
-        self.Bind(wx.EVT_TEXT, self.onOutsidTextChange,self.out_sid_text)
-        self.Bind(wx.EVT_TEXT, self.onWeightTextChange,self.weight_text)
+        self.Bind(wx.EVT_TEXT_ENTER, self.onOutsidTextChange,self.out_sid_text)
+        self.Bind(wx.EVT_TEXT_ENTER, self.onWeightTextChange,self.weight_text)
         self.Bind(wx.EVT_CHECKBOX, self.onClickCheckBox, self.auto_add_checkbox)
         self.Bind(wx.EVT_BUTTON,self.onClickSaveBtn,self.hand_add_button)
         self.Bind(wx.EVT_BUTTON,self.onClickCancelBtn,self.cancel_button)   
@@ -294,15 +287,12 @@ class ScanWeightPanel(wx.Panel):
         self.Layout()
         
     def onWeightTextChange(self,evt):
-        weight = self.weight_text.GetValue().strip()
-        precise = self.precise_select.GetValue()
-        wregex = weight_regex%WEIGHT_PRECISE.get(precise,3)
-        wcompile = re.compile(wregex)
-        if wcompile.match(weight) and self.is_auto_save:
+        weight = self.weight_text.GetValue()
+        if weight and self.trade and self.is_auto_save:
             self.save_weight_to_trade(self.trade,weight)
             self.out_sid_text.Clear()
             self.weight_text.Clear()
-            self.company_select.SetFocus()
+            self.weight_text.SetFocus()
         
     def save_weight_to_trade(self,trade,weight):
         if trade.sys_status not in ('',SYS_STATUS_INVALID,SYS_STATUS_FINISHED) :
