@@ -13,7 +13,7 @@ from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
     SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_SCANWEIGHT
 
-weight_regex=re.compile('[0-9\.]+\r\n$')
+weight_regex=re.compile('[0-9\.]{1,7}$')
 
 class ScanWeightPanel(wx.Panel):
     
@@ -287,8 +287,8 @@ class ScanWeightPanel(wx.Panel):
         self.Layout()
         
     def onWeightTextChange(self,evt):
-        weight = self.weight_text.GetValue()
-        if weight and self.trade and self.is_auto_save:
+        weight = self.weight_text.GetValue().strip()
+        if weight_regex.match(weight) and self.trade and self.is_auto_save:
             self.save_weight_to_trade(self.trade,weight)
             self.out_sid_text.Clear()
             self.weight_text.Clear()
