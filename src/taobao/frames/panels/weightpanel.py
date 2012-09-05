@@ -290,9 +290,9 @@ class ScanWeightPanel(wx.Panel):
         weight = self.weight_text.GetValue().strip()
         if weight_regex.match(weight) and self.trade and self.is_auto_save:
             self.save_weight_to_trade(self.trade,weight)
-            self.out_sid_text.Clear()
             self.weight_text.Clear()
-            self.weight_text.SetFocus()
+            self.out_sid_text.Clear()
+            self.out_sid_text.SetFocus()
         
     def save_weight_to_trade(self,trade,weight):
         if trade.sys_status not in ('',SYS_STATUS_INVALID,SYS_STATUS_FINISHED) :
