@@ -180,15 +180,3 @@ class DeliveryPrinter(wx.Frame):
                 picking_data_list.append(trade_data)
                                            
         return picking_data_list    
-    
-#class wxHTML(HtmlWindow):
-#    #----------------------------------------------------------------------
-#    def __init__(self, parent, id):
-#        HtmlWindow.__init__(self, parent, id, style=wx.NO_FULL_REPAINT_ON_RESIZE)
- 
-# 
-#if __name__ == '__main__':
-#    app = wx.App(False)
-#    frame = SnapshotPrinter()
-#    frame.Show()
-#    app.MainLoop()

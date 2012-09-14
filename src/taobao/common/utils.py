@@ -16,8 +16,17 @@ import taobao
 
 FONT_PATH = 'c:\Windows\Fonts\simsun.ttc'
 IMAGE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\images\\'
-def parse_datetime(dt):
-    return datetime.datetime(*(time.strptime(dt,'%m/%d/%Y %H:%M:%S')[0:6]))
+def parse_datetime(dt,format='%m/%d/%Y %H:%M:%S'):
+    return datetime.datetime(*(time.strptime(dt,format)[0:6]))
+
+def parse_date(dt,format='%m/%d/%Y'):
+    return datetime.datetime(*(time.strptime(dt,format)[0:6]))
+
+def format_date(dt,format="%Y-%m-%d"):
+    return dt.strftime(format)
+
+def format_datetime(dt,format="%Y-%m-%d %H:%M:%S"):
+    return dt.strftime(format)
 
 def pydate2wxdate(date):
     assert isinstance(date,(datetime.datetime,datetime.date))
@@ -48,7 +57,11 @@ def gen_string_image(font_path,code_string):
 class create_session():
     def __init__(self,parent):
         self.parent = parent
-        self.session = parent.Session
+        if hasattr(parent, 'Session'):
+            self.session = parent.Session
+        else:
+            from taobao.dao.dbsession import get_session
+            self.session = get_session()
   
     def __enter__(self):
         from taobao.dao.models import SystemConfig

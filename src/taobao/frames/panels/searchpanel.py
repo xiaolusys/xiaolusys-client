@@ -64,6 +64,10 @@ class SearchPanel(wx.Panel):
         self.logistics_pick_check  = wx.CheckBox(self,-1)
         self.has_refund_label = wx.StaticText(self,-1,'有退款')
         self.has_refund_check  = wx.CheckBox(self,-1)
+        self.out_stock_label = wx.StaticText(self,-1,'缺货')
+        self.out_stock_check  = wx.CheckBox(self,-1)
+        self.has_memo_label = wx.StaticText(self,-1,'有留言')
+        self.has_memo_check  = wx.CheckBox(self,-1)
 
         self.search_btn = wx.Button(self,-1,'搜索')
         
@@ -99,7 +103,8 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.delivery_pick_check, pos=(0,11), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.send_sms_label, pos=(0,12), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.send_sms_check, pos=(0,13), span=(1,1), flag=wx.EXPAND)
-        
+        gridbagsizer.Add(self.out_stock_label, pos=(0,14), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.out_stock_check, pos=(0,15), span=(1,1), flag=wx.EXPAND)
         
         gridbagsizer.Add(self.start_time_label, pos=(1,0), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.start_time_select, pos=(1,1), span=(1,1), flag=wx.EXPAND)
@@ -115,8 +120,11 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.logistics_pick_check, pos=(1,11), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.has_refund_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.has_refund_check, pos=(1,13), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.has_memo_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.has_memo_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
         
-        gridbagsizer.Add(self.search_btn,pos=(1,14),span=(1,1),flag=wx.EXPAND)
+        
+        gridbagsizer.Add(self.search_btn,pos=(1,16),span=(1,1),flag=wx.EXPAND)
         gridbagsizer.Layout()
         
         self.SetSizer(gridbagsizer)
@@ -146,6 +154,8 @@ class SearchPanel(wx.Panel):
         is_express_print = self.logistics_pick_check.IsChecked()
         is_sms_send = self.send_sms_check.IsChecked()
         has_refund = self.has_refund_check.IsChecked()
+        is_out_stock = self.out_stock_check.IsChecked()
+        is_has_memo  = self.has_memo_check.IsChecked()
         
         if trade_id:
             datasource = datasource.filter_by(tid=trade_id.decode('utf8'))
@@ -180,6 +190,10 @@ class SearchPanel(wx.Panel):
                 datasource = datasource.filter_by(is_send_sms=True)
             if has_refund:
                 datasource = datasource.filter_by(has_refund=True)
+            if is_out_stock:
+                datasource = datasource.filter_by(out_goods=True)
+            if is_has_memo:
+                datasource = datasource.filter_by(has_memo=True)
         
         self.Parent.grid.setSearchData(datasource)
         

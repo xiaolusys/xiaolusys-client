@@ -9,9 +9,11 @@ import wx.aui
 from taobao.dao.dbsession import get_session
 from taobao.frames.panels.tradepanel import TradePanel
 from taobao.frames.panels.weightpanel import ScanWeightPanel
+from taobao.frames.panels.checkpanel import ScanCheckPanel
 
 
 ID_TradeMainPage   = wx.NewId()
+ID_ScanCheck       = wx.NewId()
 ID_ScanWeight      = wx.NewId()
 
 ID_Help            = wx.NewId() 
@@ -32,6 +34,7 @@ class MainFrame(wx.Frame):
         mb = wx.MenuBar()
         view_menu = wx.Menu()
         view_menu.Append(ID_TradeMainPage, "订单列表","订单主界面")
+        view_menu.Append(ID_ScanCheck, "扫描验货","扫描物流单编号，扫描商品条码")
         view_menu.Append(ID_ScanWeight, "扫描称重","扫描物流单编号，包裹称重")
         view_menu.Append(wx.ID_EXIT, "退出")
         view_menu.AppendSeparator()
@@ -53,6 +56,9 @@ class MainFrame(wx.Frame):
         
         self._mgr.AddPane(self.CreateOrderGrid(), wx.aui.AuiPaneInfo().Name("order_grid_content").
                           CenterPane().Hide())
+        
+        self._mgr.AddPane(self.CreateCheckView(), wx.aui.AuiPaneInfo().Name("scan_check_content").
+                          CenterPane().Hide())
 
         self._mgr.AddPane(self.CreateDeliveryView(), wx.aui.AuiPaneInfo().Name("scan_weight_content").
                           CenterPane().Hide())
@@ -65,6 +71,7 @@ class MainFrame(wx.Frame):
         self._mgr.Update()
         
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_TradeMainPage)
+        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_ScanCheck)
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_ScanWeight)
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
         
@@ -72,12 +79,17 @@ class MainFrame(wx.Frame):
     def OnChangeContentPane(self, event):
         
         self._mgr.GetPane("order_grid_content").Show(event.GetId() == ID_TradeMainPage)
+        self._mgr.GetPane("scan_check_content").Show(event.GetId() == ID_ScanCheck)
         self._mgr.GetPane("scan_weight_content").Show(event.GetId() == ID_ScanWeight)
         self._mgr.Update()    
                 
     def CreateOrderGrid(self):
         trade_operation_panel = TradePanel(self,-1) 
         return trade_operation_panel
+    
+    def CreateCheckView(self):    
+        check_panel = ScanCheckPanel(self,-1)        
+        return check_panel
     
     def CreateDeliveryView(self):    
         delivery_panel = ScanWeightPanel(self,-1)        

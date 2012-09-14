@@ -5,7 +5,7 @@ Created on 2012-7-16
 @author: user1
 '''
 import wx
-from taobao.common.utils import create_session
+from taobao.common.utils import create_session,format_date
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS
 
@@ -69,8 +69,8 @@ class BasicPanel(wx.Panel):
         self.order_content18  = wx.TextCtrl(self,-1)
         self.order_label19  = wx.StaticText(self,-1,'系统状态')
         self.order_content19  = wx.TextCtrl(self,-1)
-        self.order_label20  = wx.StaticText(self,-1,'反审核次数')
-        self.order_content20  = wx.SpinCtrl(self,-1,'0')
+        self.order_label20  = wx.StaticText(self,-1,'订单提醒时间')
+        self.order_content20  = wx.TextCtrl(self,-1,'')
         self.cod_status_label = wx.StaticText(self,-1,'货到付款状态')
         self.cod_status_text  = wx.TextCtrl(self,-1)
         self.has_refund_label = wx.StaticText(self,-1,'有退款')
@@ -115,7 +115,6 @@ class BasicPanel(wx.Panel):
         self.control_array.append(self.order_content18)
         self.control_array.append(self.order_content19)
         self.control_array.append(self.order_content20)
-
         self.control_array.append(self.seller_cod_text)
         self.control_array.append(self.delivery_pick_check)
         self.control_array.append(self.buyer_cod_text)
@@ -262,7 +261,7 @@ class BasicPanel(wx.Panel):
         self.order_content17.SetValue(trade.post_cost)
         self.order_content18.SetValue(TRADE_STATUS.get(trade.status,'其他'))
         self.order_content19.SetValue(SYS_STATUS.get(trade.sys_status,'其他'))
-        self.order_content20.SetValue(trade.reverse_audit_times)
+        self.order_content19.SetValue(format_date(trade.remind_time) if trade.remind_time else '')
         
         self.order_content22.SetValue(trade.seller_memo)
         self.order_content23.SetValue(trade.buyer_message)

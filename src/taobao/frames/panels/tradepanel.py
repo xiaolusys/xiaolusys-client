@@ -8,19 +8,23 @@ import wx
 from taobao.dao.models import MergeTrade
 from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.frames.panels.gridpanel import QueryObjectGridPanel
-from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_UNAUDIT,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,\
-    SYS_STATUS_SCANWEIGHT,SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_SYSTEMSEND
+from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,SYS_STATUS_SCANCHECK,SYS_STATUS_SCANWEIGHT,\
+    SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_SYSTEMSEND,SYS_STATUS_REGULAR_REMAIN,SYS_STATUS_ON_THE_FLY
 
 
 all_trade_id = wx.NewId()
-wait_audit_id = wx.NewId()
 prapare_send_id  = wx.NewId()
+check_barcode_id  = wx.NewId()
 scan_weight_id = wx.NewId()
 wait_delivery_id = wx.NewId()
 sync_status_id = wx.NewId()
 has_send_id   = wx.NewId()
 audit_fail_id = wx.NewId()
 invalid_id   = wx.NewId()
+merge_rule_id = wx.NewId()
+regular_remain_id = wx.NewId()
+expand_id = wx.NewId()
+fold_id = wx.NewId()
 class TradePanel(wx.Panel):
     
     def __init__(self,parent,id=-1):
@@ -36,13 +40,13 @@ class TradePanel(wx.Panel):
         for button in self.buttons_tuple:
             self.buttons.append(wx.Button(self,button[0],button[1]))
  
-        colLabels = ('订单号','卖家昵称','买家昵称','订单类型','订单状态','系统状态','物流类型','有退款','打印发货单','打印物流单','短信提醒','物流公司','物流单号',
-                     '实付','邮费','总金额','商品数量','优惠金额','调整金额','付款时间','发货时间','反审核次数')
+        colLabels = ('订单号','卖家昵称','买家昵称','订单类型','订单状态','系统状态','物流类型','有退款','打印发货单','打印物流单','短信提醒','缺货','有留言',
+                     '订单提醒日期','物流公司','物流单号','实付','邮费','总金额','商品数量','优惠金额','调整金额','付款时间','发货时间')
         self.grid = QueryObjectGridPanel(self,rowLabels=None,colLabels=colLabels)
-        self.grid.setDataSource(SYS_STATUS_UNAUDIT)
+        self.grid.setDataSource(SYS_STATUS_AUDITFAIL)
         
         self.static_button_up = wx.Button(self,-1,label='^------------^',size=(-1,11))
-        self.isSearchPanelShow = True
+        self.isSearchPanelShow = False
         self.istailnumshow = False
         
         self.filter_number_btn = wx.Button(self,-1,'>',size=(23,23)) 
@@ -54,23 +58,33 @@ class TradePanel(wx.Panel):
      
     @property 
     def buttons_tuple(self):
-        return ((all_trade_id,'全部'),
-                (wait_audit_id,'待审核'),
-                (prapare_send_id,'待发货准备'),
-                (scan_weight_id,'待扫描称重'),
-                (wait_delivery_id,'待确认发货'),
-                (has_send_id,'已发货'),
-                (audit_fail_id,'问题单'),
-                (invalid_id,'已作废'),
+        return ((all_trade_id,'全部',1),#1表示显示，0表示在隐藏域
+                (audit_fail_id,'问题单',1),
+                (prapare_send_id,'待发货准备',1),
+                (check_barcode_id,'待扫描验货',1),
+                (scan_weight_id,'待扫描称重',1),
+                (expand_id,'>>',2),
+                (wait_delivery_id,'待淘宝发货',0),
+                (merge_rule_id,'合并规则区',0),
+                (regular_remain_id,'定时处理区',0),
+                (has_send_id,'已发货',0),
+                (invalid_id,'已作废',0),
+                (fold_id,'<<',2),
                 )
            
         
     def __set_properties(self):
         self.SetName('trade_panel') 
-        self.FindWindowById(wait_audit_id).Enable(False)  
+        self.FindWindowById(audit_fail_id).Enable(False)  
         self.colorpicker.SetToolTip(wx.ToolTip('设置选中行颜色'))
         self.filter_number_btn.SetToolTip(wx.ToolTip('选择显示的订单尾号'))  
         
+        self.search_panel.Hide()
+        for button in self.buttons_tuple:
+            if button[2] == 0:
+                self.FindWindowById(button[0]).Hide()
+        self.FindWindowById(fold_id).Hide()
+    
     def __do_layout(self):  
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.Add(self.search_panel,flag=wx.EXPAND)
@@ -81,7 +95,7 @@ class TradePanel(wx.Panel):
         for index,button in enumerate(self.buttons_tuple):
             trade_naming_sizer.Add(self.FindWindowById(button[0]),0,index)
         
-        trade_naming_sizer.Add((150,-1))
+        trade_naming_sizer.Add((250,-1))
         
         self.checksizer = wx.FlexGridSizer(hgap=2,vgap=10)
         self.checkbox_list = []
@@ -103,7 +117,11 @@ class TradePanel(wx.Panel):
         
     def __evt_bind(self):
         for button in self.buttons_tuple:
-            self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.FindWindowById(button[0]))    
+            if button[2] in (0,1):
+                self.Bind(wx.EVT_BUTTON,self.onClickGridBtn,self.FindWindowById(button[0])) 
+            elif button[2] == 2:
+                self.Bind(wx.EVT_BUTTON,self.onClickExpandFoldBtn,self.FindWindowById(button[0]))   
+                
         self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_up)
         
         self.Bind(wx.EVT_COLOURPICKER_CHANGED, self.onClickColorPickerChange,self.colorpicker)
@@ -111,16 +129,30 @@ class TradePanel(wx.Panel):
         for checkbox in self.checkbox_list:
             self.Bind(wx.EVT_CHECKBOX, self.onCheckTailNum,checkbox)
             
-        
-         
+    def onClickExpandFoldBtn(self,evt):
+        eventid = evt.GetId()
+        if eventid == expand_id:
+            for button in self.buttons_tuple:
+                if button[2] == 0:
+                    self.FindWindowById(button[0]).Show()
+            self.FindWindowById(expand_id).Hide() 
+            self.FindWindowById(fold_id).Show()     
+        elif eventid == fold_id:
+            for button in self.buttons_tuple:
+                if button[2] == 0:
+                    self.FindWindowById(button[0]).Hide() 
+            self.FindWindowById(fold_id).Hide()
+            self.FindWindowById(expand_id).Show()
+        self.Layout()
+            
     def onClickGridBtn(self,evt):
         eventid = evt.GetId()
         if eventid == all_trade_id:
             trades_status_type = SYS_STATUS_ALL
-        elif eventid == wait_audit_id:
-            trades_status_type = SYS_STATUS_UNAUDIT 
         elif eventid == prapare_send_id:
-            trades_status_type = SYS_STATUS_PREPARESEND       
+            trades_status_type = SYS_STATUS_PREPARESEND 
+        elif eventid == check_barcode_id:
+            trades_status_type = SYS_STATUS_SCANCHECK      
         elif eventid == scan_weight_id:
             trades_status_type = SYS_STATUS_SCANWEIGHT  
         elif eventid == wait_delivery_id:
@@ -132,7 +164,11 @@ class TradePanel(wx.Panel):
         elif eventid == audit_fail_id:
             trades_status_type = SYS_STATUS_AUDITFAIL  
         elif eventid == invalid_id:
-            trades_status_type = SYS_STATUS_INVALID 
+            trades_status_type = SYS_STATUS_INVALID
+        elif eventid == merge_rule_id:
+            trades_status_type = SYS_STATUS_ON_THE_FLY
+        elif eventid == regular_remain_id:
+            trades_status_type = SYS_STATUS_REGULAR_REMAIN 
             
         for button in self.buttons:
             button.Enable(not eventid==button.GetId())

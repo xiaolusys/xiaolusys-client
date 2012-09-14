@@ -131,7 +131,6 @@ class Order(Base):
     oid = Column(BigInteger, primary_key=True)
 
     trade_id = Column(BigInteger, ForeignKey('shop_orders_trade.id'))
-    item_id = Column(BigInteger, ForeignKey('shop_items_item.num_iid'))
 
     title = Column(String(128), nullable=True)
     price = Column(String(12), nullable=True)
@@ -361,7 +360,6 @@ class MergeTrade(Base):
     receiver_mobile = Column(String(20), default='')
     receiver_phone = Column(String(20), default='')
 
-    reverse_audit_times = Column(Integer, nullable=True)
     reverse_audit_reason = Column(String(1000), default='')
     status = Column(String(32), index=True, nullable=True)
     
@@ -369,6 +367,10 @@ class MergeTrade(Base):
     is_express_print = Column(Boolean, default=False)
     is_send_sms = Column(Boolean, default=False)
     has_refund = Column(Boolean, default=False)
+    out_goods  = Column(Boolean, default=False)
+    has_memo   = Column(Boolean, default=False)
+    remind_time = Column(DateTime, nullable=True)
+    refund_num   = Column(Integer, nullable=True)
         
     sys_status = Column(String(32),index=True,default='')    
     def __repr__(self):
@@ -425,7 +427,6 @@ class Item(Base):
     num_iid = Column(String(64), primary_key=True)
     
     user_id = Column(String(32), nullable=True)
-    orders = relationship("Order", backref="item")
     category_id = Column(Integer, ForeignKey('shop_categorys_category.cid'))
     
     outer_id = Column(String(64), nullable=True)
