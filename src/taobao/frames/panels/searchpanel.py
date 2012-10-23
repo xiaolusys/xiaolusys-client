@@ -6,30 +6,13 @@ Created on 2012-7-19
 '''
 import datetime
 import wx
-from taobao.dao.models import Trade,User,LogisticsCompany
+from taobao.dao.models import MergeTrade,User,LogisticsCompany
 from taobao.common.utils import wxdate2pydate,create_session
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE
 
 class SearchPanel(wx.Panel):
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,-1)
-        
-#        self.search_params = {
-#            'trade_id':None,
-#            'trade_type':None,
-#            'trade_status':None,
-#            'seller_id':None,
-#            'buyer_nick':None,
-#            'start_time':None,
-#            'end_time':None,
-#            'logistics_id':None,
-#            'out_sid':None,
-#            'logistics_company':None,
-#            'is_picking_print':None,
-#            'is_express_print':None,
-#            'is_sms_send':None,
-#            'has_refund':None
-#        }
         
         self.Session = parent.Session
         self.order_label = wx.StaticText(self,-1,'订单号')

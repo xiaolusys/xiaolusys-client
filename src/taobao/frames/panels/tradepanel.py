@@ -8,8 +8,8 @@ import wx
 from taobao.dao.models import MergeTrade
 from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.frames.panels.gridpanel import QueryObjectGridPanel
-from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_AUDITFAIL,SYS_STATUS_PREPARESEND,SYS_STATUS_SCANCHECK,SYS_STATUS_SCANWEIGHT,\
-    SYS_STATUS_CONFIRMSEND,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_SYSTEMSEND,SYS_STATUS_REGULAR_REMAIN,SYS_STATUS_ON_THE_FLY
+from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,SYS_STATUS_WAITSCANWEIGHT,\
+    SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_REGULAR_REMAIN,SYS_STATUS_ON_THE_FLY
 
 
 all_trade_id = wx.NewId()
@@ -43,7 +43,7 @@ class TradePanel(wx.Panel):
         colLabels = ('订单号','卖家昵称','买家昵称','订单类型','订单状态','系统状态','物流类型','有退款','打印发货单','打印物流单','短信提醒','缺货','有留言',
                      '订单提醒日期','物流公司','物流单号','实付','邮费','总金额','商品数量','优惠金额','调整金额','付款时间','发货时间')
         self.grid = QueryObjectGridPanel(self,rowLabels=None,colLabels=colLabels)
-        self.grid.setDataSource(SYS_STATUS_AUDITFAIL)
+        self.grid.setDataSource(SYS_STATUS_PREPARESEND)
         
         self.static_button_up = wx.Button(self,-1,label='^------------^',size=(-1,11))
         self.isSearchPanelShow = False
@@ -59,14 +59,13 @@ class TradePanel(wx.Panel):
     @property 
     def buttons_tuple(self):
         return ((all_trade_id,'全部',1),#1表示显示，0表示在隐藏域
-                (audit_fail_id,'问题单',1),
                 (prapare_send_id,'待发货准备',1),
                 (check_barcode_id,'待扫描验货',1),
                 (scan_weight_id,'待扫描称重',1),
                 (expand_id,'>>',2),
-                (wait_delivery_id,'待淘宝发货',0),
                 (merge_rule_id,'合并规则区',0),
                 (regular_remain_id,'定时处理区',0),
+                (audit_fail_id,'问题单',0),
                 (has_send_id,'已发货',0),
                 (invalid_id,'已作废',0),
                 (fold_id,'<<',2),
@@ -75,7 +74,7 @@ class TradePanel(wx.Panel):
         
     def __set_properties(self):
         self.SetName('trade_panel') 
-        self.FindWindowById(audit_fail_id).Enable(False)  
+        self.FindWindowById(prapare_send_id).Enable(False)  
         self.colorpicker.SetToolTip(wx.ToolTip('设置选中行颜色'))
         self.filter_number_btn.SetToolTip(wx.ToolTip('选择显示的订单尾号'))  
         
@@ -152,17 +151,13 @@ class TradePanel(wx.Panel):
         elif eventid == prapare_send_id:
             trades_status_type = SYS_STATUS_PREPARESEND 
         elif eventid == check_barcode_id:
-            trades_status_type = SYS_STATUS_SCANCHECK      
+            trades_status_type = SYS_STATUS_WAITSCANCHECK      
         elif eventid == scan_weight_id:
-            trades_status_type = SYS_STATUS_SCANWEIGHT  
-        elif eventid == wait_delivery_id:
-            trades_status_type = SYS_STATUS_CONFIRMSEND  
-        elif eventid == sync_status_id: 
-            trades_status_type = SYS_STATUS_SYSTEMSEND
+            trades_status_type = SYS_STATUS_WAITSCANWEIGHT  
         elif eventid == has_send_id:
             trades_status_type = SYS_STATUS_FINISHED 
         elif eventid == audit_fail_id:
-            trades_status_type = SYS_STATUS_AUDITFAIL  
+            trades_status_type = SYS_STATUS_WAITAUDIT  
         elif eventid == invalid_id:
             trades_status_type = SYS_STATUS_INVALID
         elif eventid == merge_rule_id:

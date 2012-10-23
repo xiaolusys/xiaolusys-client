@@ -4,7 +4,6 @@ Created on 2012-6-4
 @author: user1
 '''
 from taobao.dao.dbsession import get_session
-from taobao.dao.models import Trade, Order,TradeExtraInfo
 
 
 def get_or_create_model(session,model_class,**kwargs):

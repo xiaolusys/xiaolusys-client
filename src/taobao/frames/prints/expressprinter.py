@@ -16,7 +16,7 @@ from wx.html import HtmlEasyPrinting,HtmlWindow
 from taobao.common.environment import get_template
 from taobao.dao.dbsession import get_session
 from taobao.common.utils import create_session
-from taobao.dao.models import Trade, MergeTrade,Item,Order,SubPurchaseOrder,FenxiaoProduct
+from taobao.dao.models import MergeTrade,Item,MergeOrder
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS
 
 FONTSIZE = 10

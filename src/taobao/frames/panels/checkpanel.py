@@ -10,8 +10,8 @@ import wx,wx.grid
 from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.frames.panels.gridpanel import CheckGridPanel
-from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
-    SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_SCANWEIGHT
+from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,SYS_STATUS_PREPARESEND,\
+    SYS_STATUS_INVALID,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK
 
 
 
@@ -89,7 +89,7 @@ class ScanCheckPanel(wx.Panel):
         if company_name:
             with create_session(self.Parent) as session:
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                         logistics_company_name=company_name,status=TRADE_STATUS_WAIT_SEND_GOODS)
+                         logistics_company_name=company_name,sys_status=SYS_STATUS_WAITSCANCHECK)
         count = trades.count() if trades else 0   
         if count>1 :
             self.error_text.SetLabel('该快递单号已重复，请反审核后修改')
@@ -114,10 +114,9 @@ class ScanCheckPanel(wx.Panel):
         with create_session(self.Parent) as session:
             if company_name and out_sid:
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                       logistics_company_name=company_name,status=TRADE_STATUS_WAIT_SEND_GOODS)
+                       logistics_company_name=company_name,sys_status=SYS_STATUS_WAITSCANCHECK)
             elif out_sid :
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,status=TRADE_STATUS_WAIT_SEND_GOODS)
-                
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=SYS_STATUS_WAITSCANCHECK)
                  
         count = trades.count() if trades else 0 
         if count>1 :
@@ -128,7 +127,6 @@ class ScanCheckPanel(wx.Panel):
         elif count == 1:
             self.trade = trades.one()
             self.gridpanel.setData(self.trade)
-            self.code_num_dict = self.getOrderCodeMapNumDict(self.trade)
             self.barcode_text.SetFocus()
             self.error_text.SetLabel('')
             self.error_text.SetForegroundColour('white')
@@ -140,14 +138,33 @@ class ScanCheckPanel(wx.Panel):
             self.clearTradeInfoPanel()
         evt.Skip()
          
-    def onCheckCodeTextChange(self,evt):
-        pass
-   
-    def onClickSaveBtn(self,evt):
+    def setBarCode(self):
         barcode = self.barcode_text.GetValue()
         if self.trade and barcode:
-            self.gridpanel.setBarCode(barcode)
-    
+            checked = self.gridpanel.setBarCode(barcode)
+            if checked:
+                if self.gridpanel.isCheckOver():
+                    with create_session(self.Parent) as session: 
+                        session.query(MergeTrade).filter_by(tid=self.trade.tid,sys_status=SYS_STATUS_WAITSCANCHECK)\
+                            .update({'sys_status':SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
+                    self.out_sid_text.Clear()
+                    self.barcode_text.Clear()
+                    self.out_sid_text.SetFocus()
+                else:
+                    self.barcode_text.Clear()
+                    self.barcode_text.SetFocus()
+            else:
+                self.barcode_text.Clear()
+                self.barcode_text.SetFocus()
+         
+    def onCheckCodeTextChange(self,evt):
+
+        self.setBarCode()
+   
+    def onClickSaveBtn(self,evt):
+
+        self.setBarCode()
+            
     def onClickCancelBtn(self,evt):
         self.out_sid_text.Clear()
         self.barcode_text.Clear()

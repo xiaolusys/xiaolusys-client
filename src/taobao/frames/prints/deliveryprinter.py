@@ -16,8 +16,8 @@ import datetime
 from wx.html import HtmlEasyPrinting,HtmlWindow 
 from taobao.common.environment import get_template
 from taobao.common.utils import create_session
-from taobao.dao.models import Trade, MergeTrade,Item,Order,SubPurchaseOrder,FenxiaoProduct
-from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS
+from taobao.dao.models import MergeTrade,MergeOrder,Product
+from taobao.dao.configparams import SYS_STATUS_PREPARESEND,TRADE_STATUS_WAIT_SEND_GOODS
 from taobao.common.utils import IMAGE_ROOT
 
 FONTSIZE = 10
@@ -129,7 +129,7 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['post_date']    = dt
                 trade_data['buyer_nick']        = trade.buyer_nick
                 trade_data['out_sid']      = trade.out_sid
-                trade_data['company_name'] = trade.logistics_company_name
+                trade_data['company_name'] = trade.logistics_company.name
                 trade_data['order_nums']   = 0
                 trade_data['total_fee']    = 0
                 trade_data['discount_fee'] = 0
@@ -149,31 +149,21 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['sys_memo']   = trade.sys_memo
                 trade_data['orders']       = [] 
                 
-                is_fenxiao = (trade.type == 'fenxiao')
-                if is_fenxiao:
-                    orders = session.query(SubPurchaseOrder).filter(SubPurchaseOrder.status.in_(
-                        ('WAIT_COMFIRM_WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS','WAIT_SELLER_SEND_GOODS'))).filter_by(id=trade.tid).all()
-                else:
-                    orders = session.query(Order).filter_by(trade_id=trade.tid,refund_status='NO_REFUND')  
+                orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id,refund_status='NO_REFUND')  
                 for order in orders:
                     order_data = {} 
-                    if is_fenxiao:
-                        item = session.query(FenxiaoProduct).filter_by(pid=order.item_id).first()
-                        title = item.name
-                    else :
-                        item  = session.query(Item).filter_by(num_iid=order.num_iid).first()
-                        title = item.title
+                    product = session.query(Product).filter_by(outer_id=order.outer_id).one()
                     trade_data['order_nums']     += order.num
-                    trade_data['discount_fee']   += float(order.discount_fee or 0) if not is_fenxiao else 0
+                    trade_data['discount_fee']   += float(order.discount_fee or 0)
                     trade_data['total_fee']      += float(order.total_fee or 0) 
-                    trade_data['payment']      += float(order.payment or 0) if not is_fenxiao else float(order.buyer_payment)
-                    order_data['outer_id']  = order.item_outer_id if is_fenxiao else order.outer_id 
-                    order_data['item_name'] = title
+                    trade_data['payment']      += float(order.payment or 0)
+                    order_data['outer_id']  = order.outer_id 
+                    order_data['item_name'] = product.name
                     order_data['num']       = order.num
                     order_data['price']     = order.price
-                    order_data['discount_fee'] = float(order.discount_fee or 0) if not is_fenxiao else 0
-                    order_data['payment']   = order.buyer_payment if is_fenxiao else order.payment 
-                    order_data['properties'] = order.sku_properties if is_fenxiao else order.sku_properties_name
+                    order_data['discount_fee'] = float(order.discount_fee or 0)
+                    order_data['payment']   = order.payment 
+                    order_data['properties'] = order.sku_properties_name
                     
                     trade_data['orders'].append(order_data)
 

@@ -11,7 +11,7 @@ from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
-    SYS_STATUS_INVALID,SYS_STATUS_CONFIRMSEND,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_SCANWEIGHT
+    SYS_STATUS_INVALID,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_WAITSCANWEIGHT
 
 weight_regex=re.compile('[0-9\.]{1,7}$')
 
@@ -296,11 +296,9 @@ class ScanWeightPanel(wx.Panel):
         
     def save_weight_to_trade(self,trade,weight):
         if trade.sys_status not in ('',SYS_STATUS_INVALID,SYS_STATUS_FINISHED) :
-            trade.reverse_audit_reason += '-->待确认发货'.decode('utf8')
             with create_session(self.Parent) as session: 
-                session.query(MergeTrade).filter_by(tid=trade.tid,sys_status=SYS_STATUS_SCANWEIGHT)\
-                        .update({'weight':weight,'sys_status':SYS_STATUS_CONFIRMSEND,
-                                 'reverse_audit_reason':trade.reverse_audit_reason},synchronize_session='fetch')
+                session.query(MergeTrade).filter_by(tid=trade.tid,sys_status=SYS_STATUS_WAITSCANWEIGHT)\
+                        .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
             self.gridpanel.InsertTradeRows(trade)
     
         
@@ -321,20 +319,4 @@ class ScanWeightPanel(wx.Panel):
             control.Clear()
    
      
-           
-class TestFrame(wx.Frame):
-    def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, "Custom cell editor test", size=(950,600))
-
-        grid = ScanWeightPanel(self,-1)
-        self.CentreOnScreen()
-
-class MyApp(wx.App):
-    def OnInit(self):
-        frame = TestFrame(None)
-        frame.Show(True)
-        self.SetTopWindow(frame)
-        return True  
-    
-if __name__ == '__main__':         
-    MyApp(0).MainLoop()        
+                 

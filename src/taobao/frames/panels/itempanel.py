@@ -5,7 +5,7 @@ Created on 2012-7-16
 @author: user1
 '''
 import wx
-from taobao.common.utils import create_session,format_date
+from taobao.common.utils import create_session,format_date,pydate2wxdate,wxdate2pydate
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS
 
@@ -70,7 +70,8 @@ class BasicPanel(wx.Panel):
         self.order_label19  = wx.StaticText(self,-1,'系统状态')
         self.order_content19  = wx.TextCtrl(self,-1)
         self.order_label20  = wx.StaticText(self,-1,'订单提醒时间')
-        self.order_content20  = wx.TextCtrl(self,-1,'')
+        self.order_content20  = wx.DatePickerCtrl(self, size=(120,-1),
+                                style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE )
         self.cod_status_label = wx.StaticText(self,-1,'货到付款状态')
         self.cod_status_text  = wx.TextCtrl(self,-1)
         self.has_refund_label = wx.StaticText(self,-1,'有退款')
@@ -89,7 +90,6 @@ class BasicPanel(wx.Panel):
         
         self.__set_properties()
         self.__do_layout()
-        self.__evt_bind()
         
 
     def __set_properties(self):
@@ -212,13 +212,13 @@ class BasicPanel(wx.Panel):
         
         self.SetSizer(base_order_sizer)
     
-    def __evt_bind(self):
-        self.Bind(wx.EVT_BUTTON,self.onClickChangeBtn,self.change_btn)
         
     def onClickChangeBtn(self,evt):
         with create_session(self.Parent) as session:
             company_name = self.order_content13.GetValue()
             company = session.query(LogisticsCompany).filter_by(name=company_name).first()
+            remaid_time = self.order_content20.GetValue() 
+            remain_time = wxdate2pydate(remaid_time) if remaid_time else None
             session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
                 'is_picking_print':self.delivery_pick_check.IsChecked(),
                 'is_express_print':self.logistics_pick_check.IsChecked(),
@@ -227,7 +227,8 @@ class BasicPanel(wx.Panel):
                 'logistics_company_name':company_name,
                 'out_sid':self.order_content14.GetValue(),
                 'sys_memo':self.order_content25.GetValue(),
-                'logistics_company_code': company.code if company else ''
+                'logistics_company_code': company.code if company else '',
+                'remind_time':remain_time,
                 })
         self.order_content9.SetValue(company.code if company else '')
         for control in self.control_array:
@@ -248,12 +249,12 @@ class BasicPanel(wx.Panel):
         self.order_content6.SetValue(trade.total_num)
         self.order_content7.SetValue(trade.total_fee)
         self.order_content8.SetValue(trade.payment)
-        self.order_content9.SetValue(trade.logistics_company_code)
+        self.order_content9.SetValue(trade.logistics_company and trade.logistics_company.code or '')
         self.order_content10.SetValue(trade.discount_fee)
         
         self.order_content11.SetValue(SHIPPING_TYPE.get(trade.shipping_type,'其他'))
         self.order_content12.SetValue(trade.post_fee)
-        self.order_content13.SetValue(trade.logistics_company_name)
+        self.order_content13.SetValue(trade.logistics_company and trade.logistics_company.name or '')
         self.order_content14.SetValue(trade.out_sid) 
         self.order_content15.SetValue(str(trade.consign_time or '')) 
         
@@ -261,7 +262,10 @@ class BasicPanel(wx.Panel):
         self.order_content17.SetValue(trade.post_cost)
         self.order_content18.SetValue(TRADE_STATUS.get(trade.status,'其他'))
         self.order_content19.SetValue(SYS_STATUS.get(trade.sys_status,'其他'))
-        self.order_content19.SetValue(format_date(trade.remind_time) if trade.remind_time else '')
+        if trade.remind_time:
+            self.order_content20.SetValue(pydate2wxdate(trade.remind_time))
+        else:
+            self.order_content20
         
         self.order_content22.SetValue(trade.seller_memo)
         self.order_content23.SetValue(trade.buyer_message)
@@ -287,6 +291,7 @@ class BasicPanel(wx.Panel):
             self.has_refund_check.Enable(True)
             self.order_content13.Enable(True)
             self.order_content14.Enable(True)
+            self.order_content20.Enable(True)
             self.order_content25.Enable(True)
             self.change_btn.Show()
         else :
@@ -356,7 +361,6 @@ class ReceiverPanel(wx.Panel):
         self.change_btn   = wx.Button(self,-1,'确认修改',size=(-1,-1))
         self.__set_properties()
         self.__do_layout()
-        self.__evt_bind()
         
     def __set_properties(self):
         self.SetName('receiver_panel')
@@ -403,8 +407,6 @@ class ReceiverPanel(wx.Panel):
         main_sizer.Add(box_sizer,flag=wx.EXPAND,border=10)
         self.SetSizer(main_sizer)
         
-    def __evt_bind(self):
-        self.Bind(wx.EVT_BUTTON,self.onClickChangeBtn,self.change_btn)
         
     def onClickChangeBtn(self,evt):
         with create_session(self.Parent) as session:
