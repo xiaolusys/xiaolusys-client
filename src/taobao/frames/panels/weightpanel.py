@@ -201,14 +201,15 @@ class ScanWeightPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON,self.onClickCancelBtn,self.cancel_button)   
     
     def onComboboxSelect(self,evt):
-        company_name = self.company_select.GetValue()
-        out_sid      = self.out_sid_text.GetValue()
+        company_name = self.company_select.GetValue().strip()
+        out_sid      = self.out_sid_text.GetValue().strip()
         
         trades = None
         if company_name:
             with create_session(self.Parent) as session:
+                logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                         logistics_company_name=company_name,status=TRADE_STATUS_WAIT_SEND_GOODS)
+                         logistics_company_id=logistics_company.id,status=TRADE_STATUS_WAIT_SEND_GOODS)
         count = trades.count() if trades else 0   
         if count>1 :
             self.error_text.SetLabel('该快递单号已重复，请反审核后修改')
@@ -231,8 +232,9 @@ class ScanWeightPanel(wx.Panel):
         trades = None
         with create_session(self.Parent) as session:
             if company_name and out_sid:
+                logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                       logistics_company_name=company_name,status=TRADE_STATUS_WAIT_SEND_GOODS)
+                       logistics_company_id=logistics_company.id,status=TRADE_STATUS_WAIT_SEND_GOODS)
             elif out_sid :
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,status=TRADE_STATUS_WAIT_SEND_GOODS)
                  
@@ -267,7 +269,7 @@ class ScanWeightPanel(wx.Panel):
         self.order_content2.SetValue(str(trade.tid))
         self.order_content3.SetValue(TRADE_TYPE.get(trade.type,'其他'))
         self.order_content4.SetValue(trade.buyer_nick)
-        self.order_content5.SetValue(trade.logistics_company_name)
+        self.order_content5.SetValue(trade.logistics_company.name)
         self.order_content6.SetValue(trade.out_sid)
         
         self.order_content7.SetValue(TRADE_STATUS.get(trade.status,'其他'))
@@ -295,11 +297,10 @@ class ScanWeightPanel(wx.Panel):
             self.out_sid_text.SetFocus()
         
     def save_weight_to_trade(self,trade,weight):
-        if trade.sys_status not in ('',SYS_STATUS_INVALID,SYS_STATUS_FINISHED) :
-            with create_session(self.Parent) as session: 
-                session.query(MergeTrade).filter_by(tid=trade.tid,sys_status=SYS_STATUS_WAITSCANWEIGHT)\
-                        .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
-            self.gridpanel.InsertTradeRows(trade)
+        with create_session(self.Parent) as session: 
+            session.query(MergeTrade).filter_by(id=trade.id,sys_status=SYS_STATUS_WAITSCANWEIGHT)\
+                    .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
+        self.gridpanel.InsertTradeRows(trade)
     
         
     def onClickCheckBox(self,evt):

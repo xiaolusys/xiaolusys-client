@@ -115,26 +115,26 @@ class ExpressPrinter(wx.Frame):
     #----------------------------------------------------------------------
     def onUpdateExpressStatus(self,event):
         with create_session(self.Parent) as session: 
-            session.query(MergeTrade).filter(MergeTrade.tid.in_(self.trade_ids))\
+            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_express_print':True},synchronize_session='fetch')
     
     #----------------------------------------------------------------------
     def getLogisticsData(self ,trade_ids=[]):
         with create_session(self.Parent) as session: 
-            send_trades  = session.query(MergeTrade).filter(MergeTrade.tid.in_(trade_ids))
+            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))
         
         express_data_list = []
         for trade in send_trades:
             trade_data = {}
             dt         = datetime.datetime.now() 
                     
-            trade_data['trade_id']     = trade.tid
+            trade_data['trade_id']     = trade.id
             trade_data['seller_nick']  = trade.seller_nick
             trade_data['post_date']    = dt
             trade_data['buyer_nick']        = trade.buyer_nick
             trade_data['out_sid']      = trade.out_sid
-            trade_data['company_name'] = trade.logistics_company_name
-            trade_data['company_code'] = trade.logistics_company_code
+            trade_data['company_name'] = trade.logistics_company.name
+            trade_data['company_code'] = trade.logistics_company.code
             
             trade_data['receiver_name']     = trade.receiver_name
             trade_data['receiver_phone']    = trade.receiver_phone

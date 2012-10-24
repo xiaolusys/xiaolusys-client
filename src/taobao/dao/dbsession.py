@@ -6,17 +6,11 @@ Created on 2012-6-2
 import os
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-import ConfigParser
-import taobao
-
-
+from taobao.common.utils import getconfig
 
 def get_session():
-    cf = ConfigParser.ConfigParser()
-    config_path = os.path.abspath(os.path.dirname(taobao.__file__))
-    cf.read(config_path+'/system.conf')
- 
-    db_host = cf.get('db','db_host')
+    cf = getconfig()
+    db_host = cf.get('db','db_host') 
     db_port = cf.get('db','db_port')
     db_name = cf.get('db','db_name')
     db_user = cf.get('db','db_user')

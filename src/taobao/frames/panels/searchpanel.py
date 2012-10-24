@@ -45,12 +45,6 @@ class SearchPanel(wx.Panel):
         self.logistics_company_select = wx.ComboBox(self,-1)
         self.logistics_pick_label = wx.StaticText(self,-1,'已打印物流单')
         self.logistics_pick_check  = wx.CheckBox(self,-1)
-        self.has_refund_label = wx.StaticText(self,-1,'有退款')
-        self.has_refund_check  = wx.CheckBox(self,-1)
-        self.out_stock_label = wx.StaticText(self,-1,'缺货')
-        self.out_stock_check  = wx.CheckBox(self,-1)
-        self.has_memo_label = wx.StaticText(self,-1,'有留言')
-        self.has_memo_check  = wx.CheckBox(self,-1)
 
         self.search_btn = wx.Button(self,-1,'搜索')
         
@@ -86,8 +80,6 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.delivery_pick_check, pos=(0,11), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.send_sms_label, pos=(0,12), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.send_sms_check, pos=(0,13), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.out_stock_label, pos=(0,14), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.out_stock_check, pos=(0,15), span=(1,1), flag=wx.EXPAND)
         
         gridbagsizer.Add(self.start_time_label, pos=(1,0), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.start_time_select, pos=(1,1), span=(1,1), flag=wx.EXPAND)
@@ -101,11 +93,6 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.logistics_company_select, pos=(1,9), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_pick_label, pos=(1,10), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_pick_check, pos=(1,11), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.has_refund_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.has_refund_check, pos=(1,13), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.has_memo_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.has_memo_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
-        
         
         gridbagsizer.Add(self.search_btn,pos=(1,16),span=(1,1),flag=wx.EXPAND)
         gridbagsizer.Layout()
@@ -136,10 +123,7 @@ class SearchPanel(wx.Panel):
         is_picking_print = self.delivery_pick_check.IsChecked()
         is_express_print = self.logistics_pick_check.IsChecked()
         is_sms_send = self.send_sms_check.IsChecked()
-        has_refund = self.has_refund_check.IsChecked()
-        is_out_stock = self.out_stock_check.IsChecked()
-        is_has_memo  = self.has_memo_check.IsChecked()
-        
+   
         if trade_id:
             datasource = datasource.filter_by(tid=trade_id.decode('utf8'))
         elif logistics_id:
@@ -164,19 +148,15 @@ class SearchPanel(wx.Panel):
                 shipping_dict = dict([(v,k) for k,v in SHIPPING_TYPE.items()])
                 datasource = datasource.filter_by(shipping_type=shipping_dict.get(shipping_type.strip().encode('utf8'),None))
             if logistics_company :
-                datasource = datasource.filter_by(logistics_company_name=logistics_company.strip().decode('utf8'))
+                with create_session(self.Parent) as session:
+                    log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip().decode('utf8')).one()
+                datasource = datasource.filter_by(logistics_company_id=log_company.id)
             if is_picking_print:
                 datasource = datasource.filter_by(is_picking_print=True)
             if is_express_print:
                 datasource = datasource.filter_by(is_express_print=True)
             if is_sms_send:
                 datasource = datasource.filter_by(is_send_sms=True)
-            if has_refund:
-                datasource = datasource.filter_by(has_refund=True)
-            if is_out_stock:
-                datasource = datasource.filter_by(out_goods=True)
-            if is_has_memo:
-                datasource = datasource.filter_by(has_memo=True)
         
         self.Parent.grid.setSearchData(datasource)
         

@@ -86,8 +86,6 @@ class BasicPanel(wx.Panel):
         self.order_label25  = wx.StaticText(self,-1,'系统订单备注')
         self.order_content25  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
         
-        self.change_btn     = wx.Button(self,-1,'确认修改',size=(-1,40))
-        
         self.__set_properties()
         self.__do_layout()
         
@@ -130,9 +128,7 @@ class BasicPanel(wx.Panel):
             self.order_content13.AppendItems([company.name for company in logistics_companies])
         for control in self.control_array:
             control.Enable(False)
-        self.change_btn.Hide()
-        
-        
+             
             
     def __do_layout(self):
         
@@ -206,35 +202,12 @@ class BasicPanel(wx.Panel):
         base_order_sizer.Add(self.order_content24,pos=(4,5),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.order_label25,pos=(4,6),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.order_content25,pos=(4,7),span=(1,1),flag=wx.EXPAND)
-        
-        base_order_sizer.Add(self.change_btn,pos=(4,11))
+
         base_order_sizer.Layout()
         
         self.SetSizer(base_order_sizer)
     
         
-    def onClickChangeBtn(self,evt):
-        with create_session(self.Parent) as session:
-            company_name = self.order_content13.GetValue()
-            company = session.query(LogisticsCompany).filter_by(name=company_name).first()
-            remaid_time = self.order_content20.GetValue() 
-            remain_time = wxdate2pydate(remaid_time) if remaid_time else None
-            session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
-                'is_picking_print':self.delivery_pick_check.IsChecked(),
-                'is_express_print':self.logistics_pick_check.IsChecked(),
-                'is_send_sms':self.send_sms_check.IsChecked(),
-                'has_refund':self.has_refund_check.IsChecked(),
-                'logistics_company_name':company_name,
-                'out_sid':self.order_content14.GetValue(),
-                'sys_memo':self.order_content25.GetValue(),
-                'logistics_company_code': company.code if company else '',
-                'remind_time':remain_time,
-                })
-        self.order_content9.SetValue(company.code if company else '')
-        for control in self.control_array:
-            control.Enable(False)
-        self.Parent.is_changeable = False
-        self.change_btn.Hide()
     
     def setData(self,trade): 
         if not trade: 
@@ -269,7 +242,7 @@ class BasicPanel(wx.Panel):
         
         self.order_content22.SetValue(trade.seller_memo)
         self.order_content23.SetValue(trade.buyer_message)
-        self.order_content24.SetValue(trade.reverse_audit_reason)
+        self.order_content24.SetValue(trade.reason_code)
         self.order_content25.SetValue(trade.sys_memo)
         
         self.seller_cod_text.SetValue(trade.seller_cod_fee)
@@ -284,18 +257,6 @@ class BasicPanel(wx.Panel):
         
         for control in self.control_array:
             control.Enable(False)
-        if self.Parent.is_changeable:
-            self.delivery_pick_check.Enable(True)
-            self.logistics_pick_check.Enable(True)
-            self.send_sms_check.Enable(True)
-            self.has_refund_check.Enable(True)
-            self.order_content13.Enable(True)
-            self.order_content14.Enable(True)
-            self.order_content20.Enable(True)
-            self.order_content25.Enable(True)
-            self.change_btn.Show()
-        else :
-            self.change_btn.Hide()
         self.Layout()
         
         
@@ -357,8 +318,7 @@ class ReceiverPanel(wx.Panel):
         self.order_content8 = wx.TextCtrl(self,-1)
         self.order_label9  = wx.StaticText(self,-1,'收货地址')
         self.order_content9  = wx.TextCtrl(self,-1,size=(600,-1))
-        
-        self.change_btn   = wx.Button(self,-1,'确认修改',size=(-1,-1))
+
         self.__set_properties()
         self.__do_layout()
         
@@ -374,7 +334,7 @@ class ReceiverPanel(wx.Panel):
         self.control_array.append(self.order_content7)
         self.control_array.append(self.order_content8)
         self.control_array.append(self.order_content9)
-        self.enable_controls()
+
  
     def __do_layout(self):
         
@@ -400,36 +360,12 @@ class ReceiverPanel(wx.Panel):
         box_sizer = wx.BoxSizer(wx.HORIZONTAL)
         box_sizer.Add(self.order_label9,0,flag=wx.EXPAND,border=10)
         box_sizer.Add(self.order_content9,0,flag=wx.EXPAND,border=10)
-        box_sizer.Add(self.change_btn,0,flag=wx.EXPAND)
         
         main_sizer.Add(base_order_sizer,flag=wx.EXPAND,border=10)
         main_sizer.Add((-1,10))
         main_sizer.Add(box_sizer,flag=wx.EXPAND,border=10)
         self.SetSizer(main_sizer)
         
-        
-    def onClickChangeBtn(self,evt):
-        with create_session(self.Parent) as session:
-            session.query(MergeTrade).filter_by(tid=self.trade.tid).update({
-            'receiver_name':self.order_content1.GetValue(),
-            'receiver_phone':self.order_content2.GetValue(),
-            'receiver_mobile':self.order_content3.GetValue(),
-            'receiver_zip':self.order_content4.GetValue(),
-            'receiver_state':self.order_content5.GetValue(),
-            'receiver_city':self.order_content6.GetValue(),
-            'receiver_district':self.order_content7.GetValue(),
-            'alipay_no':self.order_content8.GetValue(),
-            'receiver_address':self.order_content9.GetValue(),
-            })
-        self.Parent.is_changeable = False
-        self.enable_controls(False)
-        
-    
-    def enable_controls(self,is_enable=False):
-        for control in self.control_array:
-            control.Enable(is_enable)
-        self.change_btn.Show(is_enable)
-            
             
     def setData(self,trade):
         if not trade:
@@ -444,8 +380,6 @@ class ReceiverPanel(wx.Panel):
         self.order_content7.SetValue(trade.receiver_district) 
         self.order_content8.SetValue(trade.alipay_no)  
         self.order_content9.SetValue(trade.receiver_address)  
-        
-        self.enable_controls(is_enable=self.Parent.is_changeable)
   
     
         
@@ -458,8 +392,7 @@ class ItemPanel(wx.Panel):
         
         self.Session = parent.Session
         self.selected_trade = None
-        
-        self.is_changeable = False
+
         self.base_trade_btn = wx.Button(self,BASIC_TRADE_ID,'基本信息')
         self.detail_trade_btn = wx.Button(self,DETAIL_TRADE_ID,'商品明细')
         self.receiver_trade_btn = wx.Button(self,RECEIVER_TRADE_ID,'收货信息')
@@ -529,7 +462,7 @@ class ItemPanel(wx.Panel):
     def setData(self,trade_id):
         self.is_changeable = False
         with create_session(self.Parent) as session: 
-            self.selected_trade = session.query(MergeTrade).filter_by(tid=trade_id).one()
+            self.selected_trade = session.query(MergeTrade).filter_by(id=trade_id).one()
         self.base_trade_panel.setData(self.selected_trade)
         self.detail_trade_panel.setData(self.selected_trade)
         self.receiver_trade_panel.setData(self.selected_trade)

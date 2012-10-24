@@ -82,14 +82,14 @@ class ScanCheckPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON,self.onClickCancelBtn,self.cancel_button)   
     
     def onComboboxSelect(self,evt):
-        company_name = self.company_select.GetValue()
-        out_sid      = self.out_sid_text.GetValue()
-        
+        company_name = self.company_select.GetValue().strip()
+        out_sid      = self.out_sid_text.GetValue().strip()
         trades = None
         if company_name:
             with create_session(self.Parent) as session:
+                logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                         logistics_company_name=company_name,sys_status=SYS_STATUS_WAITSCANCHECK)
+                         logistics_company_id=logistics_company.id,sys_status=SYS_STATUS_WAITSCANCHECK)
         count = trades.count() if trades else 0   
         if count>1 :
             self.error_text.SetLabel('该快递单号已重复，请反审核后修改')
@@ -113,8 +113,9 @@ class ScanCheckPanel(wx.Panel):
         trades = None
         with create_session(self.Parent) as session:
             if company_name and out_sid:
+                logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                       logistics_company_name=company_name,sys_status=SYS_STATUS_WAITSCANCHECK)
+                       logistics_company_id=logistics_company.id,sys_status=SYS_STATUS_WAITSCANCHECK)
             elif out_sid :
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=SYS_STATUS_WAITSCANCHECK)
                  
@@ -139,13 +140,13 @@ class ScanCheckPanel(wx.Panel):
         evt.Skip()
          
     def setBarCode(self):
-        barcode = self.barcode_text.GetValue()
+        barcode = self.barcode_text.GetValue().strip()
         if self.trade and barcode:
             checked = self.gridpanel.setBarCode(barcode)
             if checked:
                 if self.gridpanel.isCheckOver():
                     with create_session(self.Parent) as session: 
-                        session.query(MergeTrade).filter_by(tid=self.trade.tid,sys_status=SYS_STATUS_WAITSCANCHECK)\
+                        session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=SYS_STATUS_WAITSCANCHECK)\
                             .update({'sys_status':SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
                     self.out_sid_text.Clear()
                     self.barcode_text.Clear()

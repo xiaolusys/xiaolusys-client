@@ -40,8 +40,8 @@ class TradePanel(wx.Panel):
         for button in self.buttons_tuple:
             self.buttons.append(wx.Button(self,button[0],button[1]))
  
-        colLabels = ('订单号','卖家昵称','买家昵称','订单类型','订单状态','系统状态','物流类型','有退款','打印发货单','打印物流单','短信提醒','缺货','有留言',
-                     '订单提醒日期','物流公司','物流单号','实付','邮费','总金额','商品数量','优惠金额','调整金额','付款时间','发货时间')
+        colLabels = ('订单号','卖家昵称','买家昵称','订单类型','订单状态','系统状态','物流类型','打印发货单','打印物流单','短信提醒',
+                     '物流公司','物流单号','物流成本','操作员','实付','总金额','商品数量','付款时间','发货时间')
         self.grid = QueryObjectGridPanel(self,rowLabels=None,colLabels=colLabels)
         self.grid.setDataSource(SYS_STATUS_PREPARESEND)
         
@@ -66,7 +66,7 @@ class TradePanel(wx.Panel):
                 (merge_rule_id,'合并规则区',0),
                 (regular_remain_id,'定时处理区',0),
                 (audit_fail_id,'问题单',0),
-                (has_send_id,'已发货',0),
+                (has_send_id,'已完成',0),
                 (invalid_id,'已作废',0),
                 (fold_id,'<<',2),
                 )

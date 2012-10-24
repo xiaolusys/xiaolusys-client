@@ -109,14 +109,14 @@ class DeliveryPrinter(wx.Frame):
     #----------------------------------------------------------------------
     def onUpdateDeliveryStatus(self,event):
         with create_session(self.Parent) as session: 
-            session.query(MergeTrade).filter(MergeTrade.tid.in_(self.trade_ids))\
+            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_picking_print':True},synchronize_session='fetch')
 
     #----------------------------------------------------------------------
     def getTradePickingData(self ,trade_ids=[]):
         
         with create_session(self.Parent) as session: 
-            send_trades  = session.query(MergeTrade).filter(MergeTrade.tid.in_(trade_ids))
+            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))
         
             picking_data_list = []
             for trade in send_trades:

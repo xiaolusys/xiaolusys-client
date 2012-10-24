@@ -43,7 +43,7 @@ class GridTable(grd.PyGridTableBase):
             self.data[(i,0)] = attr
             j = 1
             for v in row:
-                if j in (8,9,10,11,12,13):
+                if j in (8,9,10):
                     self.data[(i,j)]= v
                 else:
                     self.data[(i,j)]=str(v)#给每一个单元格赋值的方法
@@ -81,7 +81,7 @@ class GridTable(grd.PyGridTableBase):
     def SetValue(self, row, col, value):#给表赋值
         if col ==0:
             self.data[(row,col)]= True if value else False
-        elif col in (8,9,10,11,12,13):
+        elif col in (8,9,10):
             self.data[(row,col)]= True if value == 'True' else False
         else:    
             self.data[(row,col)] = value
@@ -98,7 +98,7 @@ class GridTable(grd.PyGridTableBase):
         if col == 0:
             attr = self.attr
             attr.IncRef()
-        elif col in (8,9,10,11,12,13):
+        elif col in (8,9,10):
             attr = self.boolattr
             attr.IncRef()
         elif col == 13:

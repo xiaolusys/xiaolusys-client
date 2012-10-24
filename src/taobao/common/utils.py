@@ -13,6 +13,7 @@ import ImageDraw
 import ImageFont
 import wx
 import taobao
+import ConfigParser
 
 FONT_PATH = 'c:\Windows\Fonts\simsun.ttc'
 IMAGE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\images\\'
@@ -53,6 +54,13 @@ def gen_string_image(font_path,code_string):
 #    buf = cStringIO.StringIO()
 #    im.save(buf,'jpg')
     return im
+
+def getconfig():
+    cf = ConfigParser.ConfigParser()
+    config_path = os.path.abspath(os.path.dirname(taobao.__file__))
+    cf.read(config_path+'/system.conf')
+    return cf
+
 
 class create_session():
     def __init__(self,parent):

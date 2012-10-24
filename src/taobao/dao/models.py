@@ -224,6 +224,8 @@ class MergeTrade(Base):
     sys_memo      = Column(String(500))
     
     out_sid       = Column(String(64),index=True)
+    weight        = Column(String(10))
+    post_cost     = Column(String(10))
     logistics_company_id = Column(Integer,ForeignKey('shop_logistics_company.id'))
     receiver_name = Column(String(64), default='')
     receiver_state = Column(String(8), default='')
@@ -245,6 +247,7 @@ class MergeTrade(Base):
     has_memo         = Column(Boolean)
     remind_time      = Column(DateTime)
    
+    operator         = Column(String(32))
     sys_status       = Column(String(32),index=True)  
     def __repr__(self):
         return "<Trade('%s','%s','%s','%s')>" % (str(self.id),str(self.tid), self.seller_nick, self.buyer_nick)

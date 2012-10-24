@@ -13,7 +13,7 @@ from taobao.frames.panels.itempanel import ItemPanel
 from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
-from taobao.common.utils import create_session
+from taobao.common.utils import create_session,getconfig
 from taobao.dao.models import MergeOrder,MergeTrade,LogisticsCompany
 from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,\
@@ -22,7 +22,8 @@ from taobao.frames.prints.deliveryprinter import DeliveryPrinter
 from taobao.frames.prints.expressprinter import ExpressPrinter
 
 TRADE_ID_CELL_COL = 1
-OUT_SID_CELL_COL = 16
+LOG_COMPANY_CELL_COL = 11
+OUT_SID_CELL_COL = 12
 OUTER_ID_COL = 5
 OUTER_SKU_ID_COL = 6
 NUM_STATUS_COL = 9
@@ -103,7 +104,9 @@ class GridPanel(wx.Panel):
         self.express_print_btn.SetFont(font)
         self.scan_check_btn.SetFont(font)
         self.scan_weight_btn.SetFont(font)
-
+        
+        self.fill_sid_checkbox1.SetValue(True)
+        
         self.button_array.append(self.fill_sid_btn)
         self.button_array.append(self.picking_print_btn)
         self.button_array.append(self.express_print_btn)
@@ -344,14 +347,25 @@ class GridPanel(wx.Panel):
     def fillOutSidToCell(self,evt):
         start_out_sid = self.fill_sid_text.GetValue()
         is_auto_fill  = self.fill_sid_checkbox1.IsChecked()
-        if start_out_sid.isdigit() and is_auto_fill:
-            start_out_sid = int(start_out_sid)
-            for row in self._selectedRows:
-                self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))
-                start_out_sid += 1
-        elif start_out_sid.isdigit():
-            min_row_num = min(self._selectedRows)
-            self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
+        with create_session(self.Parent) as session:
+            if start_out_sid.isdigit() and is_auto_fill:
+                start_out_sid = int(start_out_sid)
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                    company_regex = trade.logistics_company.reg_mail_no
+                    id_compile = re.compile(company_regex)
+                    if id_compile.match(str(start_out_sid)):
+                        self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
+                        start_out_sid += 1
+            elif start_out_sid.isdigit():
+                min_row_num = min(self._selectedRows)
+                trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                company_regex = trade.logistics_company.reg_mail_no
+                id_compile = re.compile(company_regex)
+                if id_compile.match(str(start_out_sid)):
+                    self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
         self.fill_sid_btn2.Enable(True)
         self.fill_sid_text.Clear()
         self.grid.ForceRefresh()
@@ -360,20 +374,20 @@ class GridPanel(wx.Panel):
     
     def onClickActiveButton(self,evt):
         eventid = evt.GetId()
+        cf = getconfig()
+        operator = cf.get('user','username') 
         with create_session(self.Parent) as session: 
-
             if eventid == fill_sid_btn2_id:
                 for row in self._selectedRows:
-                    trade_id = self.grid.GetCellValue(row,1)
+                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
-                    trade = session.query(MergeTrade).filter_by(tid=trade_id).first()
-                    company_code = trade.logistics_company_code if trade else None
-                    company = session.query(LogisticsCompany).filter_by(code=company_code).first()
-                    company_regex = company.reg_mail_no if company else ''
+                    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                    company_code = trade.logistics_company.code if trade else None
+                    company_regex = trade.logistics_company.reg_mail_no if trade else None
                     id_compile = re.compile(company_regex)
-                    if id_compile.match(out_sid):
-                        session.query(MergeTrade).filter_by(tid=trade_id)\
-                            .update({'out_sid':out_sid},synchronize_session='fetch')
+                    if id_compile.match(out_sid) and not trade.operator:
+                        session.query(MergeTrade).filter_by(id=trade_id)\
+                            .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
                 self.refreshTable()
                 self.fill_sid_btn2.Enable(False)
                 
@@ -387,8 +401,8 @@ class GridPanel(wx.Panel):
                 trade_ids = []
                 pre_company_name = ''
                 for row in self._selectedRows:
-                    trade_id = self.grid.GetCellValue(row,1)
-                    company_name = self.grid.GetCellValue(row,12)
+                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                    company_name = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
                     if pre_company_name and pre_company_name !=company_name:
                         return
                     pre_company_name = company_name
@@ -505,28 +519,23 @@ class QueryObjectGridPanel(GridPanel):
         for object in object_list:
             if not tailnums or object.tid%10 in tailnums:
                 object_array = []
-                object_array.append(object.tid)
+                object_array.append(object.id)
                 object_array.append(object.seller_nick)
                 object_array.append(object.buyer_nick)
                 object_array.append(TRADE_TYPE.get(object.type,'其他'))
                 object_array.append(TRADE_STATUS.get(object.status,'其他'))
                 object_array.append(SYS_STATUS.get(object.sys_status,'其他'))
                 object_array.append(SHIPPING_TYPE.get(object.shipping_type,'其他'))
-                object_array.append(object.has_refund)
                 object_array.append(object.is_picking_print)
                 object_array.append(object.is_express_print)
                 object_array.append(object.is_send_sms)
-                object_array.append(False)
-                object_array.append(object.has_memo)
-                object_array.append(object.remind_time or '')
                 object_array.append(object.logistics_company and object.logistics_company.name or '')
                 object_array.append(object.out_sid)
-                object_array.append(object.payment)
                 object_array.append(object.post_fee)
+                object_array.append(object.operator)
+                object_array.append(object.payment)
                 object_array.append(object.total_fee)
                 object_array.append(str(object.total_num))
-                object_array.append(object.discount_fee)
-                object_array.append(object.adjust_fee)
                 object_array.append(object.pay_time)
                 object_array.append(object.consign_time or '')
                 array_object.append(object_array)
