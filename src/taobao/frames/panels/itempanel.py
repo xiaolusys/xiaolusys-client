@@ -124,7 +124,7 @@ class BasicPanel(wx.Panel):
         self.control_array.append(self.has_refund_check)
         
         with create_session(self.Parent) as session:
-            logistics_companies = session.query(LogisticsCompany).order_by('priority desc').all()
+            logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
             self.order_content13.AppendItems([company.name for company in logistics_companies])
         for control in self.control_array:
             control.Enable(False)
@@ -268,8 +268,8 @@ class DetailPanel(wx.Panel):
         self.Session = parent.Session
         self.trade = None
         from taobao.frames.panels.gridpanel import SimpleOrdersGridPanel
-        colLabels = ('商品图片','子订单ID','商品ID','商品名称','商品简称','规格编码','规格','订购数量','实际单价','实付金额',
-                     '退款单号','退款费用','退款状态','退款原因','订单状态')
+        colLabels = ('商品图片','订单ID','商品外部编码','商品简称','规格编码','规格属性','订购数量','实际单价','实付金额',
+                     '退款单号','退款状态','订单状态')
         self.ordergridpanel = SimpleOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()

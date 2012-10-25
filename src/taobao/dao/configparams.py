@@ -20,6 +20,8 @@ TRADE_STATUS = {
     TRADE_STATUS_CLOSED_BY_TAOBAO:'关闭交易',
 }
 
+
+
 TRADE_TYPE = {
     'fixed':'一口价',
     'auction':'拍卖',
@@ -33,8 +35,7 @@ TRADE_TYPE = {
     'game_equipment':'游戏装备',
     'shopex_trade':'ShopEX交易',
     'netcn_trade':'万网交易',
-    'external_trade':'统一外部交易',
-    
+    'external_trade':'统一外部交易', 
 }
 
 SYS_STATUS_ALL     = 'ALL'
@@ -66,6 +67,13 @@ SHIPPING_TYPE ={
     'virtual':'虚拟发货',
 }
 
+NO_REFUND = 'NO_REFUND'
+WAIT_SELLER_AGREEV = 'WAIT_SELLER_AGREE'
+WAIT_BUYER_RETURN_GOODS = 'WAIT_BUYER_RETURN_GOODS'
+WAIT_SELLER_CONFIRM_GOODS = 'WAIT_SELLER_CONFIRM_GOODS'
+SELLER_REFUSE_BUYER = 'SELLER_REFUSE_BUYER'
+REFUND_CLOSED = 'CLOSED'
+REFUND_SUCCESS = 'SUCCESS'
 
 REFUND_STATUS ={
     'NO_REFUND':'没有退款',

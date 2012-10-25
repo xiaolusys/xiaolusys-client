@@ -8,10 +8,10 @@ import re
 import weakref
 import wx,wx.grid
 from taobao.common.utils import create_session
-from taobao.dao.models import MergeTrade,LogisticsCompany
+from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import CheckGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,SYS_STATUS_PREPARESEND,\
-    SYS_STATUS_INVALID,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK
+    SYS_STATUS_INVALID,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER
 
 
 
@@ -45,7 +45,7 @@ class ScanCheckPanel(wx.Panel):
         self.SetName('check panel')
         
         with create_session(self.Parent) as session: 
-            logistics_companies = session.query(LogisticsCompany).order_by('priority desc').all()
+            logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
         self.company_select.AppendItems([company.name for company in logistics_companies])
         self.out_sid_text.SetFocus()
 
@@ -146,8 +146,22 @@ class ScanCheckPanel(wx.Panel):
             if checked:
                 if self.gridpanel.isCheckOver():
                     with create_session(self.Parent) as session: 
+                        orders = session.query(MergeOrder).filter_by(merge_trade_id=self.trade.id).filter(
+                                MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS')),
+                                MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER)))
+                        for order in orders:
+                            outer_id = order.outer_id 
+                            outer_sku_id = order.outer_sku_id 
+                            if outer_sku_id:
+                                session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
+                                    .update({ProductSku.quantity:ProductSku.quantity-order.num})
+                            else:
+                                session.query(Product).filter_by(outer_id=outer_id)\
+                                    .update({Product.collect_num:Product.collect_num-order.num})
+                        #库存减掉后，修改发货状态
                         session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=SYS_STATUS_WAITSCANCHECK)\
                             .update({'sys_status':SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
+                            
                     self.out_sid_text.Clear()
                     self.barcode_text.Clear()
                     self.out_sid_text.SetFocus()

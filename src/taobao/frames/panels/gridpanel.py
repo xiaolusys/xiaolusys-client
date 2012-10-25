@@ -14,10 +14,10 @@ from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session,getconfig
-from taobao.dao.models import MergeOrder,MergeTrade,LogisticsCompany
+from taobao.dao.models import MergeOrder,MergeTrade
 from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,\
-    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED,SYS_STATUS_INVALID
+    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
 
@@ -531,8 +531,8 @@ class QueryObjectGridPanel(GridPanel):
                 object_array.append(object.is_send_sms)
                 object_array.append(object.logistics_company and object.logistics_company.name or '')
                 object_array.append(object.out_sid)
-                object_array.append(object.post_fee)
                 object_array.append(object.operator)
+                object_array.append(object.post_cost)
                 object_array.append(object.payment)
                 object_array.append(object.total_fee)
                 object_array.append(str(object.total_num))
@@ -598,13 +598,10 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
             array_object = [] 
             for object in orders:
                 object_array = []
-                product = session.query(Product).filter_by(outer_id=object.outer_id).first()
                 object_array.append(object.pic_path)
-                object_array.append(object.oid)
-                object_array.append(object.num_iid)
+                object_array.append(object.id)
+                object_array.append(object.outer_id or object.num_iid)
                 object_array.append(object.title)
-                
-                object_array.append(product.name if product else '')
                 object_array.append(object.outer_sku_id)
                 object_array.append(object.sku_properties_name)
                 object_array.append(object.num)
@@ -612,9 +609,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(object.payment)
                 
                 object_array.append(object.refund_id)
-                object_array.append('')
                 object_array.append(REFUND_STATUS.get(object.refund_status,''))
-                object_array.append('')
                 object_array.append(TRADE_STATUS.get(object.status,'其他'))
     
                 array_object.append(object_array)
@@ -626,7 +621,7 @@ class WeightGridPanel(wx.Panel):
         wx.Panel.__init__(self, parent, id) 
         
         self.grid = grd.Grid(self,-1)
-        colLabels = ('来源单号','店铺简称','订单类型','会员名称','订单状态','系统状态','物流类型','称重重量','物流成本','实付邮费',
+        colLabels = ('内部单号','店铺简称','订单类型','会员名称','订单状态','系统状态','物流类型','称重重量','物流成本','实付邮费',
                      '收货人','收货人固定电话','收货人手机','收货邮编','所在省','所在市','所在地区','收货地址')
         gridtable = weakref.ref(WeightGridTable(colLabels=colLabels))
         self.grid.SetTable(gridtable(),True)  
@@ -653,7 +648,7 @@ class WeightGridPanel(wx.Panel):
 
     def getTradeItems(self,trade):
         items = []
-        items.append(str(trade.tid))
+        items.append(str(trade.id))
         items.append(trade.seller_nick)
         items.append(TRADE_TYPE.get(trade.type,'其它'))
         items.append(trade.buyer_nick)
@@ -684,15 +679,17 @@ class CheckOrdersGridPanel(SimpleGridPanel):
             return array_object
         
         with create_session(self.Parent) as session:
-            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id)
+            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id).filter(
+                    MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS')),
+                    MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER)))
             from taobao.dao.models import Product
             array_object = [] 
             for object in orders:
                 object_array = []     
                 product = session.query(Product).filter_by(outer_id=object.outer_id).first()
                 object_array.append(object.pic_path)
-                object_array.append(str(object.oid))
-                object_array.append(object.num_iid)
+                object_array.append(str(object.id))
+                object_array.append(object.outer_id or object.num_iid)
                 
                 object_array.append(product.name if product else '')
                 object_array.append(object.num)

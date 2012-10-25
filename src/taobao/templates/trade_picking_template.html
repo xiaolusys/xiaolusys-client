@@ -15,7 +15,7 @@ table {
 	padding:0px;
 	margin:0px;
 	width:100%;
-	font-size:16px;
+	font-size:14px;
 }
 
 td{
@@ -31,11 +31,13 @@ td{
 
 .seller-nick {
 	clear:both;
-	margin-top:70px;
+	margin-top:60px;
 
 }
 .base-info {
 	width:898px;
+	font-size:14px;
+	margin-top:60px;
 }
 
 .left-label {
@@ -64,8 +66,7 @@ td{
 	border:1px dashed #c3c3c3;
 }
 .order-info{
-	height:200px;
-	padding:2px;
+	padding:1px;
 	margin:0px;
 }
 .order-info td {
@@ -74,17 +75,14 @@ td{
 
 .memo-style {
 	text-align:left;
-	width:100%;
-	height:40px;
-	
+	float:left;	
 }
 </style>
 </head>
 <body>
 	{% for trade in trades %}
 	<div  class='delivery' >
-		
-		<div class='seller-nick'><h2>{{ trade.seller_nick }}<br>发货单</h2></div>
+		<!-- <div class='seller-nick'><h3>{{ trade.seller_nick }} 发货单</h3></div> -->
 		<div class='base-info'>
 			<div class='left-label'><label>订单编号:</label><span>{{ trade.trade_id }}</span></div>
 			<div class='middle-label'><label>物流编号:</label><span>{{ trade.out_sid }}（{{trade.company_name}}）</span></div>
@@ -111,32 +109,32 @@ td{
 					<td>货品名称</td>
 					<td>规格</td>
 					<td>数量</td>
-					<td>单价</td>
+					<!-- <td>单价</td>
 					<td>折扣</td>
-					<td>实付</td>
+					<td>实付</td> -->
 				</tr>
 				{% for order in trade.orders %}
 				<tr >
 					<td>{{ loop.index }}</td>
 					<td>{{ order.outer_id }}</td>
-					<td>{{ order.item_name|slice_string(split_len=16)}}</td>
-					<td>{{ order.properties|slice_string(split_len=16)}}</td>
+					<td>{{ order.item_name|slice_string(split_len=40)}}</td>
+					<td>{{ order.properties|slice_string(split_len=40)}}</td>
 					<td>{{ order.num }}</td>
-					<td>{{ order.price }}</td>
+					<!-- <td>{{ order.price }}</td>
 					<td>{{ order.discount_fee }}</td>
-					<td>{{ order.payment }}</td>
+					<td>{{ order.payment }}</td> -->
 				</tr>
 				{% endfor %}
-				<tr>
+				<!-- <tr>
 					<td colspan='4'>合计 </td>
 					<td >{{ trade.order_nums }}</td>
 					<td >{{ trade.total_fee }}</td>
 					<td >{{ trade.discount_fee }}</td>
 					<td >{{ trade.payment }}</td>
-				</tr>
+				</tr> -->
 			</table>
 		</div>
-		<div class='memo-style'><label>留言：</label><span>{{ trade.sys_memo }}<!-- <br>{{trade.seller_memo}}<br>{{trade.buyer_message}} --></span></div>
+		<div class='memo-style'><label>留言：</label><span>{{trade.buyer_message}} {{ trade.sys_memo }}<!-- <br>{{trade.seller_memo}}<br>{{trade.buyer_message}} --></span></div>
 		<!-- trade.orders|print_wraps(max_num=43,split_len=16)  --> 
 		
 	</div>

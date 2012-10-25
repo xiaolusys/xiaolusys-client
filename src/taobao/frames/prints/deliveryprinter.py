@@ -124,10 +124,10 @@ class DeliveryPrinter(wx.Frame):
                 dt         = datetime.datetime.now() 
                         
                 trade_data['trade_serial'] = int(time.time()*100%10000000)
-                trade_data['trade_id']     = trade.tid
+                trade_data['trade_id']     = trade.id
                 trade_data['seller_nick']  = trade.seller_nick
                 trade_data['post_date']    = dt
-                trade_data['buyer_nick']        = trade.buyer_nick
+                trade_data['buyer_nick']   = trade.buyer_nick
                 trade_data['out_sid']      = trade.out_sid
                 trade_data['company_name'] = trade.logistics_company.name
                 trade_data['order_nums']   = 0

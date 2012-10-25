@@ -138,6 +138,9 @@ class LogisticsCompany(Base):
     reg_mail_no = Column(String(500), nullable=True)
     priority = Column(Integer, default=0)
     
+    district = Column(String(1000))
+    status   = Column(Boolean)
+    
     merge_trades = relationship("MergeTrade", backref="logistics_company")
     def __repr__(self):
         return "<LogisticsCompany('%s','%s','%s')>" % (str(self.id), str(self.code), str(self.name))

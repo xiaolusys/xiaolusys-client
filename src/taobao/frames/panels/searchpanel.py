@@ -6,6 +6,7 @@ Created on 2012-7-19
 '''
 import datetime
 import wx
+from   sqlalchemy import or_
 from taobao.dao.models import MergeTrade,User,LogisticsCompany
 from taobao.common.utils import wxdate2pydate,create_session
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE
@@ -56,7 +57,7 @@ class SearchPanel(wx.Panel):
         self.SetName('search_panel')
         with create_session(self.Parent) as session: 
             users = session.query(User).all()
-            logistics_companies = session.query(LogisticsCompany).order_by('priority desc').all()
+            logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
         self.seller_select.AppendItems([user.nick for user in users])
         self.logistics_company_select.AppendItems([company.name for company in logistics_companies])
         
@@ -125,10 +126,9 @@ class SearchPanel(wx.Panel):
         is_sms_send = self.send_sms_check.IsChecked()
    
         if trade_id:
-            datasource = datasource.filter_by(tid=trade_id.decode('utf8'))
+            datasource = datasource.filter(or_(MergeTrade.tid==trade_id.decode('utf8'),MergeTrade.id==trade_id.decode('utf8')))
         elif logistics_id:
-            datasource = datasource.filter('tid = (select tid from shop_logistics_logistic where out_sid =:logistics_id')\
-                   .params(logistics_id=logistics_id.decode('utf8')) 
+            datasource = datasource.filter_by(out_sid=logistics_id.decode('utf8'))
         else:
             if trade_type:
                 type_dict = dict([(v,k) for k,v in TRADE_TYPE.items()])

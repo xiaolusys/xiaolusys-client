@@ -21,7 +21,7 @@ class ScanWeightPanel(wx.Panel):
         wx.Panel.__init__(self,parent,id)
         
         self.Session = parent.Session
-        self.is_auto_save = False
+        self.is_auto_save = True
         self.trade = None
         self.company_label = wx.StaticText(self,-1,'快递公司')
         self.company_select = wx.ComboBox(self,-1)
@@ -91,9 +91,10 @@ class ScanWeightPanel(wx.Panel):
         self.SetName('weight panel')
         
         with create_session(self.Parent) as session: 
-            logistics_companies = session.query(LogisticsCompany).order_by('priority desc').all()
+            logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
         self.company_select.AppendItems([company.name for company in logistics_companies])
         self.out_sid_text.SetFocus()
+        self.auto_add_checkbox.SetValue(True)
         
         self.control_array = []
         self.control_array.append(self.order_content1)
