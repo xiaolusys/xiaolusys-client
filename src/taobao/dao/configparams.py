@@ -10,32 +10,32 @@ TRADE_STATUS_CLOSED = 'TRADE_CLOSED'
 TRADE_STATUS_CLOSED_BY_TAOBAO = 'TRADE_CLOSED_BY_TAOBAO'
 
 TRADE_STATUS = {
-    TRADE_STATUS_NO_PAY:'买家没有支付宝',
-    TRADE_STATUS_WAIT_PAY:'等待买家付款',
-    TRADE_STATUS_WAIT_SEND_GOODS:'等待发货',
-    TRADE_STATUS_WAIT_CONFIRM_GOODS:'等待确认收货',
-    TRADE_STATUS_COD_SIGNED:'货到付款已签收',
-    TRADE_STATUS_FINISHED:'交易成功',
-    TRADE_STATUS_CLOSED:'退款成功',
-    TRADE_STATUS_CLOSED_BY_TAOBAO:'关闭交易',
+    TRADE_STATUS_NO_PAY:u'买家没有支付宝',
+    TRADE_STATUS_WAIT_PAY:u'等待买家付款',
+    TRADE_STATUS_WAIT_SEND_GOODS:u'等待发货',
+    TRADE_STATUS_WAIT_CONFIRM_GOODS:u'等待确认收货',
+    TRADE_STATUS_COD_SIGNED:u'货到付款已签收',
+    TRADE_STATUS_FINISHED:u'交易成功',
+    TRADE_STATUS_CLOSED:u'退款成功',
+    TRADE_STATUS_CLOSED_BY_TAOBAO:u'关闭交易',
 }
 
 
 
 TRADE_TYPE = {
-    'fixed':'一口价',
-    'auction':'拍卖',
-    'guarantee_trade':'一口价拍卖',
-    'auto_delivery':'自动发货',
-    'independent_simple_trade':'旺店入门版交易',
-    'independent_shop_trade':'旺店标准版交易',
-    'ec':'直冲',
-    'cod':'货到付款',
-    'fenxiao':'分销',
-    'game_equipment':'游戏装备',
-    'shopex_trade':'ShopEX交易',
-    'netcn_trade':'万网交易',
-    'external_trade':'统一外部交易', 
+    'fixed':u'一口价',
+    'auction':u'拍卖',
+    'guarantee_trade':u'一口价拍卖',
+    'auto_delivery':u'自动发货',
+    'independent_simple_trade':u'旺店入门版交易',
+    'independent_shop_trade':u'旺店标准版交易',
+    'ec':u'直冲',
+    'cod':u'货到付款',
+    'fenxiao':u'分销',
+    'game_equipment':u'游戏装备',
+    'shopex_trade':u'ShopEX交易',
+    'netcn_trade':u'万网交易',
+    'external_trade':u'统一外部交易', 
 }
 
 SYS_STATUS_ALL     = 'ALL'
@@ -49,22 +49,22 @@ SYS_STATUS_REGULAR_REMAIN = 'REGULAR_REMAIN'
 SYS_STATUS_ON_THE_FLY = 'ON_THE_FLY'
 
 SYS_STATUS = {
-    SYS_STATUS_WAITAUDIT:'问题单',
-    SYS_STATUS_PREPARESEND:'待发货准备',
-    SYS_STATUS_WAITSCANCHECK:'待扫描验货',
-    SYS_STATUS_WAITSCANWEIGHT:'待扫描称重',
-    SYS_STATUS_FINISHED:'已发货',
-    SYS_STATUS_INVALID:'已作废',
-    SYS_STATUS_ON_THE_FLY:'飞行模式',
-    SYS_STATUS_REGULAR_REMAIN:'定时提醒',
+    SYS_STATUS_WAITAUDIT:u'问题单',
+    SYS_STATUS_PREPARESEND:u'待发货准备',
+    SYS_STATUS_WAITSCANCHECK:u'待扫描验货',
+    SYS_STATUS_WAITSCANWEIGHT:u'待扫描称重',
+    SYS_STATUS_FINISHED:u'已发货',
+    SYS_STATUS_INVALID:u'已作废',
+    SYS_STATUS_ON_THE_FLY:u'飞行模式',
+    SYS_STATUS_REGULAR_REMAIN:u'定时提醒',
 }
 
 SHIPPING_TYPE ={
-    'free':'卖家包邮',
-    'post':'平邮',
-    'express':'快递',
-    'ems':'EMS',
-    'virtual':'虚拟发货',
+    'free':u'卖家包邮',
+    'post':u'平邮',
+    'express':u'快递',
+    'ems':u'EMS',
+    'virtual':u'虚拟发货',
 }
 
 NO_REFUND = 'NO_REFUND'
@@ -76,11 +76,11 @@ REFUND_CLOSED = 'CLOSED'
 REFUND_SUCCESS = 'SUCCESS'
 
 REFUND_STATUS ={
-    'NO_REFUND':'没有退款',
-    'WAIT_SELLER_AGREE':'等待卖家同意',
-    'WAIT_BUYER_RETURN_GOODS':'等待买家退货',
-    'WAIT_SELLER_CONFIRM_GOODS':'等待买家确认收货',
-    'SELLER_REFUSE_BUYER':'卖家拒绝退款',
-    'CLOSED':'退款关闭',
-    'SUCCESS':'退款成功',
+    'NO_REFUND':u'没有退款',
+    'WAIT_SELLER_AGREE':u'等待卖家同意',
+    'WAIT_BUYER_RETURN_GOODS':u'等待买家退货',
+    'WAIT_SELLER_CONFIRM_GOODS':u'等待买家确认收货',
+    'SELLER_REFUSE_BUYER':u'卖家拒绝退款',
+    'CLOSED':u'退款关闭',
+    'SUCCESS':u'退款成功',
 }

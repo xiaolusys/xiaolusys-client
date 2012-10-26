@@ -28,14 +28,14 @@ class Paginator(object):
         try:
             number = int(number)
         except ValueError:
-            raise PageNotAnInteger("页号不是数字")
+            raise PageNotAnInteger(u"页号不是数字")
         if number <1:
-            raise EmptyPage("页号小于1")
+            raise EmptyPage(u"页号小于1")
         if number > self.num_pages:
             if number == 1 and self.allow_empty_first_page:
                 pass
             else:
-                raise EmptyPage('没有记录')
+                raise EmptyPage(u'没有记录')
         return number
     
     def page(self,number):

@@ -46,21 +46,21 @@ class HtmlPrinter(HtmlEasyPrinting):
 class DeliveryPrinter(wx.Frame):
  
     #----------------------------------------------------------------------
-    def __init__(self,parent=None, title='打印发货单',trade_ids=[]):
+    def __init__(self,parent=None, title=u'打印发货单',trade_ids=[]):
         wx.Frame.__init__(self, parent, wx.ID_ANY, title, size=(850,500))
         
         self.trade_ids = trade_ids
         self.panel = wx.Panel(self, wx.ID_ANY)
-        self.printer = HtmlPrinter(name='打印', parentWindow=None)
+        self.printer = HtmlPrinter(name=u'打印', parentWindow=None)
  
         self.html = iewin.IEHtmlWindow(self.panel)
         #trade_ids = [200165044022938,165155430754126]
         html_text = self.createHtml(trade_ids)
         self.html.LoadString(html_text)
  
-        mention = wx.StaticText(self.panel,wx.ID_ANY,'(请点击鼠标右键选择打印预览)')
-        cancelBtn = wx.Button(self.panel, wx.ID_ANY, '取消打印')
-        deliveryBtn = wx.Button(self.panel, wx.ID_ANY, '更新已打印发货单状态')
+        mention = wx.StaticText(self.panel,wx.ID_ANY,u'(请点击鼠标右键选择打印预览)')
+        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'取消打印')
+        deliveryBtn = wx.Button(self.panel, wx.ID_ANY, u'更新已打印发货单状态')
         
         self.Bind(wx.EVT_BUTTON, self.onCancel, cancelBtn)
         self.Bind(wx.EVT_BUTTON, self.onUpdateDeliveryStatus, deliveryBtn)
@@ -100,7 +100,7 @@ class DeliveryPrinter(wx.Frame):
     def sendToPrinter(self):
         """"""
         self.printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
-        self.printer.PrintText(self.html.GetText(True),'发货单')
+        self.printer.PrintText(self.html.GetText(True),u'发货单')
  
     #----------------------------------------------------------------------
     def onCancel(self, event):

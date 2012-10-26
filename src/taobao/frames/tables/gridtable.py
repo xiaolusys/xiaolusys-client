@@ -1,4 +1,4 @@
-#-*- encoding:UTF-8 -*-
+#-*- coding:utf8 -*-
 '''
 Created on 2012-7-12
 
@@ -46,7 +46,7 @@ class GridTable(grd.PyGridTableBase):
                 if j in (8,9,10):
                     self.data[(i,j)]= v
                 else:
-                    self.data[(i,j)]=str(v)#给每一个单元格赋值的方法
+                    self.data[(i,j)] = v#给每一个单元格赋值的方法
                 j+=1
             i+=1
             
@@ -136,7 +136,7 @@ class SimpleGridTable(grd.PyGridTableBase):
         for row in datasource:
             j = 0
             for v in row:
-                self.data[(i,j)]=str(v)#给每一个单元格赋值的方法
+                self.data[(i,j)]=v#给每一个单元格赋值的方法
                 j+=1
             i+=1
             
@@ -275,7 +275,7 @@ class CheckGridTable(grd.PyGridTableBase):
         for row in datasource:
             j = 0
             for v in row:
-                self.data[(i,j)]=str(v)#给每一个单元格赋值的方法
+                self.data[(i,j)]=v #给每一个单元格赋值的方法
                 j+=1
             i+=1
             

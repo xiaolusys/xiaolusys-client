@@ -4,6 +4,7 @@ Created on 2012-7-11
 
 @author: user1
 '''
+import sys
 import wx
 import wx.aui
 from taobao.dao.dbsession import get_session
@@ -19,7 +20,7 @@ ID_ScanWeight      = wx.NewId()
 ID_Help            = wx.NewId() 
 
 class MainFrame(wx.Frame):
-    def __init__(self, parent, id=-1, title="ERPå®¢æˆ·ç«¯", pos=wx.DefaultPosition,
+    def __init__(self, parent, id=-1, title=u"ERP¿Í»§¶Ë", pos=wx.DefaultPosition,
                  size=(1300,700), style=wx.DEFAULT_FRAME_STYLE |wx.SUNKEN_BORDER |wx.CLIP_CHILDREN):
 
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
@@ -33,17 +34,17 @@ class MainFrame(wx.Frame):
         # create menu
         mb = wx.MenuBar()
         view_menu = wx.Menu()
-        view_menu.Append(ID_TradeMainPage, "è®¢å•åˆ—è¡¨","è®¢å•ä¸»ç•Œé¢")
-        view_menu.Append(ID_ScanCheck, "æ‰«æéªŒè´§","æ‰«æç‰©æµå•ç¼–å·ï¼Œæ‰«æå•†å“æ¡ç ")
-        view_menu.Append(ID_ScanWeight, "æ‰«æç§°é‡","æ‰«æç‰©æµå•ç¼–å·ï¼ŒåŒ…è£¹ç§°é‡")
-        view_menu.Append(wx.ID_EXIT, "é€€å‡º")
+        view_menu.Append(ID_TradeMainPage, u"¶©µ¥ÁĞ±í",u"¶©µ¥Ö÷½çÃæ")
+        view_menu.Append(ID_ScanCheck, u"É¨ÃèÑé»õ",u"É¨ÃèÎïÁ÷µ¥±àºÅ£¬É¨ÃèÉÌÆ·ÌõÂë")
+        view_menu.Append(ID_ScanWeight, u"É¨Ãè³ÆÖØ",u"É¨ÃèÎïÁ÷µ¥±àºÅ£¬°ü¹ü³ÆÖØ")
+        view_menu.Append(wx.ID_EXIT, u"ÍË³ö")
         view_menu.AppendSeparator()
         
         help_menu = wx.Menu()
-        help_menu.Append(ID_Help, "å¸®åŠ©æ–‡æ¡£")
+        help_menu.Append(ID_Help, u"°ïÖúÎÄµµ")
         
-        mb.Append(view_menu, "è®¢å•æ“ä½œ")
-        mb.Append(help_menu, "å¸®åŠ©")
+        mb.Append(view_menu, u"¶©µ¥²Ù×÷")
+        mb.Append(help_menu, u"°ïÖú")
         
         self.SetMenuBar(mb)
         
@@ -98,7 +99,7 @@ class MainFrame(wx.Frame):
     def OnExit(self,event):
         self.Close()
     
-    
+#sys.setdefaultencoding('utf8')    
 app = wx.PySimpleApp()
 wx.InitAllImageHandlers()
 frm = MainFrame(None)

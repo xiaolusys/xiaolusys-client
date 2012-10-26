@@ -16,38 +16,38 @@ class SearchPanel(wx.Panel):
         wx.Panel.__init__(self,parent,-1)
         
         self.Session = parent.Session
-        self.order_label = wx.StaticText(self,-1,'订单号')
+        self.order_label = wx.StaticText(self,-1,u'订单号')
         self.order_text = wx.TextCtrl(self,-1)
-        self.order_type_label = wx.StaticText(self,-1,'订单类型')
+        self.order_type_label = wx.StaticText(self,-1,u'订单类型')
         self.order_type_select = wx.ComboBox(self,-1)
-        self.taobao_status_label = wx.StaticText(self,-1,'订单状态')
+        self.taobao_status_label = wx.StaticText(self,-1,u'订单状态')
         self.taobao_status_select = wx.ComboBox(self,-1)
-        self.seller_label = wx.StaticText(self,-1,'店铺名称')
+        self.seller_label = wx.StaticText(self,-1,u'店铺名称')
         self.seller_select = wx.ComboBox(self,-1) 
-        self.buyer_label = wx.StaticText(self,-1,'买家称呼')
+        self.buyer_label = wx.StaticText(self,-1,u'买家称呼')
         self.buyer_text = wx.TextCtrl(self,-1)
-        self.delivery_pick_label = wx.StaticText(self,-1,'已打印发货单')
+        self.delivery_pick_label = wx.StaticText(self,-1,u'已打印发货单')
         self.delivery_pick_check  = wx.CheckBox(self,-1)
-        self.send_sms_label = wx.StaticText(self,-1,'已短信提醒')
+        self.send_sms_label = wx.StaticText(self,-1,u'已短信提醒')
         self.send_sms_check  = wx.CheckBox(self,-1)
         
         
-        self.start_time_label = wx.StaticText(self,-1,'付款时起')
+        self.start_time_label = wx.StaticText(self,-1,u'付款时起')
         self.start_time_select = wx.DatePickerCtrl(self, size=(120,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE )
-        self.end_time_label = wx.StaticText(self,-1,'付款时终')
+        self.end_time_label = wx.StaticText(self,-1,u'付款时终')
         self.end_time_select =  wx.DatePickerCtrl(self, size=(120,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE )
-        self.logistics_label = wx.StaticText(self,-1,'物流单号')
+        self.logistics_label = wx.StaticText(self,-1,u'物流单号')
         self.logistics_text = wx.TextCtrl(self,-1)
-        self.shipping_type_label = wx.StaticText(self,-1,'物流类型')
+        self.shipping_type_label = wx.StaticText(self,-1,u'物流类型')
         self.shipping_type_select =  wx.ComboBox(self,-1) 
-        self.logistics_company_label = wx.StaticText(self,-1,'快递公司')
+        self.logistics_company_label = wx.StaticText(self,-1,u'快递公司')
         self.logistics_company_select = wx.ComboBox(self,-1)
-        self.logistics_pick_label = wx.StaticText(self,-1,'已打印物流单')
+        self.logistics_pick_label = wx.StaticText(self,-1,u'已打印物流单')
         self.logistics_pick_check  = wx.CheckBox(self,-1)
 
-        self.search_btn = wx.Button(self,-1,'搜索')
+        self.search_btn = wx.Button(self,-1,u'搜索')
         
         self.__set_properties()
         self.__do_layout()
@@ -126,30 +126,30 @@ class SearchPanel(wx.Panel):
         is_sms_send = self.send_sms_check.IsChecked()
    
         if trade_id:
-            datasource = datasource.filter(or_(MergeTrade.tid==trade_id.decode('utf8'),MergeTrade.id==trade_id.decode('utf8')))
+            datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
         elif logistics_id:
-            datasource = datasource.filter_by(out_sid=logistics_id.decode('utf8'))
+            datasource = datasource.filter_by(out_sid=logistics_id)
         else:
             if trade_type:
                 type_dict = dict([(v,k) for k,v in TRADE_TYPE.items()])
-                datasource = datasource.filter_by(type=type_dict.get(trade_type.strip().encode('utf8'),None))
+                datasource = datasource.filter_by(type=type_dict.get(trade_type.strip(),None))
             if trade_status:
                 status_dict = dict([(v,k) for k,v in TRADE_STATUS.items()])
-                datasource = datasource.filter_by(status=status_dict.get(trade_status.strip().encode('utf8'),None))
+                datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(),None))
             if seller_id:
-                datasource = datasource.filter_by(seller_nick=seller_id.strip().decode('utf8'))
+                datasource = datasource.filter_by(seller_nick=seller_id.strip())
             if buyer_nick:
-                datasource = datasource.filter_by(buyer_nick=buyer_nick.strip().decode('utf8'))
+                datasource = datasource.filter_by(buyer_nick=buyer_nick.strip())
             if start_time:
                 datasource = datasource.filter("pay_time >=:start").params(start=start_time)
             if end_time:
                 datasource = datasource.filter("pay_time <=:end").params(end=end_time)
             if shipping_type:
                 shipping_dict = dict([(v,k) for k,v in SHIPPING_TYPE.items()])
-                datasource = datasource.filter_by(shipping_type=shipping_dict.get(shipping_type.strip().encode('utf8'),None))
+                datasource = datasource.filter_by(shipping_type=shipping_dict.get(shipping_type.strip(),None))
             if logistics_company :
                 with create_session(self.Parent) as session:
-                    log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip().decode('utf8')).one()
+                    log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
                 datasource = datasource.filter_by(logistics_company_id=log_company.id)
             if is_picking_print:
                 datasource = datasource.filter_by(is_picking_print=True)

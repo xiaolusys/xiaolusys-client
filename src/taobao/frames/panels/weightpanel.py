@@ -23,64 +23,64 @@ class ScanWeightPanel(wx.Panel):
         self.Session = parent.Session
         self.is_auto_save = True
         self.trade = None
-        self.company_label = wx.StaticText(self,-1,'快递公司')
+        self.company_label = wx.StaticText(self,-1,u'快递公司')
         self.company_select = wx.ComboBox(self,-1)
-        self.out_sid_label = wx.StaticText(self,-1,'快递单号')
+        self.out_sid_label = wx.StaticText(self,-1,u'快递单号')
         self.out_sid_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
-        self.weight_label  = wx.StaticText(self,-1,'称重重量(g)')
+        self.weight_label  = wx.StaticText(self,-1,u'称重重量(g)')
         self.weight_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
-        self.auto_add_label  = wx.StaticText(self,-1,'自动保存') 
+        self.auto_add_label  = wx.StaticText(self,-1,u'自动保存') 
         self.auto_add_checkbox = wx.CheckBox(self,-1)
-        self.hand_add_button   = wx.Button(self,-1,'保存') 
-        self.cancel_button   = wx.Button(self,-1,'取消')
+        self.hand_add_button   = wx.Button(self,-1,u'保存') 
+        self.cancel_button   = wx.Button(self,-1,u'取消')
         
         self.error_text = wx.StaticText(self,-1)
         
-        self.order_label1  = wx.StaticText(self,-1,'店铺简称')
+        self.order_label1  = wx.StaticText(self,-1,u'店铺简称')
         self.order_content1  = wx.TextCtrl(self,-1)
-        self.order_label2  = wx.StaticText(self,-1,'来源单号')
+        self.order_label2  = wx.StaticText(self,-1,u'来源单号')
         self.order_content2  = wx.TextCtrl(self,-1)
-        self.order_label3  = wx.StaticText(self,-1,'订单类型')
+        self.order_label3  = wx.StaticText(self,-1,u'订单类型')
         self.order_content3  = wx.TextCtrl(self,-1)
-        self.order_label4  = wx.StaticText(self,-1,'会员名称')
+        self.order_label4  = wx.StaticText(self,-1,u'会员名称')
         self.order_content4  = wx.TextCtrl(self,-1)
-        self.order_label5  = wx.StaticText(self,-1,'快递公司')
+        self.order_label5  = wx.StaticText(self,-1,u'快递公司')
         self.order_content5  = wx.TextCtrl(self,-1)     
-        self.order_label6  = wx.StaticText(self,-1,'快递单号')
+        self.order_label6  = wx.StaticText(self,-1,u'快递单号')
         self.order_content6  = wx.TextCtrl(self,-1) 
 
         
-        self.order_label7  = wx.StaticText(self,-1,'订单状态')
+        self.order_label7  = wx.StaticText(self,-1,u'订单状态')
         self.order_content7  = wx.TextCtrl(self,-1)
-        self.order_label8  = wx.StaticText(self,-1,'系统状态')
+        self.order_label8  = wx.StaticText(self,-1,u'系统状态')
         self.order_content8  = wx.TextCtrl(self,-1)
-        self.order_label9  = wx.StaticText(self,-1,'收货人')
+        self.order_label9  = wx.StaticText(self,-1,u'收货人')
         self.order_content9  = wx.TextCtrl(self,-1)
-        self.order_label10  = wx.StaticText(self,-1,'物流类型')
+        self.order_label10  = wx.StaticText(self,-1,u'物流类型')
         self.order_content10  = wx.TextCtrl(self,-1)
-        self.order_label11  = wx.StaticText(self,-1,'实付邮费')
+        self.order_label11  = wx.StaticText(self,-1,u'实付邮费')
         self.order_content11  = wx.TextCtrl(self,-1)
-        self.order_label12  = wx.StaticText(self,-1,'收货人固定电话')
-        self.order_content12  = wx.TextCtrl(self,-1,'') 
+        self.order_label12  = wx.StaticText(self,-1,u'收货人固定电话')
+        self.order_content12  = wx.TextCtrl(self,-1,u'') 
         
-        self.order_label13  = wx.StaticText(self,-1,'收货人手机')
+        self.order_label13  = wx.StaticText(self,-1,u'收货人手机')
         self.order_content13  = wx.TextCtrl(self,-1) 
-        self.order_label14  = wx.StaticText(self,-1,'收货邮编')
+        self.order_label14  = wx.StaticText(self,-1,u'收货邮编')
         self.order_content14  = wx.TextCtrl(self,-1)
-        self.order_label15  = wx.StaticText(self,-1,'所在省')
+        self.order_label15  = wx.StaticText(self,-1,u'所在省')
         self.order_content15  = wx.TextCtrl(self,-1)
-        self.order_label16  = wx.StaticText(self,-1,'所在市')
+        self.order_label16  = wx.StaticText(self,-1,u'所在市')
         self.order_content16  = wx.TextCtrl(self,-1)
-        self.order_label17  = wx.StaticText(self,-1,'所在地区')
+        self.order_label17  = wx.StaticText(self,-1,u'所在地区')
         self.order_content17  = wx.TextCtrl(self,-1)
-        self.order_label18  = wx.StaticText(self,-1,'收货地址')
+        self.order_label18  = wx.StaticText(self,-1,u'收货地址')
         self.order_content18  = wx.TextCtrl(self,-1,size=(150,-1))
         
-        self.order_box1 = wx.StaticBox(self,-1,'扫描订单详细信息')
+        self.order_box1 = wx.StaticBox(self,-1,u'扫描订单详细信息')
         
         self.gridpanel = WeightGridPanel(self,-1)
         
-        self.order_box2 = wx.StaticBox(self,-1,'已称重订单列表')
+        self.order_box2 = wx.StaticBox(self,-1,u'已称重订单列表')
 
         self.__set_properties()
         self.__do_layout()
@@ -213,7 +213,7 @@ class ScanWeightPanel(wx.Panel):
                          logistics_company_id=logistics_company.id,status=TRADE_STATUS_WAIT_SEND_GOODS)
         count = trades.count() if trades else 0   
         if count>1 :
-            self.error_text.SetLabel('该快递单号已重复，请反审核后修改')
+            self.error_text.SetLabel(u'该快递单号已重复，请反审核后修改')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
         elif count == 1:
@@ -222,7 +222,7 @@ class ScanWeightPanel(wx.Panel):
             self.weight_text.SetFocus()
             self.error_text.SetLabel('')
         else:
-            self.error_text.SetLabel('未找到该订单')
+            self.error_text.SetLabel(u'未找到该订单')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
         
@@ -241,7 +241,7 @@ class ScanWeightPanel(wx.Panel):
                  
         count = trades.count() if trades else 0 
         if count>1 :
-            self.error_text.SetLabel('该快递单号已重复，请反审核后修改')
+            self.error_text.SetLabel(u'该快递单号已重复，请反审核后修改')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
             self.clearTradeInfoPanel()
@@ -253,7 +253,7 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetForegroundColour('white')
             self.error_text.SetBackgroundColour('black')
         else:
-            self.error_text.SetLabel('未找到该订单')
+            self.error_text.SetLabel(u'未找到该订单')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
             self.clearTradeInfoPanel()
@@ -268,15 +268,15 @@ class ScanWeightPanel(wx.Panel):
  
         self.order_content1.SetValue(trade.seller_nick)
         self.order_content2.SetValue(str(trade.tid))
-        self.order_content3.SetValue(TRADE_TYPE.get(trade.type,'其他'))
+        self.order_content3.SetValue(TRADE_TYPE.get(trade.type,u'其他'))
         self.order_content4.SetValue(trade.buyer_nick)
         self.order_content5.SetValue(trade.logistics_company.name)
         self.order_content6.SetValue(trade.out_sid)
         
-        self.order_content7.SetValue(TRADE_STATUS.get(trade.status,'其他'))
-        self.order_content8.SetValue(SYS_STATUS.get(trade.sys_status,'其他'))
+        self.order_content7.SetValue(TRADE_STATUS.get(trade.status,u'其他'))
+        self.order_content8.SetValue(SYS_STATUS.get(trade.sys_status,u'其他'))
         self.order_content9.SetValue(trade.receiver_name)
-        self.order_content10.SetValue(SHIPPING_TYPE.get(trade.shipping_type,'其他'))
+        self.order_content10.SetValue(SHIPPING_TYPE.get(trade.shipping_type,u'其他'))
         self.order_content11.SetValue(trade.post_fee)
         self.order_content12.SetValue(trade.receiver_phone)
         

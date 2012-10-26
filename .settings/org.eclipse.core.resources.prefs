@@ -14,6 +14,7 @@ encoding//src/taobao/frames/panels/weightpanel.py=utf8
 encoding//src/taobao/frames/prints/deliveryprinter.py=utf8
 encoding//src/taobao/frames/prints/expressprinter.py=utf8
 encoding//src/taobao/frames/prints/send_sms.py=utf-8
+encoding//src/taobao/frames/tables/gridtable.py=utf8
 encoding//src/taobao/frames/tables/renderer.py=utf8
 encoding//src/test/frames/colorpicker.py=utf8
 encoding//src/test/mytemp/testframe1.py=utf8

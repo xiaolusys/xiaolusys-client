@@ -49,40 +49,40 @@ class GridPanel(wx.Panel):
         self.grid = grd.Grid(self, -1)
         
         self._selectedRows = set()
-        self.select_all_label = wx.StaticText(self,-1,'  全  选')
+        self.select_all_label = wx.StaticText(self,-1,u'  全  选')
         self.select_all_check = wx.CheckBox(self,-1)
-        self.pt1 = wx.StaticText(self, -1, ",第")
-        self.pt2 = wx.StaticText(self, -1, "/")
-        self.pt3 = wx.StaticText(self, -1, "页(共")
-        self.pt5 = wx.StaticText(self, -1, "条记录,已选中 ") 
-        self.pt6 = wx.StaticText(self,-1," 条),每页")
+        self.pt1 = wx.StaticText(self, -1, u",第")
+        self.pt2 = wx.StaticText(self, -1, u"/")
+        self.pt3 = wx.StaticText(self, -1, u"页(共")
+        self.pt5 = wx.StaticText(self, -1, u"条记录,已选中 ") 
+        self.pt6 = wx.StaticText(self,-1,u" 条),每页")
         self.lblPageIndex = wx.StaticText(self, -1, "0")
         self.lblPageCount = wx.StaticText(self, -1, "0")
         self.lblTotalCount = wx.StaticText(self, -1, "0")
         self.selected_counts = wx.StaticText(self,-1,'0')
         self.page_size_select = wx.ComboBox(self,-1,choices=('20','50','100','200','500','1000','5000'),value='50')
-        self.btnFirst = wx.Button(self, -1, label='首页', style=0)
-        self.btnLast = wx.Button(self, -1, label='尾页', style=0)
-        self.btnPrev = wx.Button(self, -1, label='上一页', style=0)
-        self.btnNext = wx.Button(self, -1, label='下一页', style=0)
+        self.btnFirst = wx.Button(self, -1, label=u'首页', style=0)
+        self.btnLast = wx.Button(self, -1, label=u'尾页', style=0)
+        self.btnPrev = wx.Button(self, -1, label=u'上一页', style=0)
+        self.btnNext = wx.Button(self, -1, label=u'下一页', style=0)
    
-        self.fill_sid_btn = wx.Button(self, fill_sid_btn_id, label='填物流单号',name='打印发货单前，需将物流单号与订单绑定')
-        self.picking_print_btn = wx.Button(self, picking_print_btn_id, label='打印发货单',name='打印发货单，进行配货')
-        self.express_print_btn = wx.Button(self,express_print_btn_id,label='打印物流单',name='打印物流单，为扫描称重准备')
-        self.scan_check_btn = wx.Button(self,scan_check_btn_id,label='扫描验货',name='对发货包裹进行检验，确认是否缺货')
-        self.scan_weight_btn = wx.Button(self,scan_weight_btn_id,label='扫描称重',name='对发货包裹进行称重，物流结算')
+        self.fill_sid_btn = wx.Button(self, fill_sid_btn_id, label=u'填物流单号',name=u'打印发货单前，需将物流单号与订单绑定')
+        self.picking_print_btn = wx.Button(self, picking_print_btn_id, label=u'打印发货单',name=u'打印发货单，进行配货')
+        self.express_print_btn = wx.Button(self,express_print_btn_id,label=u'打印物流单',name=u'打印物流单，为扫描称重准备')
+        self.scan_check_btn = wx.Button(self,scan_check_btn_id,label=u'扫描验货',name=u'对发货包裹进行检验，确认是否缺货')
+        self.scan_weight_btn = wx.Button(self,scan_weight_btn_id,label=u'扫描称重',name=u'对发货包裹进行称重，物流结算')
         
         self.button_array = []
         
         self.inner_panel  = wx.Panel(self,-1)
         self.fill_sid_panel   = wx.Panel(self.inner_panel,-1)
-        self.fill_sid_label1  = wx.StaticText(self.fill_sid_panel,-1,'起始物流单号')
+        self.fill_sid_label1  = wx.StaticText(self.fill_sid_panel,-1,u'起始物流单号')
         self.fill_sid_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(200,-1))
-        self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,'自增物流单号')
+        self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,u'自增物流单号')
         self.fill_sid_checkbox1   = wx.CheckBox(self.fill_sid_panel,-1)
-        self.preview_btn      = wx.Button(self.fill_sid_panel,-1,'预览')
-        self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,'确定')
-        self.fill_sid_btn3   = wx.Button(self.fill_sid_panel,-1,'取消')
+        self.preview_btn      = wx.Button(self.fill_sid_panel,-1,u'预览')
+        self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,u'确定')
+        self.fill_sid_btn3   = wx.Button(self.fill_sid_panel,-1,u'取消')
 
         self.static_button_down = wx.Button(self,-1,label='v------------v',size=(-1,11))
         self.isSearchPanelShow = True
@@ -231,7 +231,7 @@ class GridPanel(wx.Panel):
         if not hasattr(self,"popupID1"):
             self.popupID1 = wx.NewId()
         menu = wx.Menu()
-        item = wx.MenuItem(menu,self.popupID1,'刷新')
+        item = wx.MenuItem(menu,self.popupID1,u'刷新')
         menu.AppendItem(item)
         self.grid.PopupMenu(menu)
         menu.Destroy()
@@ -483,7 +483,7 @@ class GridPanel(wx.Panel):
     
      
     def parseObjectToList(self, object_list):
-        raise NotImplement("parseObjectToList-该方法没有实现") 
+        raise NotImplement(u"parseObjectToList-该方法没有实现") 
         
     
     def onBtnFirstClick(self, evt):
@@ -522,10 +522,10 @@ class QueryObjectGridPanel(GridPanel):
                 object_array.append(object.id)
                 object_array.append(object.seller_nick)
                 object_array.append(object.buyer_nick)
-                object_array.append(TRADE_TYPE.get(object.type,'其他'))
-                object_array.append(TRADE_STATUS.get(object.status,'其他'))
-                object_array.append(SYS_STATUS.get(object.sys_status,'其他'))
-                object_array.append(SHIPPING_TYPE.get(object.shipping_type,'其他'))
+                object_array.append(TRADE_TYPE.get(object.type,u'其他'))
+                object_array.append(TRADE_STATUS.get(object.status,u'其他'))
+                object_array.append(SYS_STATUS.get(object.sys_status,u'其他'))
+                object_array.append(SHIPPING_TYPE.get(object.shipping_type,u'其他'))
                 object_array.append(object.is_picking_print)
                 object_array.append(object.is_express_print)
                 object_array.append(object.is_send_sms)
@@ -582,7 +582,7 @@ class SimpleGridPanel(wx.Panel):
         self.Layout()
     
     def parseObjectToList(self,trade):
-        raise NotImplement("parseObjectToList-该方法没有实现")
+        raise NotImplement(u"parseObjectToList-该方法没有实现")
         
  
 class SimpleOrdersGridPanel(SimpleGridPanel):
@@ -621,8 +621,8 @@ class WeightGridPanel(wx.Panel):
         wx.Panel.__init__(self, parent, id) 
         
         self.grid = grd.Grid(self,-1)
-        colLabels = ('内部单号','店铺简称','订单类型','会员名称','订单状态','系统状态','物流类型','称重重量','物流成本','实付邮费',
-                     '收货人','收货人固定电话','收货人手机','收货邮编','所在省','所在市','所在地区','收货地址')
+        colLabels = (u'内部单号',u'店铺简称',u'订单类型',u'会员名称',u'订单状态',u'系统状态',u'物流类型',u'称重重量',u'物流成本',u'实付邮费',
+                     u'收货人',u'收货人固定电话',u'收货人手机',u'收货邮编',u'所在省',u'所在市',u'所在地区',u'收货地址')
         gridtable = weakref.ref(WeightGridTable(colLabels=colLabels))
         self.grid.SetTable(gridtable(),True)  
         self.grid.SetRowLabelSize(40)
@@ -650,11 +650,11 @@ class WeightGridPanel(wx.Panel):
         items = []
         items.append(str(trade.id))
         items.append(trade.seller_nick)
-        items.append(TRADE_TYPE.get(trade.type,'其它'))
+        items.append(TRADE_TYPE.get(trade.type,u'其它'))
         items.append(trade.buyer_nick)
-        items.append(TRADE_STATUS.get(trade.status,'其它'))
-        items.append(SYS_STATUS.get(trade.sys_status,'其它'))
-        items.append(SHIPPING_TYPE.get(trade.shipping_type,'其它'))
+        items.append(TRADE_STATUS.get(trade.status,u'其它'))
+        items.append(SYS_STATUS.get(trade.sys_status,u'其它'))
+        items.append(SHIPPING_TYPE.get(trade.shipping_type,u'其它'))
         items.append(trade.weight)
         items.append(trade.post_cost)
         
@@ -712,7 +712,7 @@ class CheckGridPanel(wx.Panel):
         self.trade = None
         self.code_num_dict = {}
        
-        colLabels = ('商品图片','子订单ID','商品ID','商品简称','订购数量','商品外部编码','规格外部编码','规格属性','订单状态','扫描次数')
+        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品外部编码',u'规格外部编码',u'规格属性',u'订单状态',u'扫描次数')
         self.ordergridpanel = CheckOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()

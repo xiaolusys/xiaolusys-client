@@ -40,8 +40,8 @@ class TradePanel(wx.Panel):
         for button in self.buttons_tuple:
             self.buttons.append(wx.Button(self,button[0],button[1]))
  
-        colLabels = ('订单号','卖家昵称','买家昵称','订单类型','订单状态','系统状态','物流类型','打印发货单','打印物流单','短信提醒',
-                     '物流公司','物流单号','操作员','物流成本','实付','总金额','商品数量','付款时间','发货时间')
+        colLabels = (u'订单号',u'卖家昵称',u'买家昵称',u'订单类型',u'订单状态',u'系统状态',u'物流类型',u'打印发货单',u'打印物流单',u'短信提醒',
+                     u'物流公司',u'物流单号',u'操作员',u'物流成本',u'实付',u'总金额',u'商品数量',u'付款时间',u'发货时间')
         self.grid = QueryObjectGridPanel(self,rowLabels=None,colLabels=colLabels)
         self.grid.setDataSource(SYS_STATUS_PREPARESEND)
         
@@ -58,16 +58,16 @@ class TradePanel(wx.Panel):
      
     @property 
     def buttons_tuple(self):
-        return ((all_trade_id,'全部',1),#1表示显示，0表示在隐藏域
-                (prapare_send_id,'待发货准备',1),
-                (check_barcode_id,'待扫描验货',1),
-                (scan_weight_id,'待扫描称重',1),
+        return ((all_trade_id,u'全部',1),#1表示显示，0表示在隐藏域
+                (prapare_send_id,u'待发货准备',1),
+                (check_barcode_id,u'待扫描验货',1),
+                (scan_weight_id,u'待扫描称重',1),
                 (expand_id,'>>',2),
-                (merge_rule_id,'合并规则区',0),
-                (regular_remain_id,'定时处理区',0),
-                (audit_fail_id,'问题单',0),
-                (has_send_id,'已完成',0),
-                (invalid_id,'已作废',0),
+                (merge_rule_id,u'合并规则区',0),
+                (regular_remain_id,u'定时处理区',0),
+                (audit_fail_id,u'问题单',0),
+                (has_send_id,u'已完成',0),
+                (invalid_id,u'已作废',0),
                 (fold_id,'<<',2),
                 )
            
@@ -75,8 +75,8 @@ class TradePanel(wx.Panel):
     def __set_properties(self):
         self.SetName('trade_panel') 
         self.FindWindowById(prapare_send_id).Enable(False)  
-        self.colorpicker.SetToolTip(wx.ToolTip('设置选中行颜色'))
-        self.filter_number_btn.SetToolTip(wx.ToolTip('选择显示的订单尾号'))  
+        self.colorpicker.SetToolTip(wx.ToolTip(u'设置选中行颜色'))
+        self.filter_number_btn.SetToolTip(wx.ToolTip(u'选择显示的订单尾号'))  
         
         self.search_panel.Hide()
         for button in self.buttons_tuple:
