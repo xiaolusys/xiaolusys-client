@@ -269,7 +269,7 @@ class DetailPanel(wx.Panel):
         self.trade = None
         from taobao.frames.panels.gridpanel import SimpleOrdersGridPanel
         colLabels = (u'商品图片',u'订单ID',u'商品外部编码',u'商品简称',u'规格编码',u'规格属性',u'订购数量',u'实际单价',u'实付金额',
-                     u'退款单号',u'退款状态',u'订单状态')
+                     u'退款单号',u'退款状态',u'订单状态',u'系统状态')
         self.ordergridpanel = SimpleOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()

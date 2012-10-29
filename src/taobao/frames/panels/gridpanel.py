@@ -612,7 +612,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(object.refund_id)
                 object_array.append(REFUND_STATUS.get(object.refund_status,''))
                 object_array.append(TRADE_STATUS.get(object.status,'其他'))
-    
+                object_array.append(SYS_ORDERS_STATUS.get(object.sys_status,'其他'))
                 array_object.append(object_array)
         return array_object
       
