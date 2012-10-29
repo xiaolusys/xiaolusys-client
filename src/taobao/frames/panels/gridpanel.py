@@ -17,7 +17,7 @@ from taobao.common.utils import create_session,getconfig
 from taobao.dao.models import MergeOrder,MergeTrade
 from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,\
-    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER
+    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,IN_EFFECT,SYS_ORDERS_STATUS
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
 
@@ -26,7 +26,8 @@ LOG_COMPANY_CELL_COL = 11
 OUT_SID_CELL_COL = 12
 OUTER_ID_COL = 5
 OUTER_SKU_ID_COL = 6
-NUM_STATUS_COL = 9
+ORIGIN_NUL_COL = 4
+NUM_STATUS_COL = 10
 
 fill_sid_btn_id = wx.NewId()
 picking_print_btn_id = wx.NewId()
@@ -681,7 +682,7 @@ class CheckOrdersGridPanel(SimpleGridPanel):
         with create_session(self.Parent) as session:
             orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id).filter(
                     MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS')),
-                    MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER)))
+                    MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER))).filter_by(sys_status=IN_EFFECT)
             from taobao.dao.models import Product
             array_object = [] 
             for object in orders:
@@ -689,7 +690,7 @@ class CheckOrdersGridPanel(SimpleGridPanel):
                 product = session.query(Product).filter_by(outer_id=object.outer_id).first()
                 object_array.append(object.pic_path)
                 object_array.append(str(object.id))
-                object_array.append(object.outer_id or object.num_iid)
+                object_array.append(object.num_iid or object.outer_id)
                 
                 object_array.append(product.name if product else '')
                 object_array.append(object.num)
@@ -697,6 +698,7 @@ class CheckOrdersGridPanel(SimpleGridPanel):
                 object_array.append(object.outer_sku_id)
                 object_array.append(object.sku_properties_name)
                 object_array.append(TRADE_STATUS.get(object.status,'其他'))
+                object_array.append(SYS_ORDERS_STATUS.get(object.sys_status,'其他'))
                 object_array.append(0)
                 
                 array_object.append(object_array)
@@ -712,7 +714,7 @@ class CheckGridPanel(wx.Panel):
         self.trade = None
         self.code_num_dict = {}
        
-        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品外部编码',u'规格外部编码',u'规格属性',u'订单状态',u'扫描次数')
+        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品外部编码',u'规格外部编码',u'规格属性',u'订单状态',u'系统状态',u'扫描次数')
         self.ordergridpanel = CheckOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()
@@ -730,7 +732,9 @@ class CheckGridPanel(wx.Panel):
     def getOrderCodeMapNumDict(self,trade):
         is_fenxiao = self.trade.type =='fenxiao'
         with create_session(self.Parent) as session:
-            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id)
+            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id).filter(
+                    MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS')),
+                    MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER))).filter_by(sys_status=IN_EFFECT)
             code_num_dict = {}    
             for order in orders:
                 barcode = order.outer_id+order.outer_sku_id

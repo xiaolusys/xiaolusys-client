@@ -322,7 +322,7 @@ class CheckGridTable(grd.PyGridTableBase):
         
     # the table can also provide the attribute for each cell
     def GetAttr(self, row, col, kind):
-        check_num = int(self.data[(row,9)])
+        check_num = int(self.data[(row,10)])
         origin_num = int(self.data[(row,4)])
         if col==0:
             attr = self.imagecell

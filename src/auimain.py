@@ -20,7 +20,7 @@ ID_ScanWeight      = wx.NewId()
 ID_Help            = wx.NewId() 
 
 class MainFrame(wx.Frame):
-    def __init__(self, parent, id=-1, title=u"ERP¿Í»§¶Ë", pos=wx.DefaultPosition,
+    def __init__(self, parent, id=-1, title=u"ERPå®¢æˆ·ç«¯", pos=wx.DefaultPosition,
                  size=(1300,700), style=wx.DEFAULT_FRAME_STYLE |wx.SUNKEN_BORDER |wx.CLIP_CHILDREN):
 
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
@@ -34,17 +34,17 @@ class MainFrame(wx.Frame):
         # create menu
         mb = wx.MenuBar()
         view_menu = wx.Menu()
-        view_menu.Append(ID_TradeMainPage, u"¶©µ¥ÁĞ±í",u"¶©µ¥Ö÷½çÃæ")
-        view_menu.Append(ID_ScanCheck, u"É¨ÃèÑé»õ",u"É¨ÃèÎïÁ÷µ¥±àºÅ£¬É¨ÃèÉÌÆ·ÌõÂë")
-        view_menu.Append(ID_ScanWeight, u"É¨Ãè³ÆÖØ",u"É¨ÃèÎïÁ÷µ¥±àºÅ£¬°ü¹ü³ÆÖØ")
-        view_menu.Append(wx.ID_EXIT, u"ÍË³ö")
+        view_menu.Append(ID_TradeMainPage, u"è®¢å•åˆ—è¡¨",u"è®¢å•æ“ä½œä¸»ç•Œé¢")
+        view_menu.Append(ID_ScanCheck, u"æ‰«æéªŒè´§",u"æ‰«æç‰©æµå•ç¼–å·ï¼Œæ‰«æå•†å“æ¡ç ")
+        view_menu.Append(ID_ScanWeight, u"æ‰«æç§°é‡",u"æ‰«æç‰©æµå•ç¼–å·ï¼ŒåŒ…è£¹ç§°é‡")
+        view_menu.Append(wx.ID_EXIT, u"é€€å‡º")
         view_menu.AppendSeparator()
         
         help_menu = wx.Menu()
-        help_menu.Append(ID_Help, u"°ïÖúÎÄµµ")
+        help_menu.Append(ID_Help, u"å¸®åŠ©æ–‡æ¡£")
         
-        mb.Append(view_menu, u"¶©µ¥²Ù×÷")
-        mb.Append(help_menu, u"°ïÖú")
+        mb.Append(view_menu, u"è®¢å•æ“ä½œ")
+        mb.Append(help_menu, u"å¸®åŠ©")
         
         self.SetMenuBar(mb)
         
