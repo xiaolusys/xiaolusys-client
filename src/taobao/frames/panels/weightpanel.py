@@ -237,7 +237,7 @@ class ScanWeightPanel(wx.Panel):
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
                        logistics_company_id=logistics_company.id,status=TRADE_STATUS_WAIT_SEND_GOODS)
             elif out_sid :
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,status=TRADE_STATUS_WAIT_SEND_GOODS)
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid)
                  
         count = trades.count() if trades else 0 
         if count>1 :

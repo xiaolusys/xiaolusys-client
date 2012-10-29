@@ -11,7 +11,7 @@ from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import CheckGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,SYS_STATUS_PREPARESEND,\
-    SYS_STATUS_INVALID,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER
+    SYS_STATUS_INVALID,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,TRADE_STATUS_WAIT_CONFIRM_GOODS
 
 
 
@@ -147,7 +147,7 @@ class ScanCheckPanel(wx.Panel):
                 if self.gridpanel.isCheckOver():
                     with create_session(self.Parent) as session: 
                         orders = session.query(MergeOrder).filter_by(merge_trade_id=self.trade.id).filter(
-                                MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS')),
+                                MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS',TRADE_STATUS_WAIT_CONFIRM_GOODS)),
                                 MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER)))
                         for order in orders:
                             outer_id = order.outer_id 

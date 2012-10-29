@@ -16,7 +16,7 @@ from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session,getconfig
 from taobao.dao.models import MergeOrder,MergeTrade
 from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
-from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,\
+from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,TRADE_STATUS_WAIT_CONFIRM_GOODS,\
     SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,IN_EFFECT,SYS_ORDERS_STATUS
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
@@ -681,7 +681,7 @@ class CheckOrdersGridPanel(SimpleGridPanel):
         
         with create_session(self.Parent) as session:
             orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id).filter(
-                    MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS')),
+                    MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS',TRADE_STATUS_WAIT_CONFIRM_GOODS)),
                     MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER))).filter_by(sys_status=IN_EFFECT)
             from taobao.dao.models import Product
             array_object = [] 
@@ -733,7 +733,7 @@ class CheckGridPanel(wx.Panel):
         is_fenxiao = self.trade.type =='fenxiao'
         with create_session(self.Parent) as session:
             orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id).filter(
-                    MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS')),
+                    MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS',TRADE_STATUS_WAIT_CONFIRM_GOODS)),
                     MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER))).filter_by(sys_status=IN_EFFECT)
             code_num_dict = {}    
             for order in orders:
