@@ -17,6 +17,7 @@ from wx.html import HtmlEasyPrinting,HtmlWindow
 from taobao.common.environment import get_template
 from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,MergeOrder,Product
+from taobao.dao.tradedao import get_used_orders
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,IN_EFFECT
 
 from taobao.common.utils import IMAGE_ROOT
@@ -150,9 +151,7 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['sys_memo']   = trade.sys_memo
                 trade_data['orders']       = [] 
                 
-                orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id).filter(
-                    MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS')),
-                    MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER))).filter_by(sys_status=IN_EFFECT)  
+                orders = get_used_orders(session,trade.id)  
                 for order in orders:
                     order_data = {} 
                     product = session.query(Product).filter_by(outer_id=order.outer_id).one()
