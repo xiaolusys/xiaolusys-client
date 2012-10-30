@@ -51,28 +51,29 @@ class GridPanel(wx.Panel):
         self.grid = grd.Grid(self, -1)
         
         self._selectedRows = set()
-        self.select_all_label = wx.StaticText(self,-1,u'  全  选')
-        self.select_all_check = wx.CheckBox(self,-1)
-        self.pt1 = wx.StaticText(self, -1, u",第")
-        self.pt2 = wx.StaticText(self, -1, u"/")
-        self.pt3 = wx.StaticText(self, -1, u"页(共")
-        self.pt5 = wx.StaticText(self, -1, u"条记录,已选中 ") 
-        self.pt6 = wx.StaticText(self,-1,u" 条),每页")
-        self.lblPageIndex = wx.StaticText(self, -1, "0")
-        self.lblPageCount = wx.StaticText(self, -1, "0")
-        self.lblTotalCount = wx.StaticText(self, -1, "0")
-        self.selected_counts = wx.StaticText(self,-1,'0')
-        self.page_size_select = wx.ComboBox(self,-1,choices=('20','50','100','200','500','1000','5000'),value='50')
-        self.btnFirst = wx.Button(self, -1, label=u'首页', style=0)
-        self.btnLast = wx.Button(self, -1, label=u'尾页', style=0)
-        self.btnPrev = wx.Button(self, -1, label=u'上一页', style=0)
-        self.btnNext = wx.Button(self, -1, label=u'下一页', style=0)
+        self.pag_panel =pag_panel = wx.Panel(self,-1)
+        self.select_all_label = wx.StaticText(pag_panel,-1,u'  全  选')
+        self.select_all_check = wx.CheckBox(pag_panel,-1)
+        self.pt1 = wx.StaticText(pag_panel, -1, u",第")
+        self.pt2 = wx.StaticText(pag_panel, -1, u"/")
+        self.pt3 = wx.StaticText(pag_panel, -1, u"页(共")
+        self.pt5 = wx.StaticText(pag_panel, -1, u"条记录,已选中 ") 
+        self.pt6 = wx.StaticText(pag_panel,-1,u" 条),每页")
+        self.lblPageIndex = wx.StaticText(pag_panel, -1, "0")
+        self.lblPageCount = wx.StaticText(pag_panel, -1, "0")
+        self.lblTotalCount = wx.StaticText(pag_panel, -1, "0")
+        self.selected_counts = wx.StaticText(pag_panel,-1,"0")
+        self.page_size_select = wx.ComboBox(pag_panel,-1,choices=('20','50','100','200','500','1000','5000'),value='50')
+        self.btnFirst = wx.Button(pag_panel, -1, label=u'首页', style=0)
+        self.btnLast = wx.Button(pag_panel, -1, label=u'尾页', style=0)
+        self.btnPrev = wx.Button(pag_panel, -1, label=u'上一页', style=0)
+        self.btnNext = wx.Button(pag_panel, -1, label=u'下一页', style=0)
    
-        self.fill_sid_btn = wx.Button(self, fill_sid_btn_id, label=u'填物流单号',name=u'打印发货单前，需将物流单号与订单绑定')
-        self.picking_print_btn = wx.Button(self, picking_print_btn_id, label=u'打印发货单',name=u'打印发货单，进行配货')
-        self.express_print_btn = wx.Button(self,express_print_btn_id,label=u'打印物流单',name=u'打印物流单，为扫描称重准备')
-        self.scan_check_btn = wx.Button(self,scan_check_btn_id,label=u'扫描验货',name=u'对发货包裹进行检验，确认是否缺货')
-        self.scan_weight_btn = wx.Button(self,scan_weight_btn_id,label=u'扫描称重',name=u'对发货包裹进行称重，物流结算')
+        self.fill_sid_btn = wx.Button(pag_panel, fill_sid_btn_id, label=u'填物流单号',name=u'打印发货单前，需将物流单号与订单绑定')
+        self.picking_print_btn = wx.Button(pag_panel, picking_print_btn_id, label=u'打印发货单',name=u'打印发货单，进行配货')
+        self.express_print_btn = wx.Button(pag_panel,express_print_btn_id,label=u'打印物流单',name=u'打印物流单，为扫描称重准备')
+        self.scan_check_btn = wx.Button(pag_panel,scan_check_btn_id,label=u'扫描验货',name=u'对发货包裹进行检验，确认是否缺货')
+        self.scan_weight_btn = wx.Button(pag_panel,scan_weight_btn_id,label=u'扫描称重',name=u'对发货包裹进行称重，物流结算')
         
         self.button_array = []
         
@@ -86,8 +87,8 @@ class GridPanel(wx.Panel):
         self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,u'确定')
         self.fill_sid_btn3   = wx.Button(self.fill_sid_panel,-1,u'取消')
 
-        self.static_button_down = wx.Button(self,-1,label='v------------v',size=(-1,11))
-        self.isSearchPanelShow = True
+        self.static_button_down = wx.Button(self,-1,label='^------------^',size=(-1,11))
+        self.isSearchPanelShow = 1
         
         self.itempanel = ItemPanel(self, -1)
         
@@ -119,8 +120,8 @@ class GridPanel(wx.Panel):
         
     def __do_layout(self):
         self.main_sizer = main_sizer = wx.BoxSizer(wx.VERTICAL) 
-        fg = wx.FlexGridSizer(hgap=2, vgap=2)
         
+        fg = wx.FlexGridSizer(hgap=2, vgap=2)
         fg.Add(self.select_all_label,0,0)
         fg.Add(self.select_all_check,0,0)
         fg.Add(self.pt1, 0, 0)
@@ -144,6 +145,7 @@ class GridPanel(wx.Panel):
         fg.Add(self.picking_print_btn, 0, 19) 
         fg.Add(self.express_print_btn, 0, 20)
         fg.Add(self.scan_weight_btn, 0, 22)
+        self.pag_panel.SetSizer(fg)
         
         self.fill_sid_sizer = wx.FlexGridSizer(hgap=15, vgap=15)
         self.fill_sid_sizer.Add(self.fill_sid_label1,0,0)
@@ -160,13 +162,15 @@ class GridPanel(wx.Panel):
         self.inner_panel.SetSizer(self.inner_box_sizer)
         
         main_sizer.Add(self.grid, 5, wx.EXPAND)
-        main_sizer.Add(fg, flag=wx.RIGHT|wx.EXPAND) 
+        main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
         main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
         main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
         main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
         main_sizer.Add(self.itempanel,3,flag=wx.RIGHT|wx.EXPAND)
         
         self.SetSizer(main_sizer)
+        
+        
     
     def __bind_evt(self):
         self.Bind(grd.EVT_GRID_CELL_LEFT_CLICK, self.onMouse, self.grid)
@@ -336,14 +340,41 @@ class GridPanel(wx.Panel):
 
     
     def onClickStaticButton(self,evt):
-        if self.isSearchPanelShow:
-            self.itempanel.Hide()
-            self.static_button_down.SetLabel('^------------^')
-            self.isSearchPanelShow = False
-        else:
+        if self.isSearchPanelShow == 0:
+            self.main_sizer.Clear()
+            self.main_sizer.Add(self.grid, 6, wx.EXPAND)
+            self.main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
+            self.main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
+            self.main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
+            self.main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
+            self.main_sizer.Add(self.itempanel,4,flag=wx.RIGHT|wx.EXPAND)
+            self.SetSizer(self.main_sizer)
             self.itempanel.Show()
+            self.isSearchPanelShow = 1
+            self.static_button_down.SetLabel('^------------^')
+        elif self.isSearchPanelShow == 1:
+            self.main_sizer.Clear()
+            self.main_sizer.Add(self.grid, 1, wx.EXPAND)
+            self.main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
+            self.main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
+            self.main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
+            self.main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
+            self.main_sizer.Add(self.itempanel,9,flag=wx.RIGHT|wx.EXPAND)
+            self.SetSizer(self.main_sizer)
+            self.isSearchPanelShow = 2
             self.static_button_down.SetLabel('v------------v')
-            self.isSearchPanelShow = True
+        else:
+            self.main_sizer.Clear()
+            self.main_sizer.Add(self.grid, 7, wx.EXPAND)
+            self.main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
+            self.main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
+            self.main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
+            self.main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
+            self.main_sizer.Add(self.itempanel,2,flag=wx.RIGHT|wx.EXPAND)
+            self.SetSizer(self.main_sizer)
+            self.isSearchPanelShow = 0
+            self.static_button_down.SetLabel('^------------^')
+            self.itempanel.Hide()
         self.Layout()    
             
     def fillOutSidToCell(self,evt):
