@@ -419,7 +419,9 @@ class GridPanel(wx.Panel):
                     if pre_company_name and pre_company_name !=company_name:
                         return
                     pre_company_name = company_name
-                    trade_ids.append(trade_id)
+                    out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
+                    if out_sid:
+                        trade_ids.append(trade_id)
                     
                 ExpressPrinter(parent=self,trade_ids=trade_ids).Show()
             
@@ -429,9 +431,8 @@ class GridPanel(wx.Panel):
             
             elif eventid == scan_weight_btn_id:
                 self.Parent.Parent._mgr.GetPane("scan_weight_content").Show()
-                self.Parent.Parent._mgr.Update()
-                
-        
+                self.Parent.Parent._mgr.Update()          
+        evt.Skip()
 
     def setupPager(self):
         self.lblPageIndex.SetLabel(str(self.page.number) if self.page else '0')

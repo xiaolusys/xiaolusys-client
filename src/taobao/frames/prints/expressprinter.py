@@ -123,7 +123,7 @@ class ExpressPrinter(wx.Frame):
     #----------------------------------------------------------------------
     def getLogisticsData(self ,trade_ids=[]):
         with create_session(self.Parent) as session: 
-            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))
+            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
         
         express_data_list = []
         for trade in send_trades:
