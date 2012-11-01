@@ -179,7 +179,7 @@ class PrintFrameworkSample(wx.Frame):
     def OnPrintSetup(self, evt):
         data = wx.PrintDialogData(self.pdata)
         dlg = wx.PrintDialog(self, data)
-        dlg.GetPrintDialogData().SetSetupDialog(True)
+        dlg.SetSetupDialog(True)
         dlg.ShowModal();
         data = dlg.GetPrintDialogData()
         self.pdata = wx.PrintData(data.GetPrintData()) # force a copy

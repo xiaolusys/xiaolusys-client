@@ -161,16 +161,17 @@ class GridPanel(wx.Panel):
         self.inner_box_sizer.Add(self.fill_sid_panel,proportion=0,flag=wx.EXPAND)
         self.inner_panel.SetSizer(self.inner_box_sizer)
         
-        main_sizer.Add(self.grid, 5, wx.EXPAND)
-        main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
-        main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
-        main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
-        main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
-        main_sizer.Add(self.itempanel,3,flag=wx.RIGHT|wx.EXPAND)
+        self.__set_sizer(6,4)
         
-        self.SetSizer(main_sizer)
-        
-        
+    def __set_sizer(self,grid_propt=6,item_propt=4):
+        self.main_sizer.Clear()
+        self.main_sizer.Add(self.grid,grid_propt, wx.EXPAND)
+        self.main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
+        self.main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
+        self.main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
+        self.main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
+        self.main_sizer.Add(self.itempanel,item_propt,flag=wx.RIGHT|wx.EXPAND)
+        self.SetSizer(self.main_sizer)  
     
     def __bind_evt(self):
         self.Bind(grd.EVT_GRID_CELL_LEFT_CLICK, self.onMouse, self.grid)
@@ -201,7 +202,7 @@ class GridPanel(wx.Panel):
         
     def setDataSource(self, status_type): 
         with create_session(self.Parent) as session: 
-            datasource     = session.query(MergeTrade)
+            datasource     = session.query(MergeTrade).order_by('pay_time asc')
             if status_type and status_type != SYS_STATUS_ALL:
                 datasource = datasource.filter_by(sys_status=status_type)
         self.datasource = datasource
@@ -341,37 +342,16 @@ class GridPanel(wx.Panel):
     
     def onClickStaticButton(self,evt):
         if self.isSearchPanelShow == 0:
-            self.main_sizer.Clear()
-            self.main_sizer.Add(self.grid, 6, wx.EXPAND)
-            self.main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
-            self.main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
-            self.main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
-            self.main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
-            self.main_sizer.Add(self.itempanel,4,flag=wx.RIGHT|wx.EXPAND)
-            self.SetSizer(self.main_sizer)
+            self.__set_sizer(6,4)
             self.itempanel.Show()
             self.isSearchPanelShow = 1
             self.static_button_down.SetLabel('^------------^')
         elif self.isSearchPanelShow == 1:
-            self.main_sizer.Clear()
-            self.main_sizer.Add(self.grid, 1, wx.EXPAND)
-            self.main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
-            self.main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
-            self.main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
-            self.main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
-            self.main_sizer.Add(self.itempanel,9,flag=wx.RIGHT|wx.EXPAND)
-            self.SetSizer(self.main_sizer)
+            self.__set_sizer(1,9)
             self.isSearchPanelShow = 2
             self.static_button_down.SetLabel('v------------v')
         else:
-            self.main_sizer.Clear()
-            self.main_sizer.Add(self.grid, 7, wx.EXPAND)
-            self.main_sizer.Add(self.pag_panel,flag=wx.RIGHT|wx.EXPAND) 
-            self.main_sizer.Add(wx.StaticLine(self,-1),flag=wx.EXPAND)
-            self.main_sizer.Add(self.inner_panel,flag=wx.EXPAND)
-            self.main_sizer.Add(self.static_button_down,flag=wx.RIGHT|wx.EXPAND)
-            self.main_sizer.Add(self.itempanel,2,flag=wx.RIGHT|wx.EXPAND)
-            self.SetSizer(self.main_sizer)
+            self.__set_sizer(8,2)
             self.isSearchPanelShow = 0
             self.static_button_down.SetLabel('^------------^')
             self.itempanel.Hide()
@@ -418,7 +398,7 @@ class GridPanel(wx.Panel):
                     company_code = trade.logistics_company.code if trade else None
                     company_regex = trade.logistics_company.reg_mail_no if trade else None
                     id_compile = re.compile(company_regex)
-                    if id_compile.match(out_sid) and not trade.operator:
+                    if id_compile.match(out_sid):
                         session.query(MergeTrade).filter_by(id=trade_id)\
                             .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
                 self.refreshTable()
@@ -550,7 +530,7 @@ class QueryObjectGridPanel(GridPanel):
         assert isinstance(object_list,(set,list,tuple))
         array_object = []
         for object in object_list:
-            if not tailnums or object.tid%10 in tailnums:
+            if not tailnums or object.id%10 in tailnums:
                 object_array = []
                 object_array.append(object.id)
                 object_array.append(object.seller_nick)
@@ -718,11 +698,11 @@ class CheckOrdersGridPanel(SimpleGridPanel):
             for object in orders:
                 object_array = []     
                 product = session.query(Product).filter_by(outer_id=object.outer_id).first()
-                object_array.append(object.pic_path)
+                object_array.append(object.pic_path or product.pic_path)
                 object_array.append(str(object.id))
                 object_array.append(object.num_iid or object.outer_id)
                 
-                object_array.append(product.name if product else '')
+                object_array.append(product.name if product else object.title)
                 object_array.append(object.num)
                 object_array.append(object.outer_id)
                 object_array.append(object.outer_sku_id)

@@ -50,19 +50,21 @@ class ExpressPrinter(wx.Frame):
  
         self.trade_ids = trade_ids
         self.panel = wx.Panel(self, wx.ID_ANY)
-        self.printer = HtmlPrinter(name=u'打印', parentWindow=None)
+        #self.printer = HtmlPrinter(name=u'打印', parentWindow=self)
  
         self.html = iewin.IEHtmlWindow(self.panel)
         #trade_ids = [200165044022938,165155430754126]
         html_text = self.createHtml(trade_ids)
+
+        #self.printer.PreviewText(html_text, u'物流单')
         self.html.LoadString(html_text)
- 
-        mention = wx.StaticText(self.panel,wx.ID_ANY,u'(请点击鼠标右键选择打印预览)')
-        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'取消打印')
-        expressBtn = wx.Button(self.panel, wx.ID_ANY, u'更新已打印物流单状态')
         
+        previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
+        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'取消打印')
+        
+        self.Bind(wx.EVT_BUTTON, self.onPreview, previewBtn)
         self.Bind(wx.EVT_BUTTON, self.onCancel, cancelBtn)
-        self.Bind(wx.EVT_BUTTON, self.onUpdateExpressStatus, expressBtn)
+
         #监听打印预览菜单项
         #self.panel.Bind(wx.EVT_MENU, self.onSelectMenu)
         
@@ -70,10 +72,10 @@ class ExpressPrinter(wx.Frame):
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
  
         sizer.Add(self.html, 1, wx.GROW)
-        btnSizer.Add(mention, 0, wx.ALL, 5)
-        btnSizer.Add(cancelBtn, 0, wx.ALL, 5)
-        btnSizer.Add(expressBtn, 1, wx.ALL|wx.RIGHT, 5)
-        sizer.Add(btnSizer)
+        
+        btnSizer.Add(previewBtn, 0, wx.ALL|wx.CENTER, 5)
+        btnSizer.Add(cancelBtn, 0, wx.ALL|wx.CENTER, 5)
+        sizer.Add(btnSizer,0,wx.ALL|wx.CENTER,5)
  
         self.panel.SetSizer(sizer)
         self.panel.SetAutoLayout(True)
@@ -88,35 +90,35 @@ class ExpressPrinter(wx.Frame):
             trades = self.getLogisticsData(trade_ids)
             template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
             template = get_template(template_name) 
-            html =template.render(trades=trades)
+            html = template.render(trades=trades)
         except:
             html = u'<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'%trades[0]['company_name']
         return html
     
-    #---------------------------------------------------------------------
-    def onSelectMenu(self,event):
-        print event.GetId()
-        print dir(event)
 
     #----------------------------------------------------------------------
     def onPrint(self, event):
-        self.sendToPrinter()
+        self.html.Print(True)
+        
+        with create_session(self.Parent) as session: 
+            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
+                .update({'is_express_print':True},synchronize_session='fetch')  
+        event.Skip() 
  
     #----------------------------------------------------------------------
-    def sendToPrinter(self):
+    def onPreview(self,event):
         """"""
-        self.printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
-        self.printer.PrintText(self.html.GetText(True),u'发货单')
+        self.html.PrintPreview()
+        
+        with create_session(self.Parent) as session: 
+            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
+                .update({'is_express_print':True},synchronize_session='fetch')  
+        event.Skip()
  
     #----------------------------------------------------------------------
     def onCancel(self, event):
         self.Close()
  
-    #----------------------------------------------------------------------
-    def onUpdateExpressStatus(self,event):
-        with create_session(self.Parent) as session: 
-            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
-                .update({'is_express_print':True},synchronize_session='fetch')
     
     #----------------------------------------------------------------------
     def getLogisticsData(self ,trade_ids=[]):

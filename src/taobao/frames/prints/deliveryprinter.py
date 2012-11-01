@@ -60,21 +60,22 @@ class DeliveryPrinter(wx.Frame):
         html_text = self.createHtml(trade_ids)
         self.html.LoadString(html_text)
  
-        mention = wx.StaticText(self.panel,wx.ID_ANY,u'(请点击鼠标右键选择打印预览)')
+        previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
+        #printBtn = wx.Button(self.panel,wx.ID_ANY,u'打印')
         cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'取消打印')
-        deliveryBtn = wx.Button(self.panel, wx.ID_ANY, u'更新已打印发货单状态')
         
+        self.Bind(wx.EVT_BUTTON, self.onPreview, previewBtn)
+        #self.Bind(wx.EVT_BUTTON, self.onPrint, printBtn)
         self.Bind(wx.EVT_BUTTON, self.onCancel, cancelBtn)
-        self.Bind(wx.EVT_BUTTON, self.onUpdateDeliveryStatus, deliveryBtn)
  
         sizer = wx.BoxSizer(wx.VERTICAL)
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
  
         sizer.Add(self.html, 1, wx.GROW)
-        btnSizer.Add(mention, 0, wx.ALL, 5)
-        btnSizer.Add(cancelBtn, 0, wx.ALL, 5)
-        btnSizer.Add(deliveryBtn, 1, wx.ALL|wx.RIGHT, 5)
-        sizer.Add(btnSizer)
+        btnSizer.Add(previewBtn, 0, wx.ALL|wx.CENTER, 5)
+        #btnSizer.Add(printBtn, 0, wx.ALL|wx.CENTER, 5)
+        btnSizer.Add(cancelBtn, 0, wx.ALL|wx.CENTER, 5)
+        sizer.Add(btnSizer,0,wx.ALL|wx.CENTER,5)
  
         self.panel.SetSizer(sizer)
         self.panel.SetAutoLayout(True)
@@ -96,23 +97,26 @@ class DeliveryPrinter(wx.Frame):
 
     #----------------------------------------------------------------------
     def onPrint(self, event):
-        self.sendToPrinter()
+        self.html.Print(True)
+        
+        with create_session(self.Parent) as session: 
+            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
+                .update({'is_picking_print':True},synchronize_session='fetch')  
+        event.Skip() 
  
     #----------------------------------------------------------------------
-    def sendToPrinter(self):
+    def onPreview(self,event):
         """"""
-        self.printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
-        self.printer.PrintText(self.html.GetText(True),u'发货单')
+        self.html.PrintPreview()
+        
+        with create_session(self.Parent) as session: 
+            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
+                .update({'is_picking_print':True},synchronize_session='fetch') 
+        event.Skip()
  
     #----------------------------------------------------------------------
     def onCancel(self, event):
         self.Close()
- 
-    #----------------------------------------------------------------------
-    def onUpdateDeliveryStatus(self,event):
-        with create_session(self.Parent) as session: 
-            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
-                .update({'is_picking_print':True},synchronize_session='fetch')
 
     #----------------------------------------------------------------------
     def getTradePickingData(self ,trade_ids=[]):

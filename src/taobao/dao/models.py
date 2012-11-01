@@ -86,6 +86,8 @@ class Product(Base):
     category_id =  Column(Integer, ForeignKey('shop_categorys_category.cid'))
     
     skus = relationship("ProductSku", backref="product")
+    
+    pic_path    = Column(String(256))
     collect_num = Column(Integer)
     warn_num    = Column(Integer)
     remain_num  = Column(Integer)

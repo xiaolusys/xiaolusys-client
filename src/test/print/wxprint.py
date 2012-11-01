@@ -212,7 +212,7 @@ class PrintFrameworkSample(wx.Frame):
         printer = wx.Printer(data)
         text = self.tc.GetValue()
         printout = TextDocPrintout(text, "title", self.margins)
-        useSetupDialog = False
+        useSetupDialog = True
         if not printer.Print(self, printout, prompt=useSetupDialog) and printer.GetLastError() == wx.PRINTER_ERROR:
             wx.MessageBox(
                 "There was a problem printing.\n"
