@@ -122,7 +122,7 @@ class DeliveryPrinter(wx.Frame):
     def getTradePickingData(self ,trade_ids=[]):
         
         with create_session(self.Parent) as session: 
-            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))
+            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
         
             picking_data_list = []
             for trade in send_trades:

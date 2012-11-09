@@ -45,7 +45,7 @@ class HtmlPrinter(HtmlEasyPrinting):
 class ExpressPrinter(wx.Frame):
  
     #----------------------------------------------------------------------
-    def __init__(self,parent=None, title=u'打印发货单',trade_ids=[]):
+    def __init__(self,parent=None, title=u'打印快递单',trade_ids=[]):
         wx.Frame.__init__(self, parent, wx.ID_ANY, title, size=(850,500))
  
         self.trade_ids = trade_ids

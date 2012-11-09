@@ -25,6 +25,7 @@ from taobao.frames.prints.expressprinter import ExpressPrinter
 TRADE_ID_CELL_COL = 1
 LOG_COMPANY_CELL_COL = 11
 OUT_SID_CELL_COL = 12
+OPERATOR_CELL_COL = 13
 OUTER_ID_COL = 5
 OUTER_SKU_ID_COL = 6
 ORIGIN_NUL_COL = 4
@@ -142,8 +143,8 @@ class GridPanel(wx.Panel):
   
         fg.Add(self.scan_check_btn,0,17)
         fg.Add(self.fill_sid_btn, 0, 18)
-        fg.Add(self.picking_print_btn, 0, 19) 
-        fg.Add(self.express_print_btn, 0, 20)
+        fg.Add(self.express_print_btn, 0, 19) 
+        fg.Add(self.picking_print_btn, 0, 20)
         fg.Add(self.scan_weight_btn, 0, 22)
         self.pag_panel.SetSizer(fg)
         
@@ -407,8 +408,12 @@ class GridPanel(wx.Panel):
             elif eventid == picking_print_btn_id:
                 trade_ids = []
                 for row in self._selectedRows:
-                    trade_ids.append(self.grid.GetCellValue(row,1))
-                DeliveryPrinter(parent=self,trade_ids=trade_ids).Show()
+                    out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
+                    operator = self.grid.GetCellValue(row,OPERATOR_CELL_COL)
+                    if out_sid and operator:
+                        trade_ids.append(self.grid.GetCellValue(row,TRADE_ID_CELL_COL))
+                if trade_ids:
+                    DeliveryPrinter(parent=self,trade_ids=trade_ids).Show()
             
             elif eventid == express_print_btn_id:
                 trade_ids = []
@@ -416,14 +421,15 @@ class GridPanel(wx.Panel):
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     company_name = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
-                    if pre_company_name and pre_company_name !=company_name:
+                    if pre_company_name and pre_company_name != company_name:
                         return
                     pre_company_name = company_name
                     out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
-                    if out_sid:
+                    operator = self.grid.GetCellValue(row,OPERATOR_CELL_COL)
+                    if out_sid and operator:
                         trade_ids.append(trade_id)
-                    
-                ExpressPrinter(parent=self,trade_ids=trade_ids).Show()
+                if trade_ids:
+                    ExpressPrinter(parent=self,trade_ids=trade_ids).Show()
             
             elif eventid == scan_check_btn_id:
                 self.Parent.Parent._mgr.GetPane("scan_check_content").Show()
