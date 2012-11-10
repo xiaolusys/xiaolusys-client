@@ -11,7 +11,7 @@ from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
-    SYS_STATUS_INVALID,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_WAITSCANWEIGHT
+    SYS_STATUS_INVALID,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK
 
 weight_regex=re.compile('[0-9\.]{1,7}$')
 
@@ -209,8 +209,8 @@ class ScanWeightPanel(wx.Panel):
         if company_name:
             with create_session(self.Parent) as session:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                         logistics_company_id=logistics_company.id,sys_status=SYS_STATUS_WAITSCANWEIGHT)
+                trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_((SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK)))\
+                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id)
         count = trades.count() if trades else 0   
         if count>1 :
             self.error_text.SetLabel(u'该快递单号已重复，请联系管理员')
@@ -302,6 +302,8 @@ class ScanWeightPanel(wx.Panel):
             session.query(MergeTrade).filter_by(id=trade.id,sys_status=SYS_STATUS_WAITSCANWEIGHT)\
                     .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
         self.gridpanel.InsertTradeRows(trade)
+        for control in self.control_array:
+            control.SetValue('')
     
         
     def onClickCheckBox(self,evt):
