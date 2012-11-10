@@ -21,10 +21,12 @@ from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_ST
 from taobao.dao.tradedao import get_used_orders
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
+from taobao.frames.prints.pickleprinter import PicklePrinter
 
 TRADE_ID_CELL_COL = 1
 LOG_COMPANY_CELL_COL = 11
 OUT_SID_CELL_COL = 12
+OPERATOR_CELL_COL = 13
 OUTER_ID_COL = 5
 OUTER_SKU_ID_COL = 6
 ORIGIN_NUL_COL = 4
@@ -35,7 +37,7 @@ picking_print_btn_id = wx.NewId()
 express_print_btn_id = wx.NewId()
 scan_check_btn_id = wx.NewId()
 scan_weight_btn_id = wx.NewId()
-
+pickle_print_btn_id  = wx.NewId()
 fill_sid_btn2_id = wx.NewId()
 
 class GridPanel(wx.Panel):
@@ -71,7 +73,8 @@ class GridPanel(wx.Panel):
    
         self.fill_sid_btn = wx.Button(pag_panel, fill_sid_btn_id, label=u'填物流单号',name=u'打印发货单前，需将物流单号与订单绑定')
         self.picking_print_btn = wx.Button(pag_panel, picking_print_btn_id, label=u'打印发货单',name=u'打印发货单，进行配货')
-        self.express_print_btn = wx.Button(pag_panel,express_print_btn_id,label=u'打印物流单',name=u'打印物流单，为扫描称重准备')
+        self.express_print_btn = wx.Button(pag_panel,express_print_btn_id,label=u'打印物流单',name=u'打印物流单，为打印配货单准备')
+        self.post_print_btn = wx.Button(pag_panel,pickle_print_btn_id,label=u'打印配货单',name=u'打印配货单，为扫描验货准备')
         self.scan_check_btn = wx.Button(pag_panel,scan_check_btn_id,label=u'扫描验货',name=u'对发货包裹进行检验，确认是否缺货')
         self.scan_weight_btn = wx.Button(pag_panel,scan_weight_btn_id,label=u'扫描称重',name=u'对发货包裹进行称重，物流结算')
         
@@ -105,6 +108,7 @@ class GridPanel(wx.Panel):
         self.fill_sid_btn.SetFont(font)
         self.picking_print_btn.SetFont(font)
         self.express_print_btn.SetFont(font)
+        self.post_print_btn.SetFont(font)
         self.scan_check_btn.SetFont(font)
         self.scan_weight_btn.SetFont(font)
         
@@ -142,8 +146,9 @@ class GridPanel(wx.Panel):
   
         fg.Add(self.scan_check_btn,0,17)
         fg.Add(self.fill_sid_btn, 0, 18)
-        fg.Add(self.picking_print_btn, 0, 19) 
-        fg.Add(self.express_print_btn, 0, 20)
+        fg.Add(self.express_print_btn, 0, 19) 
+        fg.Add(self.picking_print_btn, 0, 20)
+        fg.Add(self.post_print_btn,0,21)
         fg.Add(self.scan_weight_btn, 0, 22)
         self.pag_panel.SetSizer(fg)
         
@@ -196,6 +201,7 @@ class GridPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn2)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.picking_print_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.express_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.post_print_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_check_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
 
@@ -212,6 +218,7 @@ class GridPanel(wx.Panel):
         self.fill_sid_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.picking_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.express_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
+        self.post_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.scan_check_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK))
         self.scan_weight_btn.Show(status_type in (SYS_STATUS_WAITSCANWEIGHT))
         self.updateTableAndPaginator()
@@ -407,8 +414,12 @@ class GridPanel(wx.Panel):
             elif eventid == picking_print_btn_id:
                 trade_ids = []
                 for row in self._selectedRows:
-                    trade_ids.append(self.grid.GetCellValue(row,1))
-                DeliveryPrinter(parent=self,trade_ids=trade_ids).Show()
+                    out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
+                    operator = self.grid.GetCellValue(row,OPERATOR_CELL_COL)
+                    if out_sid and operator:
+                        trade_ids.append(self.grid.GetCellValue(row,TRADE_ID_CELL_COL))
+                if trade_ids:
+                    DeliveryPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
             
             elif eventid == express_print_btn_id:
                 trade_ids = []
@@ -416,14 +427,18 @@ class GridPanel(wx.Panel):
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     company_name = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
-                    if pre_company_name and pre_company_name !=company_name:
+                    if pre_company_name and pre_company_name != company_name:
                         return
                     pre_company_name = company_name
                     out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
-                    if out_sid:
+                    operator = self.grid.GetCellValue(row,OPERATOR_CELL_COL)
+                    if out_sid and operator:
                         trade_ids.append(trade_id)
+                if trade_ids:
+                    ExpressPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
                     
-                ExpressPrinter(parent=self,trade_ids=trade_ids).Show()
+            elif eventid == pickle_print_btn_id:
+                PicklePrinter(parent=self).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()
             
             elif eventid == scan_check_btn_id:
                 self.Parent.Parent._mgr.GetPane("scan_check_content").Show()

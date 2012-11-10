@@ -62,7 +62,7 @@ class DeliveryPrinter(wx.Frame):
  
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
         #printBtn = wx.Button(self.panel,wx.ID_ANY,u'打印')
-        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'取消打印')
+        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'关闭窗口')
         
         self.Bind(wx.EVT_BUTTON, self.onPreview, previewBtn)
         #self.Bind(wx.EVT_BUTTON, self.onPrint, printBtn)
@@ -97,21 +97,21 @@ class DeliveryPrinter(wx.Frame):
 
     #----------------------------------------------------------------------
     def onPrint(self, event):
-        self.html.Print(True)
         
         with create_session(self.Parent) as session: 
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
-                .update({'is_picking_print':True},synchronize_session='fetch')  
+                .update({'is_picking_print':True},synchronize_session='fetch') 
+        self.html.Print(True)
         event.Skip() 
  
     #----------------------------------------------------------------------
     def onPreview(self,event):
         """"""
-        self.html.PrintPreview()
-        
         with create_session(self.Parent) as session: 
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
-                .update({'is_picking_print':True},synchronize_session='fetch') 
+                .update({'is_picking_print':True},synchronize_session='fetch')
+        
+        self.html.PrintPreview()
         event.Skip()
  
     #----------------------------------------------------------------------
@@ -122,7 +122,7 @@ class DeliveryPrinter(wx.Frame):
     def getTradePickingData(self ,trade_ids=[]):
         
         with create_session(self.Parent) as session: 
-            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))
+            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
         
             picking_data_list = []
             for trade in send_trades:
