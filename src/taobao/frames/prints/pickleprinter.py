@@ -31,7 +31,7 @@ class PicklePrinter(wx.Frame):
         self.html.LoadUrl(cfg.get('url','post_url'))
         
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
-        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'取消打印')
+        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'关闭窗口')
         
         self.Bind(wx.EVT_BUTTON, self.onPreview, previewBtn)
         self.Bind(wx.EVT_BUTTON, self.onCancel, cancelBtn)

@@ -60,7 +60,7 @@ class ExpressPrinter(wx.Frame):
         self.html.LoadString(html_text)
         
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
-        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'取消打印')
+        cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'关闭窗口')
         
         self.Bind(wx.EVT_BUTTON, self.onPreview, previewBtn)
         self.Bind(wx.EVT_BUTTON, self.onCancel, cancelBtn)
@@ -98,21 +98,22 @@ class ExpressPrinter(wx.Frame):
 
     #----------------------------------------------------------------------
     def onPrint(self, event):
-        self.html.Print(True)
         
         with create_session(self.Parent) as session: 
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
-                .update({'is_express_print':True},synchronize_session='fetch')  
+                .update({'is_express_print':True},synchronize_session='fetch')
+        self.html.Print(True)
+          
         event.Skip() 
  
     #----------------------------------------------------------------------
     def onPreview(self,event):
         """"""
-        self.html.PrintPreview()
-        
         with create_session(self.Parent) as session: 
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
-                .update({'is_express_print':True},synchronize_session='fetch')  
+                .update({'is_express_print':True},synchronize_session='fetch')
+        self.html.PrintPreview()
+          
         event.Skip()
  
     #----------------------------------------------------------------------

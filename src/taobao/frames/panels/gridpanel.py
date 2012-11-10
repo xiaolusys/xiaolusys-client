@@ -218,6 +218,7 @@ class GridPanel(wx.Panel):
         self.fill_sid_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.picking_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.express_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
+        self.post_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.scan_check_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK))
         self.scan_weight_btn.Show(status_type in (SYS_STATUS_WAITSCANWEIGHT))
         self.updateTableAndPaginator()
@@ -418,7 +419,7 @@ class GridPanel(wx.Panel):
                     if out_sid and operator:
                         trade_ids.append(self.grid.GetCellValue(row,TRADE_ID_CELL_COL))
                 if trade_ids:
-                    DeliveryPrinter(parent=self,trade_ids=trade_ids).Show()
+                    DeliveryPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
             
             elif eventid == express_print_btn_id:
                 trade_ids = []
@@ -434,10 +435,10 @@ class GridPanel(wx.Panel):
                     if out_sid and operator:
                         trade_ids.append(trade_id)
                 if trade_ids:
-                    ExpressPrinter(parent=self,trade_ids=trade_ids).Show()
+                    ExpressPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
                     
             elif eventid == pickle_print_btn_id:
-                PicklePrinter(parent=self).Show()
+                PicklePrinter(parent=self).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()
             
             elif eventid == scan_check_btn_id:
                 self.Parent.Parent._mgr.GetPane("scan_check_content").Show()
