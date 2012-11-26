@@ -147,16 +147,6 @@ class ScanCheckPanel(wx.Panel):
             if checked:
                 if self.gridpanel.isCheckOver():
                     with create_session(self.Parent) as session: 
-                        orders = get_used_orders(session,self.trade.id)
-                        for order in orders:
-                            outer_id = order.outer_id 
-                            outer_sku_id = order.outer_sku_id 
-                            if outer_sku_id:
-                                session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
-                                    .update({ProductSku.quantity:ProductSku.quantity-order.num})
-                            else:
-                                session.query(Product).filter_by(outer_id=outer_id)\
-                                    .update({Product.collect_num:Product.collect_num-order.num})
                         #库存减掉后，修改发货状态
                         session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=SYS_STATUS_WAITSCANCHECK)\
                             .update({'sys_status':SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')

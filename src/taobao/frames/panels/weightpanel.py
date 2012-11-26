@@ -8,8 +8,10 @@ import re
 import weakref
 import wx,wx.grid
 from taobao.common.utils import create_session
-from taobao.dao.models import MergeTrade,LogisticsCompany
+from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import WeightGridPanel
+from taobao.dao.tradedao import get_used_orders
+from taobao.common.utils import getconfig
 from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
     SYS_STATUS_INVALID,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK
 
@@ -209,7 +211,7 @@ class ScanWeightPanel(wx.Panel):
         if company_name:
             with create_session(self.Parent) as session:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
-                trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_((SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK)))\
+                trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
                     .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id)
         count = trades.count() if trades else 0   
         if count>1 :
@@ -234,10 +236,11 @@ class ScanWeightPanel(wx.Panel):
         with create_session(self.Parent) as session:
             if company_name and out_sid:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                       logistics_company_id=logistics_company.id,sys_status=SYS_STATUS_WAITSCANWEIGHT)
+                trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(out_sid=out_sid,
+                       logistics_company_id=logistics_company.id)
             elif out_sid :
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=SYS_STATUS_WAITSCANWEIGHT)
+                trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
+                        .filter_by(out_sid=out_sid,sys_status=SYS_STATUS_WAITSCANWEIGHT)
                  
         count = trades.count() if trades else 0 
         if count>1 :
@@ -299,12 +302,30 @@ class ScanWeightPanel(wx.Panel):
         
     def save_weight_to_trade(self,trade,weight):
         with create_session(self.Parent) as session: 
+            #减库存
+            orders = get_used_orders(session,self.trade.id)
+            for order in orders:
+                outer_id = order.outer_id 
+                outer_sku_id = order.outer_sku_id 
+                if outer_sku_id:
+                    session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
+                        .update({ProductSku.quantity:ProductSku.quantity-order.num,Product.collect_num:Product.collect_num-order.num})
+                else:
+                    session.query(Product).filter_by(outer_id=outer_id)\
+                        .update({Product.collect_num:Product.collect_num-order.num})
+            #称重后，内部状态变为发货已发货
             session.query(MergeTrade).filter_by(id=trade.id,sys_status=SYS_STATUS_WAITSCANWEIGHT)\
                     .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
         self.gridpanel.InsertTradeRows(trade)
         for control in self.control_array:
             control.SetValue('')
     
+    def getPreWeightStatus(self):
+        conf = getconfig()
+        is_need_check = conf.get('custom', 'check_barcode')
+        if is_need_check.lower() == 'true':
+            return (SYS_STATUS_WAITSCANWEIGHT,)
+        return (SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK)
         
     def onClickCheckBox(self,evt):
         self.is_auto_save = evt.IsChecked()
