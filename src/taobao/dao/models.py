@@ -251,7 +251,8 @@ class MergeTrade(Base):
     has_refund       = Column(Boolean)
     has_memo         = Column(Boolean)
     remind_time      = Column(DateTime)
-   
+    
+    priority         = Column(Integer,index=True)
     operator         = Column(String(32))
     sys_status       = Column(String(32),index=True)  
     def __repr__(self):
