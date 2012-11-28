@@ -236,11 +236,11 @@ class ScanWeightPanel(wx.Panel):
         with create_session(self.Parent) as session:
             if company_name and out_sid:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
-                trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(out_sid=out_sid,
-                       logistics_company_id=logistics_company.id)
+                trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
+                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id)
             elif out_sid :
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                        .filter_by(out_sid=out_sid,sys_status=SYS_STATUS_WAITSCANWEIGHT)
+                        .filter_by(out_sid=out_sid)
                  
         count = trades.count() if trades else 0 
         if count>1 :

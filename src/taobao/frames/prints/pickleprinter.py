@@ -12,7 +12,6 @@ import wx.lib.iewin as iewin
 from taobao.common.utils import getconfig
 
 FONTSIZE = 10
- 
   
  
 class PicklePrinter(wx.Frame):
