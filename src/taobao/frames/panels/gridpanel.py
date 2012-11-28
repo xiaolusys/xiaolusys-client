@@ -208,7 +208,7 @@ class GridPanel(wx.Panel):
         
     def setDataSource(self, status_type): 
         with create_session(self.Parent) as session: 
-            datasource     = session.query(MergeTrade).order_by('pay_time asc')
+            datasource     = session.query(MergeTrade).order_by('priority desc','pay_time asc')
             if status_type and status_type != SYS_STATUS_ALL:
                 datasource = datasource.filter_by(sys_status=status_type)
         self.datasource = datasource
