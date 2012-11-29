@@ -5,8 +5,7 @@ Created on 2012-6-4
 '''
 from taobao.dao.dbsession import get_session
 from taobao.dao.models import MergeOrder
-from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,SYS_STATUS_PREPARESEND,IN_EFFECT,\
-    SYS_STATUS_INVALID,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,TRADE_STATUS_WAIT_CONFIRM_GOODS
+from taobao.dao import configparams as pcfg
 
 
 def get_or_create_model(session,model_class,**kwargs):
@@ -19,7 +18,7 @@ def get_or_create_model(session,model_class,**kwargs):
         return model
 
 def get_used_orders(session,trade_id):
-    orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,sys_status=IN_EFFECT).filter(
-                MergeOrder.status.in_(('WAIT_SELLER_SEND_GOODS','WAIT_CONFIRM,WAIT_SEND_GOODS','CONFIRM_WAIT_SEND_GOODS',TRADE_STATUS_WAIT_CONFIRM_GOODS)),
-                MergeOrder.refund_status.in_((NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER)))
+    orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,sys_status=pcfg.IN_EFFECT).filter(
+                MergeOrder.status.in_((pcfg.TRADE_STATUS_WAIT_SEND_GOODS,pcfg.TRADE_STATUS_WAIT_CONFIRM_GOODS)),
+                MergeOrder.refund_status.in_((pcfg.NO_REFUND,pcfg.REFUND_CLOSED,pcfg.SELLER_REFUSE_BUYER,pcfg.WAIT_SELLER_AGREE)))
     return orders
