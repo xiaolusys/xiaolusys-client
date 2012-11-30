@@ -47,7 +47,7 @@ class GridPanel(wx.Panel):
         self.Session = parent.Session
         self.datasource = None
         self.paginator = self.page = None
-        self.page_size = 50
+        self.page_size = 100
         self.rowLabels = rowLabels
         self.colLabels = colLabels
         self.grid = grd.Grid(self, -1)
