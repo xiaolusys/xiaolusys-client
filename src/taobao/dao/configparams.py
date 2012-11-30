@@ -62,7 +62,7 @@ SYS_STATUS = {
 
 SYS_ORDERS_STATUS = {
     IN_EFFECT:u'有效', 
-    SYS_STATUS_INVALID:u'已作废'
+    SYS_STATUS_INVALID:u'无效'
 }
 
 SHIPPING_TYPE ={

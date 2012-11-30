@@ -74,7 +74,7 @@ class BasicPanel(wx.Panel):
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE )
         self.cod_status_label = wx.StaticText(self,-1,u'货到付款状态')
         self.cod_status_text  = wx.TextCtrl(self,-1)
-        self.has_refund_label = wx.StaticText(self,-1,u'有退款')
+        self.has_refund_label = wx.StaticText(self,-1,u'待退款')
         self.has_refund_check  = wx.CheckBox(self,-1)
         
         self.order_label22  = wx.StaticText(self,-1,u'卖家留言')
@@ -126,8 +126,7 @@ class BasicPanel(wx.Panel):
         with create_session(self.Parent) as session:
             logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
             self.order_content13.AppendItems([company.name for company in logistics_companies])
-        for control in self.control_array:
-            control.Enable(False)
+
              
             
     def __do_layout(self):
@@ -255,8 +254,6 @@ class BasicPanel(wx.Panel):
         self.send_sms_check.SetValue(trade.is_send_sms)
         self.has_refund_check.SetValue(trade.has_refund)
         
-        for control in self.control_array:
-            control.Enable(False)
         self.Layout()
         
         
