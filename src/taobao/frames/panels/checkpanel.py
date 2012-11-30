@@ -128,7 +128,6 @@ class ScanCheckPanel(wx.Panel):
             self.clearTradeInfoPanel()
         elif count == 1:
             self.trade = trades.one()
-            print 'debug trade:',self.trade
             self.gridpanel.setData(self.trade)
             self.barcode_text.SetFocus()
             self.error_text.SetLabel('')
