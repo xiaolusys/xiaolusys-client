@@ -119,9 +119,6 @@ class ScanWeightPanel(wx.Panel):
         self.control_array.append(self.order_content16)
         self.control_array.append(self.order_content17)
         self.control_array.append(self.order_content18)
-        
-        for control in self.control_array:
-            control.Enable(False)
             
         self.out_sid_text.SetFocus()
     
@@ -314,7 +311,7 @@ class ScanWeightPanel(wx.Panel):
                     session.query(Product).filter_by(outer_id=outer_id)\
                         .update({Product.collect_num:Product.collect_num-order.num})
             #称重后，内部状态变为发货已发货
-            session.query(MergeTrade).filter_by(id=trade.id,sys_status=SYS_STATUS_WAITSCANWEIGHT)\
+            session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
                     .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
         self.gridpanel.InsertTradeRows(trade)
         for control in self.control_array:
