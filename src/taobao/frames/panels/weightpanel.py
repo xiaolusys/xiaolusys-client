@@ -209,7 +209,7 @@ class ScanWeightPanel(wx.Panel):
             with create_session(self.Parent) as session:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id)
+                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id,reason_code='')
         count = trades.count() if trades else 0   
         if count>1 :
             self.error_text.SetLabel(u'该快递单号已重复，请联系管理员')
@@ -221,7 +221,7 @@ class ScanWeightPanel(wx.Panel):
             self.weight_text.SetFocus()
             self.error_text.SetLabel('')
         else:
-            self.error_text.SetLabel(u'未找到该订单')
+            self.error_text.SetLabel(u'未找到该订单，或订单被拦截')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
         
@@ -234,10 +234,10 @@ class ScanWeightPanel(wx.Panel):
             if company_name and out_sid:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id)
+                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id,reason_code='')
             elif out_sid :
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                        .filter_by(out_sid=out_sid)
+                        .filter_by(out_sid=out_sid,reason_code='')
                  
         count = trades.count() if trades else 0 
         if count>1 :
@@ -253,7 +253,7 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetForegroundColour('white')
             self.error_text.SetBackgroundColour('black')
         else:
-            self.error_text.SetLabel(u'未找到该订单')
+            self.error_text.SetLabel(u'未找到该订单，或订单被拦截')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
             self.clearTradeInfoPanel()

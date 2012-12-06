@@ -50,6 +50,7 @@ class GridPanel(wx.Panel):
         self.page_size = 100
         self.rowLabels = rowLabels
         self.colLabels = colLabels
+        self.status_type = ''
         self.grid = grd.Grid(self, -1)
         
         self._selectedRows = set()
@@ -207,8 +208,9 @@ class GridPanel(wx.Panel):
 
         
     def setDataSource(self, status_type): 
+        self.status_type = status_type
         with create_session(self.Parent) as session: 
-            datasource     = session.query(MergeTrade).order_by('priority desc','pay_time asc')
+            datasource     = session.query(MergeTrade).order_by('priority desc','shop_trades_mergetrade.pay_time asc')
             if status_type and status_type != SYS_STATUS_ALL:
                 datasource = datasource.filter_by(sys_status=status_type)
         self.datasource = datasource
@@ -602,12 +604,6 @@ class SimpleGridPanel(wx.Panel):
         for i in range(0,len(object_list)):
             self.grid.SetRowSize(i,50)
         self.grid.ForceRefresh()
-        #该panel中的表格是否可编辑
-        if hasattr(self.Parent.Parent,'is_changeable'):
-            if self.Parent.Parent.is_changeable:
-                self.grid.EnableEditing(True)
-            else:
-                self.grid.EnableEditing(False)
         self.Layout()
     
     def parseObjectToList(self,trade):
