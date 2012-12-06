@@ -65,7 +65,7 @@ class BasicPanel(wx.Panel):
         self.order_content16  = wx.TextCtrl(self,-1)
         self.order_label17  = wx.StaticText(self,-1,u'物流成本')
         self.order_content17  = wx.TextCtrl(self,-1)
-        self.order_label18  = wx.StaticText(self,-1,u'订单状态')
+        self.order_label18  = wx.StaticText(self,-1,u'淘宝状态')
         self.order_content18  = wx.TextCtrl(self,-1)
         self.order_label19  = wx.StaticText(self,-1,u'系统状态')
         self.order_content19  = wx.TextCtrl(self,-1)
