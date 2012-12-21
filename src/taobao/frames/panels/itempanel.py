@@ -50,7 +50,7 @@ class BasicPanel(wx.Panel):
         self.order_label12  = wx.StaticText(self,-1,u'物流费用')
         self.order_content12  = wx.TextCtrl(self,-1,'0')
         self.order_label13  = wx.StaticText(self,-1,u'物流公司')
-        self.order_content13  = wx.ComboBox(self,-1)
+        self.order_content13  = wx.TextCtrl(self,-1)
         self.order_label14  = wx.StaticText(self,-1,u'物流单号')
         self.order_content14  = wx.TextCtrl(self,-1)
         self.order_label15  = wx.StaticText(self,-1,u'发货日期')
@@ -65,13 +65,12 @@ class BasicPanel(wx.Panel):
         self.order_content16  = wx.TextCtrl(self,-1)
         self.order_label17  = wx.StaticText(self,-1,u'物流成本')
         self.order_content17  = wx.TextCtrl(self,-1)
-        self.order_label18  = wx.StaticText(self,-1,u'订单状态')
+        self.order_label18  = wx.StaticText(self,-1,u'淘宝状态')
         self.order_content18  = wx.TextCtrl(self,-1)
         self.order_label19  = wx.StaticText(self,-1,u'系统状态')
         self.order_content19  = wx.TextCtrl(self,-1)
-        self.order_label20  = wx.StaticText(self,-1,u'订单提醒时间')
-        self.order_content20  = wx.DatePickerCtrl(self, size=(120,-1),
-                                style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE )
+        self.order_label20  = wx.StaticText(self,-1,u'问题编号')
+        self.order_content20  = wx.TextCtrl(self,-1)
         self.cod_status_label = wx.StaticText(self,-1,u'货到付款状态')
         self.cod_status_text  = wx.TextCtrl(self,-1)
         self.has_refund_label = wx.StaticText(self,-1,u'待退款')
@@ -81,10 +80,8 @@ class BasicPanel(wx.Panel):
         self.order_content22  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
         self.order_label23  = wx.StaticText(self,-1,u'买家留言')
         self.order_content23  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
-        self.order_label24  = wx.StaticText(self,-1,u'问题单原因')
+        self.order_label24  = wx.StaticText(self,-1,u'系统订单备注')
         self.order_content24  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
-        self.order_label25  = wx.StaticText(self,-1,u'系统订单备注')
-        self.order_content25  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
         
         self.__set_properties()
         self.__do_layout()
@@ -123,9 +120,6 @@ class BasicPanel(wx.Panel):
         self.control_array.append(self.cod_status_text)
         self.control_array.append(self.has_refund_check)
         
-        with create_session(self.Parent) as session:
-            logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
-            self.order_content13.AppendItems([company.name for company in logistics_companies])
 
              
             
@@ -199,8 +193,6 @@ class BasicPanel(wx.Panel):
         base_order_sizer.Add(self.order_content23,pos=(4,3),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.order_label24,pos=(4,4),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.order_content24,pos=(4,5),span=(1,1),flag=wx.EXPAND)
-        base_order_sizer.Add(self.order_label25,pos=(4,6),span=(1,1),flag=wx.EXPAND)
-        base_order_sizer.Add(self.order_content25,pos=(4,7),span=(1,1),flag=wx.EXPAND)
 
         base_order_sizer.Layout()
         
@@ -234,15 +226,11 @@ class BasicPanel(wx.Panel):
         self.order_content17.SetValue(trade.post_cost)
         self.order_content18.SetValue(TRADE_STATUS.get(trade.status,u'其他'))
         self.order_content19.SetValue(SYS_STATUS.get(trade.sys_status,u'其他'))
-        if trade.remind_time:
-            self.order_content20.SetValue(pydate2wxdate(trade.remind_time))
-        else:
-            self.order_content20
+        self.order_content20.SetValue(trade.reason_code)
         
         self.order_content22.SetValue(trade.seller_memo)
         self.order_content23.SetValue(trade.buyer_message)
-        self.order_content24.SetValue(trade.reason_code)
-        self.order_content25.SetValue(trade.sys_memo)
+        self.order_content24.SetValue(trade.sys_memo)
         
         self.seller_cod_text.SetValue(trade.seller_cod_fee)
         self.buyer_cod_text.SetValue(trade.buyer_cod_fee)

@@ -119,9 +119,6 @@ class ScanWeightPanel(wx.Panel):
         self.control_array.append(self.order_content16)
         self.control_array.append(self.order_content17)
         self.control_array.append(self.order_content18)
-        
-        for control in self.control_array:
-            control.Enable(False)
             
         self.out_sid_text.SetFocus()
     
@@ -212,7 +209,7 @@ class ScanWeightPanel(wx.Panel):
             with create_session(self.Parent) as session:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id)
+                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id,reason_code='')
         count = trades.count() if trades else 0   
         if count>1 :
             self.error_text.SetLabel(u'该快递单号已重复，请联系管理员')
@@ -224,7 +221,7 @@ class ScanWeightPanel(wx.Panel):
             self.weight_text.SetFocus()
             self.error_text.SetLabel('')
         else:
-            self.error_text.SetLabel(u'未找到该订单')
+            self.error_text.SetLabel(u'未找到该订单，或订单被拦截')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
         
@@ -237,10 +234,10 @@ class ScanWeightPanel(wx.Panel):
             if company_name and out_sid:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id)
+                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id,reason_code='')
             elif out_sid :
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                        .filter_by(out_sid=out_sid)
+                        .filter_by(out_sid=out_sid,reason_code='')
                  
         count = trades.count() if trades else 0 
         if count>1 :
@@ -256,7 +253,7 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetForegroundColour('white')
             self.error_text.SetBackgroundColour('black')
         else:
-            self.error_text.SetLabel(u'未找到该订单')
+            self.error_text.SetLabel(u'未找到该订单，或订单被拦截')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
             self.clearTradeInfoPanel()
@@ -314,7 +311,7 @@ class ScanWeightPanel(wx.Panel):
                     session.query(Product).filter_by(outer_id=outer_id)\
                         .update({Product.collect_num:Product.collect_num-order.num})
             #称重后，内部状态变为发货已发货
-            session.query(MergeTrade).filter_by(id=trade.id,sys_status=SYS_STATUS_WAITSCANWEIGHT)\
+            session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
                     .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
         self.gridpanel.InsertTradeRows(trade)
         for control in self.control_array:
