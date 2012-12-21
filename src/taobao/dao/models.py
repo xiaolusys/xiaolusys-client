@@ -20,7 +20,6 @@ class SystemConfig(Base):
     id = Column(Integer, primary_key=True)
     is_rule_auto = Column(Boolean, default=False)
     is_sms_auto = Column(Boolean, default=False)
-    is_confirm_delivery_auto = Column(Boolean, default=False)
     
     def __repr__(self):
         return "<SystemConfig('%s')>" % (str(self.id))
