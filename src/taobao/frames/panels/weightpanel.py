@@ -314,8 +314,10 @@ class ScanWeightPanel(wx.Panel):
             session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
                     .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
         self.gridpanel.InsertTradeRows(trade)
+        self.trade = None
         for control in self.control_array:
             control.SetValue('')
+        
     
     def getPreWeightStatus(self):
         conf = getconfig()
