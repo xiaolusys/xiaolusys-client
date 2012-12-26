@@ -145,12 +145,13 @@ class GridPanel(wx.Panel):
         fg.Add(self.btnLast, 0, 13) 
         fg.Add((20,20),0,14)
   
-        fg.Add(self.scan_check_btn,0,17)
-        fg.Add(self.fill_sid_btn, 0, 18)
-        fg.Add(self.express_print_btn, 0, 19) 
-        fg.Add(self.picking_print_btn, 0, 20)
-        fg.Add(self.post_print_btn,0,21)
-        fg.Add(self.scan_weight_btn, 0, 22)
+        
+        fg.Add(self.fill_sid_btn, 0, 16)
+        fg.Add(self.express_print_btn, 0, 17) 
+        fg.Add(self.picking_print_btn, 0, 18)
+        fg.Add(self.post_print_btn,0,19)
+        fg.Add(self.scan_check_btn,0,20)
+        fg.Add(self.scan_weight_btn, 0, 21)
         self.pag_panel.SetSizer(fg)
         
         self.fill_sid_sizer = wx.FlexGridSizer(hgap=15, vgap=15)
