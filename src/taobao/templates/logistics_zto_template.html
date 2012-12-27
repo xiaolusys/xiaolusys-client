@@ -101,7 +101,7 @@ div {
 				</div>
 				<!--<div class='receiver-info'></div>-->
 				<div class='left-panel-bottom'>
-					<div class='receiver-mobile'>{{ trade.receiver_mobile }}</div>
+					<div class='receiver-mobile'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
 					<div class='post-code'>{{ trade.receiver_zip }}</div>
 				</div>
 			</div>

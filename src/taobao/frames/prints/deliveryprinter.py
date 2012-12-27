@@ -16,7 +16,7 @@ import datetime
 from wx.html import HtmlEasyPrinting,HtmlWindow 
 from taobao.common.environment import get_template
 from taobao.common.utils import create_session
-from taobao.dao.models import MergeTrade,MergeOrder,Product
+from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,IN_EFFECT
 
@@ -158,18 +158,19 @@ class DeliveryPrinter(wx.Frame):
                 orders = get_used_orders(session,trade.id)  
                 for order in orders:
                     order_data = {} 
-                    product = session.query(Product).filter_by(outer_id=order.outer_id).one()
+                    product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
+                    prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,prod_outer_id=order.outer_id).first()
                     trade_data['order_nums']     += order.num
                     trade_data['discount_fee']   += float(order.discount_fee or 0)
                     trade_data['total_fee']      += float(order.total_fee or 0) 
                     trade_data['payment']      += float(order.payment or 0)
                     order_data['outer_id']  = order.outer_id 
-                    order_data['item_name'] = product.name
+                    order_data['item_name'] = product.name if product else order.title
                     order_data['num']       = order.num
                     order_data['price']     = order.price
                     order_data['discount_fee'] = float(order.discount_fee or 0)
                     order_data['payment']   = order.payment 
-                    order_data['properties'] = order.sku_properties_name
+                    order_data['properties'] = prod_sku.properties_name if prod_sku else order.sku_properties_name
                     
                     trade_data['orders'].append(order_data)
 
