@@ -133,6 +133,12 @@ class ExpressPrinter(wx.Frame):
                     
             trade_data['trade_id']     = trade.id
             trade_data['seller_nick']  = trade.seller_nick
+            trade_data['seller_contacter']  = trade.user.contacter
+            trade_data['seller_phone']  = trade.user.phone
+            trade_data['seller_mobile']  = trade.user.mobile
+            trade_data['seller_area_code']  = trade.user.area_code
+            trade_data['seller_location']  = trade.user.location
+            
             trade_data['post_date']    = dt
             trade_data['buyer_nick']        = trade.buyer_nick
             trade_data['out_sid']      = trade.out_sid

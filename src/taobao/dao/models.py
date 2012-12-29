@@ -36,6 +36,13 @@ class User(Base):
     visitor_id = Column(String(32), default='')
     nick = Column(String(32), default='')
     
+    merge_trades = relationship("MergeTrade", backref="user")
+    contacter = Column(String(32), default='')
+    phone     = Column(String(20), default='')
+    mobile    = Column(String(20), default='')
+    area_code = Column(String(10), default='')
+    location  = Column(String(256), default='')
+    
     type = Column(String(2), default='')
     item_img_num = Column(Integer, nullable=True)
     item_img_size = Column(Integer, nullable=True)
@@ -198,6 +205,7 @@ class MergeTrade(Base):
     id = Column(BigInteger, primary_key=True)
     tid = Column(BigInteger, primary_key=True)
     merge_orders = relationship("MergeOrder", backref="merge_trade")
+    user_id = Column(Integer, ForeignKey('shop_users_user.id'))
 
     seller_id = Column(String(64), index=True, nullable=True)
     seller_nick = Column(String(64), nullable=True)

@@ -49,10 +49,11 @@ div {
 .name {
 	width: 50%;
 	display: inline;
+	text-align: right;
 }
 
 .phone{
-	width: 35%;
+	width: 40%;
 	display: inline;
 	margin-left: 20px;
 }
@@ -60,6 +61,7 @@ div {
 .partment{
 	width: 95%;
 	height:25px;
+	margin-left: 20px;
 }
 
 .address {
@@ -95,19 +97,18 @@ div {
 	<div class='express'>
 		<div class='head-panel'>
 			<div class='left-panel'>
-				<div class='base-info'><div class='name'>齐悦家居有限公司</div><div class='phone'>12345678</div></div>
+				<div class='base-info'><div class='name'>{{ trade.seller_nick }}</div><div class='phone'>{{ trade.seller_phone }}</div></div>
 				<div class='partment'></div>
 				<div class='address'>
-					<span>上海 上海市 杨浦区 <br><br>
-					平凉路 3241室</span>
+					<span>{{ trade.seller_location }}</span>
 				</div>
 				<div class='left-panel-bottom' >
-					<div class='account_no'>优尼世界</div>
+					<div class='account_no'></div>
 				</div>
 			</div>
 			<div class='right-panel'>
 				<div class='base-info'>
-					<div class='name' style="margin-left: 25px;">{{ trade.receiver_name }}</div>
+					<div class='name' >{{ trade.receiver_name }}</div>
 					<div class='phone'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
 				</div>
 				<div class='partment'>{{ trade.receiver_phone }}</div>
