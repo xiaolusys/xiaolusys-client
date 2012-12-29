@@ -7,6 +7,7 @@ body {
 	margin: 0 auto;
 	padding: 0;
 	text-align: center;
+	font-size:16px;
 }
 
 div {
@@ -95,7 +96,7 @@ div {
 				</div>
 				
 				<div class='left-panel-bottom'>
-					<div class='receiver-mobile'>{{ trade.receiver_mobile }}</div>
+					<div class='receiver-mobile'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
 				</div>
 			</div>
 		</div>

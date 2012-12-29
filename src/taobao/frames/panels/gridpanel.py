@@ -145,12 +145,13 @@ class GridPanel(wx.Panel):
         fg.Add(self.btnLast, 0, 13) 
         fg.Add((20,20),0,14)
   
-        fg.Add(self.scan_check_btn,0,17)
-        fg.Add(self.fill_sid_btn, 0, 18)
-        fg.Add(self.express_print_btn, 0, 19) 
-        fg.Add(self.picking_print_btn, 0, 20)
-        fg.Add(self.post_print_btn,0,21)
-        fg.Add(self.scan_weight_btn, 0, 22)
+        
+        fg.Add(self.fill_sid_btn, 0, 16)
+        fg.Add(self.express_print_btn, 0, 17) 
+        fg.Add(self.picking_print_btn, 0, 18)
+        fg.Add(self.post_print_btn,0,19)
+        fg.Add(self.scan_check_btn,0,20)
+        fg.Add(self.scan_weight_btn, 0, 21)
         self.pag_panel.SetSizer(fg)
         
         self.fill_sid_sizer = wx.FlexGridSizer(hgap=15, vgap=15)
@@ -380,14 +381,15 @@ class GridPanel(wx.Panel):
                     if id_compile.match(str(start_out_sid)):
                         self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
                         start_out_sid += 1
-            elif start_out_sid.isdigit():
+            elif start_out_sid:
                 min_row_num = min(self._selectedRows)
-                trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                trade_id = self.grid.GetCellValue(min_row_num,TRADE_ID_CELL_COL)
                 trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                 company_regex = trade.logistics_company.reg_mail_no
                 id_compile = re.compile(company_regex)
                 if id_compile.match(str(start_out_sid)):
                     self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
+
         self.fill_sid_btn2.Enable(True)
         self.fill_sid_text.Clear()
         self.grid.ForceRefresh()
@@ -406,8 +408,12 @@ class GridPanel(wx.Panel):
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     company_code = trade.logistics_company.code if trade else None
                     company_regex = trade.logistics_company.reg_mail_no if trade else None
-                    id_compile = re.compile(company_regex)
-                    if id_compile.match(out_sid):
+                    if company_regex:
+                        id_compile = re.compile(company_regex)
+                        is_match_pass = id_compile.match(out_sid)
+                    else:
+                        is_match_pass = True
+                    if is_match_pass:
                         session.query(MergeTrade).filter_by(id=trade_id)\
                             .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
                 self.refreshTable()
