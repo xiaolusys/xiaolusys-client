@@ -378,7 +378,7 @@ class GridPanel(wx.Panel):
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     company_regex = trade.logistics_company.reg_mail_no
                     id_compile = re.compile(company_regex)
-                    if id_compile.match(str(start_out_sid)):
+                    if id_compile.match(str(start_out_sid)) and trade.sys_status == SYS_STATUS_PREPARESEND:
                         self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
                         start_out_sid += 1
             elif start_out_sid:
