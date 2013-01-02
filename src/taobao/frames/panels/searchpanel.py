@@ -18,8 +18,8 @@ class SearchPanel(wx.Panel):
         self.Session = parent.Session
         self.order_label = wx.StaticText(self,-1,u'订单号')
         self.order_text = wx.TextCtrl(self,-1)
-        self.order_type_label = wx.StaticText(self,-1,u'订单类型')
-        self.order_type_select = wx.ComboBox(self,-1)
+        self.order_receiver_name_label = wx.StaticText(self,-1,u'收货人')
+        self.order_receiver_name = wx.TextCtrl(self,-1)
         self.taobao_status_label = wx.StaticText(self,-1,u'订单状态')
         self.taobao_status_select = wx.ComboBox(self,-1)
         self.seller_label = wx.StaticText(self,-1,u'店铺名称')
@@ -71,8 +71,8 @@ class SearchPanel(wx.Panel):
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)
         gridbagsizer.Add(self.order_label, pos=(0,0), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.order_text, pos=(0,1), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.order_type_label, pos=(0,2), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.order_type_select, pos=(0,3), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.order_receiver_name_labe, pos=(0,2), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.order_receiver_name, pos=(0,3), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.taobao_status_label, pos=(0,4), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.taobao_status_select, pos=(0,5), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.seller_label, pos=(0,6), span=(1,1), flag=wx.EXPAND)
@@ -112,7 +112,7 @@ class SearchPanel(wx.Panel):
     def OnSearch(self,evt):
         datasource = self.Parent.grid.datasource
         trade_id   = self.order_text.GetValue()
-        trade_type = self.order_type_select.GetValue()
+        receiver_name = self.order_receiver_name.GetValue()
         trade_status = self.taobao_status_select.GetValue()
         seller_id = self.seller_select.GetValue()
         buyer_nick = self.buyer_text.GetValue()
@@ -141,9 +141,8 @@ class SearchPanel(wx.Panel):
             elif outer_id:
                 datasource = datasource.filter(MergeOrder.outer_id==outer_id)
         else:
-            if trade_type:
-                type_dict = dict([(v,k) for k,v in TRADE_TYPE.items()])
-                datasource = datasource.filter_by(type=type_dict.get(trade_type.strip(),None))
+            if receiver_name:
+                datasource = datasource.filter_by(receiver_name=receiver_name)
             if trade_status:
                 status_dict = dict([(v,k) for k,v in TRADE_STATUS.items()])
                 datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(),None))
