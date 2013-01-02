@@ -137,7 +137,7 @@ td{
 				</tr> -->
 			</table>
 		</div>
-		<div class='memo-style'><label>留言：</label><span>{{trade.buyer_message}} {{ trade.sys_memo }}<!-- <br>{{trade.seller_memo}}<br>{{trade.buyer_message}} --></span></div>
+		<div class='memo-style'><label>留言：</label><span>{{ trade.buyer_message|cut_string() }} {{ trade.seller_memo|cut_string() }}<!-- <br>{{trade.seller_memo}}<br>{{trade.buyer_message}} --></span></div>
 		<!-- trade.orders|print_wraps(max_num=43,split_len=16)  --> 
 		
 	</div>
