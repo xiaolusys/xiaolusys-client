@@ -33,10 +33,10 @@ class SearchPanel(wx.Panel):
         
         
         self.start_time_label = wx.StaticText(self,-1,u'付款时起')
-        self.start_time_select = wx.DatePickerCtrl(self, size=(120,-1),
+        self.start_time_select = wx.DatePickerCtrl(self, size=(80,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE )
         self.end_time_label = wx.StaticText(self,-1,u'付款时终')
-        self.end_time_select =  wx.DatePickerCtrl(self, size=(120,-1),
+        self.end_time_select =  wx.DatePickerCtrl(self, size=(80,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE )
         self.logistics_label = wx.StaticText(self,-1,u'物流单号')
         self.logistics_text = wx.TextCtrl(self,-1)
@@ -63,7 +63,6 @@ class SearchPanel(wx.Panel):
         self.seller_select.AppendItems([user.nick for user in users])
         self.logistics_company_select.AppendItems([company.name for company in logistics_companies])
         
-        self.order_type_select.AppendItems([ v for k,v in TRADE_TYPE.items()])
         self.taobao_status_select.AppendItems([ v for k,v in TRADE_STATUS.items()])
         self.shipping_type_select.AppendItems([v for k,v in SHIPPING_TYPE.items()])       
         
@@ -71,7 +70,7 @@ class SearchPanel(wx.Panel):
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)
         gridbagsizer.Add(self.order_label, pos=(0,0), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.order_text, pos=(0,1), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.order_receiver_name_labe, pos=(0,2), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.order_receiver_name_label, pos=(0,2), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.order_receiver_name, pos=(0,3), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.taobao_status_label, pos=(0,4), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.taobao_status_select, pos=(0,5), span=(1,1), flag=wx.EXPAND)
