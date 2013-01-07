@@ -164,7 +164,8 @@ class DeliveryPrinter(wx.Frame):
                     trade_data['discount_fee']   += float(order.discount_fee or 0)
                     trade_data['total_fee']      += float(order.total_fee or 0) 
                     trade_data['payment']      += float(order.payment or 0)
-                    order_data['outer_id']  = order.outer_id 
+                    order_data['outer_id']  = order.outer_id
+                    order_data['outer_sku_id']  = order.outer_sku_id
                     order_data['item_name'] = product.name if product else order.title
                     order_data['num']       = order.num
                     order_data['price']     = order.price

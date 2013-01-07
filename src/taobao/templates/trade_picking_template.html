@@ -110,7 +110,6 @@ td{
 					<td>序号</td>
 					<td>商品编码</td>
 					<td>货品名称</td>
-					<td>规格编码</td>
 					<td>规格</td>
 					<td>数量</td>
 					<!-- <td>单价</td>
@@ -122,8 +121,7 @@ td{
 					<td>{{ loop.index }}</td>
 					<td>{{ order.outer_id }}</td>
 					<td>{{ order.item_name }}</td>
-					<td>{{ order.outer_sku_id }}</td>
-					<td>{{ order.properties }}</td>
+					<td>({{ order.outer_sku_id }}){{ order.properties }}</td>
 					<td>{{ order.num }}</td>
 					<!-- <td>{{ order.price }}</td>
 					<td>{{ order.discount_fee }}</td>
