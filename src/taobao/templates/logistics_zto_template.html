@@ -18,6 +18,7 @@ div {
 .express {
 	width: 660px;
 	height: 1000px;
+	text-align:left;
 }
 
 .head-panel {
@@ -89,6 +90,7 @@ div {
 <body>
 	{% for trade in trades %}
 	<div class='express'>
+		{{ trade.trade_id }}&nbsp;&nbsp;{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}
 		<div class='head-panel'>
 			<div class='left-panel'></div>
 			<div class='right-panel'>
