@@ -137,7 +137,7 @@ td{
 				</tr> -->
 			</table>
 		</div>
-		<div class='memo-style'><label>留言：</label><span>(买家){{ trade.buyer_message|cut_string() }}&nbsp;&nbsp;(卖家){{ trade.seller_memo|cut_string() }}</span></div>
+		<div class='memo-style'><label>留言：</label><span>{% if trade.buyer_message %}(买家:{{ trade.buyer_message|cut_string() }}){% endif %}&nbsp;&nbsp;{% if trade.seller_memo %}(卖家:{{ trade.seller_memo|cut_string() }}){% endif %}</span></div>
 		
 	</div>
 	{% endfor %}
