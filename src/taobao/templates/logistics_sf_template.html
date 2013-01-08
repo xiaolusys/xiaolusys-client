@@ -107,7 +107,7 @@ div {
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		{{ trade.trade_id }}&nbsp;&nbsp;{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}
+		{{ trade.trade_id }}
 		<div class='head-panel'>
 			<div class='left-panel'>
 				<div class='up-inner-panel'>
@@ -128,13 +128,14 @@ div {
 						<br> {{ trade.receiver_address }} 
 						</span>
 					</div>
-					<div class='bottom-inner-panel' >
+					<div class='bottom-inner-panel'>
 						<div class='area_no'></div>
 						<div class='phone'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
 					</div>
 				</div>
 			</div>
-			<div class='right-panel'></div>
+			<div class='right-panel'>
+			</div>
 		</div>
 		<div class='bottom-panel'></div>
 	</div>

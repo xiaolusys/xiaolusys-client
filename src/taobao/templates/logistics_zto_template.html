@@ -23,7 +23,7 @@ div {
 
 .head-panel {
 	width: 100%;
-	height: 165px;
+	height: 300px;
 	margin-top: 0px;
 }
 
@@ -85,12 +85,22 @@ div {
 	width: 100%;
 	height: 250px;
 }
+
+.post-fill{
+	width:100%;
+	height:80%;
+}
+
+.post-date{
+	width:100%;
+	height:10%;
+}
 </style>
 </head>
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		{{ trade.trade_id }}&nbsp;&nbsp;{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}
+		{{ trade.trade_id }}
 		<div class='head-panel'>
 			<div class='left-panel'></div>
 			<div class='right-panel'>
@@ -108,7 +118,10 @@ div {
 				</div>
 			</div>
 		</div>
-		<div class='bottom-panel'></div>
+		<div class='bottom-panel'>
+			<div class='post-fill'></div>
+			<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+		</div>
 	</div>
 	{% endfor %}
 </body>
