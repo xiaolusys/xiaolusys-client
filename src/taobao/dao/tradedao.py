@@ -19,6 +19,5 @@ def get_or_create_model(session,model_class,**kwargs):
 
 def get_used_orders(session,trade_id):
     orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,sys_status=pcfg.IN_EFFECT).filter(
-                MergeOrder.status.in_((pcfg.TRADE_STATUS_WAIT_SEND_GOODS,pcfg.TRADE_STATUS_WAIT_CONFIRM_GOODS)),
-                MergeOrder.refund_status.in_((pcfg.NO_REFUND,pcfg.REFUND_CLOSED)))
+                MergeOrder.status.in_((pcfg.TRADE_STATUS_WAIT_SEND_GOODS,pcfg.TRADE_STATUS_WAIT_CONFIRM_GOODS)))
     return orders
