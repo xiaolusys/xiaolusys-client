@@ -22,6 +22,7 @@ from taobao.dao.tradedao import get_used_orders
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
 from taobao.frames.prints.pickleprinter import PicklePrinter
+from taobao.frames.prints.revieworder import OrderReview
 
 TRADE_ID_CELL_COL = 1
 LOG_COMPANY_CELL_COL = 11
@@ -37,6 +38,7 @@ picking_print_btn_id = wx.NewId()
 express_print_btn_id = wx.NewId()
 scan_check_btn_id = wx.NewId()
 scan_weight_btn_id = wx.NewId()
+review_orders_btn_id = wx.NewId()
 pickle_print_btn_id  = wx.NewId()
 fill_sid_btn2_id = wx.NewId()
 
@@ -76,8 +78,9 @@ class GridPanel(wx.Panel):
         self.picking_print_btn = wx.Button(pag_panel, picking_print_btn_id, label=u'打印发货单',name=u'打印发货单，进行配货')
         self.express_print_btn = wx.Button(pag_panel,express_print_btn_id,label=u'打印物流单',name=u'打印物流单，为打印配货单准备')
         self.post_print_btn = wx.Button(pag_panel,pickle_print_btn_id,label=u'打印配货单',name=u'打印配货单，为扫描验货准备')
-        self.scan_check_btn = wx.Button(pag_panel,scan_check_btn_id,label=u'扫描验货',name=u'对发货包裹进行检验，确认是否缺货')
-        self.scan_weight_btn = wx.Button(pag_panel,scan_weight_btn_id,label=u'扫描称重',name=u'对发货包裹进行称重，物流结算')
+        self.review_orders_btn = wx.Button(pag_panel,review_orders_btn_id,label=u'审查订单',name=u'审查指定订单问题并处理')
+        self.scan_check_btn = wx.Button(pag_panel,scan_check_btn_id,label=u'扫描验货',name=u'扫描验货,为扫描称重准备')
+        self.scan_weight_btn = wx.Button(pag_panel,scan_weight_btn_id,label=u'扫描称重',name=u'扫描称重，订单发货流程结束')
         
         self.button_array = []
         
@@ -110,6 +113,7 @@ class GridPanel(wx.Panel):
         self.picking_print_btn.SetFont(font)
         self.express_print_btn.SetFont(font)
         self.post_print_btn.SetFont(font)
+        self.review_orders_btn.SetFont(font)
         self.scan_check_btn.SetFont(font)
         self.scan_weight_btn.SetFont(font)
         
@@ -120,6 +124,7 @@ class GridPanel(wx.Panel):
         self.button_array.append(self.express_print_btn)
         
         self.fill_sid_btn2.Enable(False)
+        self.review_orders_btn.Enable(False)
 
 
         
@@ -143,15 +148,16 @@ class GridPanel(wx.Panel):
         fg.Add(self.btnPrev, 0, 11)
         fg.Add(self.btnNext, 0, 12)
         fg.Add(self.btnLast, 0, 13) 
-        fg.Add((20,20),0,14)
+        fg.Add((10,10),0,14)
   
         
-        fg.Add(self.fill_sid_btn, 0, 16)
-        fg.Add(self.express_print_btn, 0, 17) 
-        fg.Add(self.picking_print_btn, 0, 18)
-        fg.Add(self.post_print_btn,0,19)
+        fg.Add(self.fill_sid_btn, 0, 15)
+        fg.Add(self.express_print_btn, 0, 16) 
+        fg.Add(self.picking_print_btn, 0, 17)
+        fg.Add(self.post_print_btn,0,18)
+        fg.Add(self.review_orders_btn,0,19)
         fg.Add(self.scan_check_btn,0,20)
-        fg.Add(self.scan_weight_btn, 0, 21)
+        fg.Add(self.scan_weight_btn, 0,21)
         self.pag_panel.SetSizer(fg)
         
         self.fill_sid_sizer = wx.FlexGridSizer(hgap=15, vgap=15)
@@ -204,6 +210,7 @@ class GridPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.picking_print_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.express_print_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.post_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.review_orders_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_check_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
 
@@ -222,10 +229,12 @@ class GridPanel(wx.Panel):
         self.picking_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.express_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.post_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
+        self.review_orders_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK))
         self.scan_check_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK))
         self.scan_weight_btn.Show(status_type in (SYS_STATUS_WAITSCANWEIGHT))
         self.updateTableAndPaginator()
         self.select_all_check.SetValue(False)
+        self.Layout()
         
     def setSearchData(self, datasource):
         self.paginator = paginator = Paginator(datasource, self.page_size)
@@ -317,6 +326,7 @@ class GridPanel(wx.Panel):
             if len(self._selectedRows) <1:
                 for btn in self.button_array:
                     btn.Enable(False)
+        self.review_orders_btn.Enable(len(self._selectedRows) == 1)
         self.updateGridCheckBoxValue()
         self.grid.ForceRefresh()
         self.selected_counts.SetLabel(str(len(self._selectedRows)))
@@ -408,11 +418,10 @@ class GridPanel(wx.Panel):
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     company_code = trade.logistics_company.code if trade else None
                     company_regex = trade.logistics_company.reg_mail_no if trade else None
+                    is_match_pass = True
                     if company_regex:
                         id_compile = re.compile(company_regex)
                         is_match_pass = id_compile.match(out_sid)
-                    else:
-                        is_match_pass = True
                     if is_match_pass:
                         session.query(MergeTrade).filter_by(id=trade_id)\
                             .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
@@ -448,6 +457,11 @@ class GridPanel(wx.Panel):
             elif eventid == pickle_print_btn_id:
                 PicklePrinter(parent=self).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()
             
+            elif eventid == review_orders_btn_id:
+                if len(self._selectedRows)==1:
+                    trade_id = self.grid.GetCellValue(self._selectedRows.pop(),TRADE_ID_CELL_COL)
+                    OrderReview(parent=self,trade_id=trade_id).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()
+
             elif eventid == scan_check_btn_id:
                 self.Parent.Parent._mgr.GetPane("scan_check_content").Show()
                 self.Parent.Parent._mgr.Update()
