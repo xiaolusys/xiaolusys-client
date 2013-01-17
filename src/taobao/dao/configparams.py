@@ -27,15 +27,8 @@ TRADE_TYPE = {
     'auction':u'拍卖',
     'guarantee_trade':u'一口价拍卖',
     'auto_delivery':u'自动发货',
-    'independent_simple_trade':u'旺店入门版交易',
-    'independent_shop_trade':u'旺店标准版交易',
-    'ec':u'直冲',
     'cod':u'货到付款',
     'fenxiao':u'分销',
-    'game_equipment':u'游戏装备',
-    'shopex_trade':u'ShopEX交易',
-    'netcn_trade':u'万网交易',
-    'external_trade':u'统一外部交易', 
 }
 
 SYS_STATUS_ALL     = 'ALL'

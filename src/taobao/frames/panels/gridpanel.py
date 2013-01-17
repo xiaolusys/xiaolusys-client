@@ -229,7 +229,7 @@ class GridPanel(wx.Panel):
         self.picking_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.express_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
         self.post_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
-        self.review_orders_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK))
+        self.review_orders_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK,SYS_STATUS_FINISHED))
         self.scan_check_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK))
         self.scan_weight_btn.Show(status_type in (SYS_STATUS_WAITSCANWEIGHT))
         self.updateTableAndPaginator()
