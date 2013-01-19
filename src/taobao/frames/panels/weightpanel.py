@@ -341,6 +341,7 @@ class ScanWeightPanel(wx.Panel):
         self.weight_text.Clear()
         for control in self.control_array:
             control.Clear()
+        self.out_sid_text.SetFocus()
    
      
                  
