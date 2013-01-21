@@ -49,6 +49,7 @@ class TradePanel(wx.Panel):
         self.isSearchPanelShow = False
         self.istailnumshow = False
         
+        self.refresh_btn = wx.Button(self,-1,'刷新',size=(35,23))
         self.filter_number_btn = wx.Button(self,-1,'>',size=(23,23)) 
         self.colorpicker = wx.ColourPickerCtrl(self,-1)
    
@@ -75,6 +76,7 @@ class TradePanel(wx.Panel):
     def __set_properties(self):
         self.SetName('trade_panel') 
         self.FindWindowById(prapare_send_id).Enable(False)  
+        self.refresh_btn.SetToolTip(wx.ToolTip(u'刷新当前表单'))
         self.colorpicker.SetToolTip(wx.ToolTip(u'设置选中行颜色'))
         self.filter_number_btn.SetToolTip(wx.ToolTip(u'选择显示的订单尾号'))  
         
@@ -102,8 +104,9 @@ class TradePanel(wx.Panel):
             check = wx.CheckBox(self,-1,str(i))
             self.checkbox_list.append(check)
             self.checksizer.Add(check,0,i)
-        trade_naming_sizer.Add(self.colorpicker,0,index+1)
-        trade_naming_sizer.Add(self.filter_number_btn,0,index+2)
+        trade_naming_sizer.Add(self.refresh_btn,0,index+1)
+        trade_naming_sizer.Add(self.colorpicker,0,index+2)
+        trade_naming_sizer.Add(self.filter_number_btn,0,index+3)
         trade_naming_sizer.Add(self.checksizer,0,index+3)
         trade_naming_sizer.Hide(self.checksizer)
         
@@ -122,7 +125,7 @@ class TradePanel(wx.Panel):
                 self.Bind(wx.EVT_BUTTON,self.onClickExpandFoldBtn,self.FindWindowById(button[0]))   
                 
         self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_up)
-        
+        self.Bind(wx.EVT_BUTTON, self.onClickRefreshBtn,self.refresh_btn)
         self.Bind(wx.EVT_COLOURPICKER_CHANGED, self.onClickColorPickerChange,self.colorpicker)
         self.Bind(wx.EVT_BUTTON, self.onClickTailNumBtn,self.filter_number_btn)
         for checkbox in self.checkbox_list:
@@ -184,7 +187,10 @@ class TradePanel(wx.Panel):
     def onClickColorPickerChange(self,evt):
         self.selectedRowColour = evt.GetColour()
         self.grid.refreshTable()
-        
+    
+    def onClickRefreshBtn(self,evt):
+        self.grid.refreshTable()   
+    
     def onCheckTailNum(self,evt):
         source = evt.GetEventObject()
         if evt.IsChecked():

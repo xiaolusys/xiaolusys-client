@@ -17,17 +17,17 @@ class SearchPanel(wx.Panel):
         
         self.Session = parent.Session
         self.order_label = wx.StaticText(self,-1,u'订单号')
-        self.order_text = wx.TextCtrl(self,-1)
+        self.order_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.order_receiver_name_label = wx.StaticText(self,-1,u'收货人')
-        self.order_receiver_name = wx.TextCtrl(self,-1)
+        self.order_receiver_name = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.taobao_status_label = wx.StaticText(self,-1,u'订单状态')
         self.taobao_status_select = wx.ComboBox(self,-1)
         self.seller_label = wx.StaticText(self,-1,u'店铺名称')
         self.seller_select = wx.ComboBox(self,-1) 
         self.buyer_label = wx.StaticText(self,-1,u'买家称呼')
-        self.buyer_text = wx.TextCtrl(self,-1)
+        self.buyer_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.outer_id_label = wx.StaticText(self,-1,u'商品编码')
-        self.outer_id_text =  wx.TextCtrl(self,-1) 
+        self.outer_id_text =  wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER) 
         self.delivery_pick_label = wx.StaticText(self,-1,u'已打印发货单')
         self.delivery_pick_check  = wx.CheckBox(self,-1)
         
@@ -39,17 +39,15 @@ class SearchPanel(wx.Panel):
         self.end_time_select =  wx.DatePickerCtrl(self, size=(80,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE )
         self.logistics_label = wx.StaticText(self,-1,u'物流单号')
-        self.logistics_text = wx.TextCtrl(self,-1)
+        self.logistics_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.shipping_type_label = wx.StaticText(self,-1,u'物流类型')
         self.shipping_type_select =  wx.ComboBox(self,-1) 
         self.logistics_company_label = wx.StaticText(self,-1,u'快递公司')
         self.logistics_company_select = wx.ComboBox(self,-1)
         self.sku_outer_id_label = wx.StaticText(self,-1,u'规格编码')
-        self.sku_outer_id_text =  wx.TextCtrl(self,-1) 
+        self.sku_outer_id_text =  wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER) 
         self.logistics_pick_label = wx.StaticText(self,-1,u'已打印物流单')
         self.logistics_pick_check  = wx.CheckBox(self,-1)
-
-        self.search_btn = wx.Button(self,-1,u'搜索')
         
         self.__set_properties()
         self.__do_layout()
@@ -97,15 +95,31 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.sku_outer_id_text, pos=(1,11), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_pick_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_pick_check, pos=(1,13), span=(1,1), flag=wx.EXPAND)
-        
-        gridbagsizer.Add(self.search_btn,pos=(1,16),span=(1,1),flag=wx.EXPAND)
+
         gridbagsizer.Layout()
         
         self.SetSizer(gridbagsizer)
         
     def __bind_evt(self):
-
-        self.Bind(wx.EVT_BUTTON, self.OnSearch, self.search_btn)
+        
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.order_text)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.order_receiver_name)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.buyer_text)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.outer_id_text)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.logistics_text)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.sku_outer_id_text)
+        
+        self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.taobao_status_select)
+        self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.seller_select)
+        self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.shipping_type_select)
+        self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.logistics_company_select)
+        
+        self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.start_time_select)
+        self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.end_time_select)
+        
+        self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.delivery_pick_check)
+        self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.logistics_pick_check)
+        
         
     
     def OnSearch(self,evt):

@@ -527,6 +527,8 @@ class GridPanel(wx.Panel):
         for btn in self.button_array:
             btn.Enable(False)
         
+        if len(object_list) == 1:
+            self.afterCheckBox(True, 0)
         self.inner_panel.Hide()
         self.inner_panel.Layout()
         self.Layout()
