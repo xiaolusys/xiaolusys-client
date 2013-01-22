@@ -5,9 +5,10 @@ Created on 2012-7-27
 @author: user1
 '''
 import re
+import winsound
 import weakref
 import wx,wx.grid
-from taobao.common.utils import create_session
+from taobao.common.utils import create_session,MEDIA_ROOT
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.tradedao import get_used_orders
@@ -252,11 +253,13 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetLabel('')
             self.error_text.SetForegroundColour('white')
             self.error_text.SetBackgroundColour('black')
+            winsound.PlaySound(MEDIA_ROOT+'success.wav',winsound.SND_FILENAME)
         else:
             self.error_text.SetLabel(u'未找到该订单，或订单被拦截')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
             self.clearTradeInfoPanel()
+            winsound.PlaySound(MEDIA_ROOT+'wrong.wav',winsound.SND_FILENAME)
         evt.Skip()
         
     def clearTradeInfoPanel(self):

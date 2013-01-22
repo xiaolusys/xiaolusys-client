@@ -17,6 +17,7 @@ import ConfigParser
 
 FONT_PATH = 'c:\Windows\Fonts\simsun.ttc'
 IMAGE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\images\\'
+MEDIA_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\media\\'
 def parse_datetime(dt,format='%m/%d/%Y %H:%M:%S'):
     return datetime.datetime(*(time.strptime(dt,format)[0:6]))
 

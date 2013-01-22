@@ -5,7 +5,9 @@ Created on 2012-6-1
 
 
 '''
-import sys
+import winsound
 
-sys.path.append('./VirtualFS')
+print winsound.__dict__
+winsound.PlaySound("SystemExit", winsound.SND_ALIAS)
 
+winsound.PlaySound("*", winsound.SND_ALIAS)

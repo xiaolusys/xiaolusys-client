@@ -49,7 +49,7 @@ class TradePanel(wx.Panel):
         self.isSearchPanelShow = False
         self.istailnumshow = False
         
-        self.refresh_btn = wx.Button(self,-1,'刷新',size=(35,23))
+        self.refresh_btn = wx.Button(self,-1,u'刷新',size=(35,23))
         self.filter_number_btn = wx.Button(self,-1,'>',size=(23,23)) 
         self.colorpicker = wx.ColourPickerCtrl(self,-1)
    
