@@ -225,6 +225,7 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetLabel(u'未找到该订单，或订单被拦截')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
+            winsound.PlaySound(MEDIA_ROOT+'wrong.wav',winsound.SND_FILENAME)
         
     
     def onOutsidTextChange(self,evt):
@@ -299,6 +300,8 @@ class ScanWeightPanel(wx.Panel):
             self.out_sid_text.Clear()
             self.out_sid_text.SetFocus()
             winsound.PlaySound(MEDIA_ROOT+'success.wav',winsound.SND_FILENAME)
+        else:
+            winsound.PlaySound(MEDIA_ROOT+'wrong.wav',winsound.SND_FILENAME)
         
     def save_weight_to_trade(self,trade,weight):
         with create_session(self.Parent) as session: 
