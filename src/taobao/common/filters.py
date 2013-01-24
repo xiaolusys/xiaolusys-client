@@ -49,7 +49,7 @@ def slice_string(string,split_len=10,pad_char='<br>'):
     return pad_char.join(str_list)
 
 
-def cut_string(string,length=140):
+def cut_string(string,length=100):
     ls  = len(string)
     lt  = length if ls > length else ls   
     return string[0:lt]
