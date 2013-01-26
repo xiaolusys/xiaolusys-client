@@ -96,7 +96,7 @@ div {
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		{{ trade.trade_id }}&nbsp;&nbsp;{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
 		<div class='head-panel'>
 			<div class='left-panel'>
 				<div class='base-info'><div class='name'>{{ trade.seller_nick }}</div><div class='phone'>{{ trade.seller_phone }}</div></div>
@@ -123,7 +123,7 @@ div {
 				</div>
 			</div>
 		</div>
-		<div class='bottom-panel'></div>
+		<div class='bottom-panel'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
 	</div>
 	{% endfor %}
 </body>
