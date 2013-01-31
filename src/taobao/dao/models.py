@@ -259,6 +259,7 @@ class MergeTrade(Base):
     has_memo         = Column(Boolean)
     remind_time      = Column(DateTime)
     
+    can_review       = Column(Boolean)
     priority         = Column(Integer,index=True)
     operator         = Column(String(32))
     sys_status       = Column(String(32),index=True)  

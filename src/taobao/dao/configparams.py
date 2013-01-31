@@ -29,6 +29,8 @@ TRADE_TYPE = {
     'auto_delivery':u'自动发货',
     'cod':u'货到付款',
     'fenxiao':u'分销',
+    'direct':u'内售',
+    'exchange':u'退换货',
 }
 
 SYS_STATUS_ALL     = 'ALL'
