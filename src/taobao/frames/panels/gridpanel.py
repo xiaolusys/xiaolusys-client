@@ -9,7 +9,7 @@ import weakref
 import time
 import wx, wx.grid as grd
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,TRADE_STATUS_WAIT_CONFIRM_GOODS,\
-    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,IN_EFFECT,SYS_ORDERS_STATUS
+    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,IN_EFFECT,SYS_ORDERS_STATUS,ORDER_TYPE
 from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable
 from taobao.frames.panels.itempanel import ItemPanel
 from taobao.frames.tables.gridtable import CheckGridTable
@@ -639,7 +639,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
             return array_object
         
         with create_session(self.Parent) as session:
-            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id)
+            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id,sys_status=IN_EFFECT)
             from taobao.dao.models import Product
             array_object = [] 
             for object in orders:
@@ -653,9 +653,9 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(object.num)
                 object_array.append(object.price)
                 object_array.append(object.payment)
-                
                 object_array.append(object.refund_id)
                 object_array.append(REFUND_STATUS.get(object.refund_status,''))
+                object_array.append(ORDER_TYPE.get(object.gift_type,u'其他'))
                 object_array.append(TRADE_STATUS.get(object.status,'其他'))
                 object_array.append(SYS_ORDERS_STATUS.get(object.sys_status,'其他'))
                 array_object.append(object_array)

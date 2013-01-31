@@ -184,7 +184,8 @@ class MergeOrder(Base):
     refund_id = Column(BigInteger, nullable=True)
     refund_status = Column(String(40))
 
-    pic_path = Column(String(128), nullable=True)
+    gift_type = Column(Integer, nullable=True)
+    pic_path  = Column(String(128), nullable=True)
 
     seller_nick = Column(String(32), nullable=True, index=True)
     buyer_nick = Column(String(32), nullable=True, index=True)
