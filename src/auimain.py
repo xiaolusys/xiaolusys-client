@@ -16,7 +16,6 @@ from taobao.frames.panels.checkpanel import ScanCheckPanel
 ID_TradeMainPage   = wx.NewId()
 ID_ScanCheck       = wx.NewId()
 ID_ScanWeight      = wx.NewId()
-
 ID_Help            = wx.NewId() 
 
 class MainFrame(wx.Frame):
