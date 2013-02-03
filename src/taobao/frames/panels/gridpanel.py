@@ -68,7 +68,7 @@ class GridPanel(wx.Panel):
         self.lblPageCount = wx.StaticText(pag_panel, -1, "0")
         self.lblTotalCount = wx.StaticText(pag_panel, -1, "0")
         self.selected_counts = wx.StaticText(pag_panel,-1,"0")
-        self.page_size_select = wx.ComboBox(pag_panel,-1,choices=('20','50','100','200','500','1000','5000'),value='100')
+        self.page_size_select = wx.ComboBox(pag_panel,-1,choices=('50','100','200','500'),value='100')
         self.btnFirst = wx.Button(pag_panel, -1, label=u'首页', style=0)
         self.btnLast = wx.Button(pag_panel, -1, label=u'尾页', style=0)
         self.btnPrev = wx.Button(pag_panel, -1, label=u'上一页', style=0)
