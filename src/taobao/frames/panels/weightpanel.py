@@ -259,6 +259,9 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
             self.clearTradeInfoPanel()
+            self.weight_text.Clear()
+            self.out_sid_text.Clear()
+            self.out_sid_text.SetFocus()
             winsound.PlaySound(MEDIA_ROOT+'wrong.wav',winsound.SND_FILENAME)
         evt.Skip()
         
