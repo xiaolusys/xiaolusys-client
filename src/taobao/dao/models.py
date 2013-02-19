@@ -231,7 +231,8 @@ class MergeTrade(Base):
     pay_time = Column(DateTime, nullable=True)
     modified = Column(DateTime, index=True, nullable=True)
     consign_time = Column(DateTime, index=True, nullable=True)
-
+    weight_time  = Column(DateTime, index=True, nullable=True)
+    
     buyer_message = Column(String(1000))
     seller_memo   = Column(String(1000))
     sys_memo      = Column(String(500))

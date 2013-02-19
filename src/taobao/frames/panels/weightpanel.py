@@ -7,6 +7,7 @@ Created on 2012-7-27
 import re
 import winsound
 import weakref
+import datetime
 import wx,wx.grid
 from taobao.common.utils import create_session,MEDIA_ROOT
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
@@ -321,7 +322,8 @@ class ScanWeightPanel(wx.Panel):
                         .update({Product.collect_num:Product.collect_num-order.num})
             #称重后，内部状态变为发货已发货
             session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
-                    .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED},synchronize_session='fetch')
+                    .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED,'weight_time':datetime.datetime.now()}
+                    ,synchronize_session='fetch')
         self.gridpanel.InsertTradeRows(trade)
         self.trade = None
         for control in self.control_array:
