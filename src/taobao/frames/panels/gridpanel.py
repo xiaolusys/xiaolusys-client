@@ -590,6 +590,7 @@ class QueryObjectGridPanel(GridPanel):
                 object_array.append(object.total_fee)
                 object_array.append(object.pay_time)
                 object_array.append(object.consign_time or '')
+                object_array.append(object.weight_time or '')
                 array_object.append(object_array)
         return array_object
     

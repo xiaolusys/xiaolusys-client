@@ -61,11 +61,15 @@ SYS_ORDERS_STATUS = {
 }
 
 SHIPPING_TYPE ={
-    'free':u'卖家包邮',
     'post':u'平邮',
     'express':u'快递',
     'ems':u'EMS',
-    'virtual':u'虚拟发货',
+    'extract':u'无需物流',
+    "free":u'卖家包邮',
+    "FAST":u'快递',
+    "SELLER":u'卖家包邮',
+    'EMS':u'EMS',
+    'ORDINARY':u'平邮',
 }
 
 NO_REFUND = 'NO_REFUND'

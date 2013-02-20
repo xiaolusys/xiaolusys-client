@@ -41,7 +41,7 @@ class TradePanel(wx.Panel):
             self.buttons.append(wx.Button(self,button[0],button[1]))
  
         colLabels = (u'订单号',u'卖家昵称',u'买家昵称',u'订单类型',u'订单状态',u'系统状态',u'省(市)',u'打印发货单',u'打印物流单',u'复审',
-                     u'物流公司',u'物流单号',u'操作员',u'订单数',u'实付',u'总金额',u'付款时间',u'发货时间')
+                     u'物流公司',u'物流单号',u'操作员',u'订单数',u'实付',u'总金额',u'付款时间',u'发货时间',u'称重时间')
         self.grid = QueryObjectGridPanel(self,rowLabels=None,colLabels=colLabels)
         self.grid.setDataSource(SYS_STATUS_PREPARESEND)
         
