@@ -440,15 +440,15 @@ class GridPanel(wx.Panel):
             
             elif eventid == express_print_btn_id:
                 trade_ids = []
-                pre_company_name = ''
+                pre_company_id = ''
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                    company_name = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
-                    if pre_company_name and pre_company_name != company_name:
+                    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                    if pre_company_id and pre_company_id != trade.logistics_company_id:
                         return
-                    pre_company_name = company_name
-                    out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
-                    operator = self.grid.GetCellValue(row,OPERATOR_CELL_COL)
+                    pre_company_id = trade.logistics_company_id
+                    out_sid = trade.out_sid
+                    operator = trade.operator
                     if out_sid and operator:
                         trade_ids.append(trade_id)
                 if trade_ids:
