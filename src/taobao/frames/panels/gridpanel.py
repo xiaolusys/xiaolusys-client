@@ -378,6 +378,7 @@ class GridPanel(wx.Panel):
         self.Layout()    
             
     def fillOutSidToCell(self,evt):
+        self.refreshTable()
         start_out_sid = self.fill_sid_text.GetValue()
         is_auto_fill  = self.fill_sid_checkbox1.IsChecked()
         with create_session(self.Parent) as session:
