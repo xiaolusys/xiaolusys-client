@@ -414,19 +414,25 @@ class GridPanel(wx.Panel):
         with create_session(self.Parent) as session: 
             if eventid == fill_sid_btn2_id:
                 for row in self._selectedRows:
-                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                    out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
-                    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
-                    company_code = trade.logistics_company.code if trade else None
-                    company_regex = trade.logistics_company.reg_mail_no if trade else None
-                    is_match_pass = True
-                    if company_regex:
-                        id_compile = re.compile(company_regex)
-                        is_match_pass = id_compile.match(out_sid)
-                    if is_match_pass:
-                        session.query(MergeTrade).filter_by(id=trade_id)\
-                            .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
-                self.refreshTable()
+                    try:
+                        trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                        out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
+                        trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                        company_code = trade.logistics_company.code if trade else None
+                        company_regex = trade.logistics_company.reg_mail_no if trade else None
+                        is_match_pass = True
+                        if company_regex:
+                            id_compile = re.compile(company_regex)
+                            is_match_pass = id_compile.match(out_sid)
+                        if is_match_pass:
+                            session.query(MergeTrade).filter_by(id=trade_id)\
+                                .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
+                            self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
+                            self.grid.SetCellValue(row,OPERATOR_CELL_COL,operator)
+                        else:
+                            break    
+                    except:
+                        break        
                 self.fill_sid_btn2.Enable(False)
                 
             elif eventid == picking_print_btn_id:
