@@ -65,7 +65,8 @@ class OrderReview(wx.Frame):
         html_text = self.createExpressHtml([self.trade_id])
         self.html.LoadString(html_text)
         self.html.PrintPreview()
-         
+        with create_session(self.Parent) as session:
+            session.query(MergeTrade).filter_by(id=self.trade_id).update({MergeTrade.is_express_print:True})
         event.Skip()
         
     #----------------------------------------------------------------------
@@ -74,7 +75,8 @@ class OrderReview(wx.Frame):
         html_text = self.createPickingHtml([self.trade_id])
         self.html.LoadString(html_text)
         self.html.PrintPreview()
-         
+        with create_session(self.Parent) as session:
+            session.query(MergeTrade).filter_by(id=self.trade_id).update({MergeTrade.is_picking_print:True})
         event.Skip()
  
     #----------------------------------------------------------------------
