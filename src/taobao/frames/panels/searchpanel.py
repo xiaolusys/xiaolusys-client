@@ -46,11 +46,11 @@ class SearchPanel(wx.Panel):
         self.trade_type_select =  wx.ComboBox(self,-1) 
         self.logistics_company_label = wx.StaticText(self,-1,u'快递公司')
         self.logistics_company_select = wx.ComboBox(self,-1)
-        self.consign_start_label = wx.StaticText(self,-1,u'发货时起')
-        self.consign_start_select = wx.DatePickerCtrl(self, size=(80,-1),
+        self.weight_start_label = wx.StaticText(self,-1,u'称重日期起')
+        self.weight_start_select = wx.DatePickerCtrl(self,size=(80,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
-        self.consign_end_label = wx.StaticText(self,-1,u'发货时终')
-        self.consign_end_select =  wx.DatePickerCtrl(self, size=(80,-1),
+        self.weight_end_label = wx.StaticText(self,-1,u'称重日期止')
+        self.weight_end_select =  wx.DatePickerCtrl(self, size=(80,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.logistics_pick_label = wx.StaticText(self,-1,u'已打印物流单')
         self.logistics_pick_check  = wx.CheckBox(self,-1)
@@ -99,10 +99,10 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.trade_type_select, pos=(1,7), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_company_label, pos=(1,8), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_company_select, pos=(1,9), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.consign_start_label, pos=(1,10), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.consign_start_select, pos=(1,11), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.consign_end_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.consign_end_select, pos=(1,13), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.weight_start_label, pos=(1,10), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.weight_start_select, pos=(1,11), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.weight_end_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.weight_end_select, pos=(1,13), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_pick_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_pick_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
 
@@ -127,8 +127,8 @@ class SearchPanel(wx.Panel):
         self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.start_time_select)
         self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.end_time_select)
         
-        self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.consign_start_select)
-        self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.consign_end_select)
+        self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.weight_start_select)
+        self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.weight_end_select)
         
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.delivery_pick_check)
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.logistics_pick_check)
@@ -155,21 +155,15 @@ class SearchPanel(wx.Panel):
         outer_id      = self.outer_id_text.GetValue()
         sku_outer_id  = self.sku_outer_id_text.GetValue()
         
-        consign_start_time = self.consign_start_select.GetValue()
-        consign_end_time   = self.consign_end_select.GetValue()
-        consign_start_time = wxdate2pydate(consign_start_time)
-        consign_end_time = wxdate2pydate(consign_end_time)
+        weight_start_time = self.weight_start_select.GetValue()
+        weight_end_time   = self.weight_end_select.GetValue()
+        weight_start_time = wxdate2pydate(weight_start_time)
+        weight_end_time = wxdate2pydate(weight_end_time)
    
         if trade_id:
             datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
         elif logistics_id:
             datasource = datasource.filter_by(out_sid=logistics_id)
-        elif outer_id or sku_outer_id:
-            datasource = datasource.join(MergeOrder,MergeTrade.id==MergeOrder.merge_trade_id)
-            if outer_id and sku_outer_id:
-                datasource = datasource.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
-            elif outer_id:
-                datasource = datasource.filter(MergeOrder.outer_id==outer_id)
         else:
             if receiver_name:
                 datasource = datasource.filter_by(receiver_name=receiver_name)
@@ -184,10 +178,10 @@ class SearchPanel(wx.Panel):
                 datasource = datasource.filter("pay_time >=:start").params(start=start_time)
             if end_time:
                 datasource = datasource.filter("pay_time <=:end").params(end=end_time)
-            if consign_start_time:
-                datasource = datasource.filter("consign_time >=:start").params(start=consign_start_time)
-            if consign_end_time:
-                datasource = datasource.filter("consign_time <=:end").params(end=consign_end_time)
+            if weight_start_time:
+                datasource = datasource.filter("weight_time >=:start").params(start=weight_start_time)
+            if weight_end_time:
+                datasource = datasource.filter("weight_time <=:end").params(end=weight_end_time)
             if trade_type:
                 trade_type_dict = dict([(v,k) for k,v in TRADE_TYPE.items()])
                 datasource = datasource.filter_by(type=trade_type_dict.get(trade_type.strip(),None))
@@ -199,6 +193,12 @@ class SearchPanel(wx.Panel):
                 datasource = datasource.filter_by(is_picking_print=True)
             if is_express_print:
                 datasource = datasource.filter_by(is_express_print=True)
+            if outer_id:
+                datasource = datasource.join(MergeOrder,MergeTrade.id==MergeOrder.merge_trade_id)
+                if outer_id and sku_outer_id:
+                    datasource = datasource.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
+                elif outer_id:
+                    datasource = datasource.filter(MergeOrder.outer_id==outer_id)
         
         self.Parent.grid.setSearchData(datasource)
         
