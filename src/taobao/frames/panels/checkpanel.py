@@ -125,7 +125,8 @@ class ScanCheckPanel(wx.Panel):
             self.error_text.SetLabel(u'该快递单号已重复，请反审核后修改')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
-            self.clearTradeInfoPanel()
+            self.barcode_text.Clear()
+            self.barcode_text.SetFocus()
         elif count == 1:
             self.trade = trades.one()
             self.gridpanel.setData(self.trade)
@@ -137,7 +138,8 @@ class ScanCheckPanel(wx.Panel):
             self.error_text.SetLabel(u'未找到该订单')
             self.error_text.SetForegroundColour('black')
             self.error_text.SetBackgroundColour('red')
-            self.clearTradeInfoPanel()
+            self.barcode_text.Clear()
+            self.barcode_text.SetFocus()
         evt.Skip()
          
     def setBarCode(self):

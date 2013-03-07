@@ -171,7 +171,8 @@ class DeliveryPrinter(wx.Frame):
                     order_data['price']     = order.price
                     order_data['discount_fee'] = float(order.discount_fee or 0)
                     order_data['payment']   = order.payment 
-                    order_data['properties'] = prod_sku.properties_name if prod_sku else order.sku_properties_name
+                    order_data['properties'] = (prod_sku.properties_alias or prod_sku.properties_name)\
+                        if prod_sku else order.sku_properties_name
                     
                     trade_data['orders'].append(order_data)
 

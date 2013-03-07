@@ -7,7 +7,7 @@ Created on 2012-6-2
 import re
 import datetime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Table, Column, Integer, BigInteger, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Table, Column, Integer, BigInteger,Float , String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 Base = declarative_base()
@@ -97,13 +97,13 @@ class Product(Base):
     collect_num = Column(Integer)
     warn_num    = Column(Integer)
     remain_num  = Column(Integer)
-    price = Column(String(10))
+    wait_post_num  = Column(Integer)
+    std_sale_price = Column(Float)
     
     created = Column(DateTime)
     modified = Column(DateTime)
     
     sync_stock  = Column(Boolean)
-    out_stock  = Column(Boolean)
     is_assign  = Column(Boolean)
     
     status     = Column(String(16))
@@ -122,14 +122,15 @@ class ProductSku(Base):
     quantity    = Column(Integer)
     warn_num    = Column(Integer)
     remain_num  = Column(Integer)
+    wait_post_num  = Column(Integer)
+    std_sale_price = Column(Float)
     
     properties_name  = Column(String(200))
-    properties       = Column(String(200))
+    properties_alias = Column(String(200))
     
     modified = Column(DateTime)
     
     sync_stock  = Column(Boolean)
-    out_stock  = Column(Boolean)
     is_assign  = Column(Boolean)
     
     status     = Column(String(10))

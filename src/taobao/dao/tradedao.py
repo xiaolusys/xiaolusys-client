@@ -21,3 +21,8 @@ def get_used_orders(session,trade_id):
     orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,sys_status=pcfg.IN_EFFECT).filter(
                 MergeOrder.gift_type!=pcfg.RETURN_GOODS_GIT_TYPE)
     return orders
+
+def get_return_orders(session,trade_id):
+    orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,
+                                gift_type=pcfg.RETURN_GOODS_GIT_TYPE,sys_status=pcfg.IN_EFFECT)
+    return orders

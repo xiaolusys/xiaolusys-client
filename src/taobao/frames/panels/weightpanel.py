@@ -12,10 +12,11 @@ import wx,wx.grid
 from taobao.common.utils import create_session,MEDIA_ROOT
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import WeightGridPanel
-from taobao.dao.tradedao import get_used_orders
+from taobao.dao.tradedao import get_used_orders,get_return_orders
 from taobao.common.utils import getconfig
-from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
-    SYS_STATUS_INVALID,TRADE_STATUS_WAIT_SEND_GOODS,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK
+from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,\
+    SYS_STATUS,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,TRADE_STATUS_WAIT_SEND_GOODS,\
+    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK,REAL_ORDER_GIT_TYPE,COMBOSE_SPLIT_GIT_TYPE
 
 weight_regex=re.compile('[0-9\.]{1,7}$')
 
@@ -316,10 +317,31 @@ class ScanWeightPanel(wx.Panel):
                 outer_sku_id = order.outer_sku_id 
                 if outer_sku_id:
                     session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
-                        .update({ProductSku.quantity:ProductSku.quantity-order.num,Product.collect_num:Product.collect_num-order.num})
-                else:
+                        .update({ProductSku.quantity:ProductSku.quantity-order.num})
+                        
+                    if order.gift_type in (REAL_ORDER_GIT_TYPE,COMBOSE_SPLIT_GIT_TYPE):
+                        session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
+                        .update({ProductSku.wait_post_num:ProductSku.wait_post_num-order.num})
+                
+                session.query(Product).filter_by(outer_id=outer_id)\
+                    .update({Product.collect_num:Product.collect_num-order.num})
+                    
+                if order.gift_type in (REAL_ORDER_GIT_TYPE,COMBOSE_SPLIT_GIT_TYPE):
                     session.query(Product).filter_by(outer_id=outer_id)\
-                        .update({Product.collect_num:Product.collect_num-order.num})
+                    .update({Product.wait_post_num:Product.wait_post_num-order.num})
+            
+            if trade.type == 'exchange':
+                return_orders = get_return_orders(session,self.trade.id)
+                for order in return_orders:
+                    outer_id = order.outer_id 
+                    outer_sku_id = order.outer_sku_id 
+                    if outer_sku_id:
+                        session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
+                            .update({ProductSku.quantity:ProductSku.quantity+order.num})
+                    
+                    session.query(Product).filter_by(outer_id=outer_id)\
+                        .update({Product.collect_num:Product.collect_num+order.num})
+                    
             #称重后，内部状态变为发货已发货
             session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
                     .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED,'weight_time':datetime.datetime.now()}
