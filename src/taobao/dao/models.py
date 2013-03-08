@@ -116,7 +116,6 @@ class ProductSku(Base):
     
     id  = Column(Integer,primary_key=True)
     outer_id = Column(String(64))
-    prod_outer_id = Column(String(64))
     product_id = Column(Integer, ForeignKey('shop_items_product.id'))
     
     quantity    = Column(Integer)

@@ -315,12 +315,13 @@ class ScanWeightPanel(wx.Panel):
             for order in orders:
                 outer_id = order.outer_id 
                 outer_sku_id = order.outer_sku_id 
-                if outer_sku_id:
-                    session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
+                product = session.query(Product).filter_by(outer_id=outer_id).first()
+                if product and outer_sku_id:
+                    session.query(ProductSku).filter_by(outer_id=outer_sku_id,product=product)\
                         .update({ProductSku.quantity:ProductSku.quantity-order.num})
                         
                     if order.gift_type in (REAL_ORDER_GIT_TYPE,COMBOSE_SPLIT_GIT_TYPE):
-                        session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
+                        session.query(ProductSku).filter_by(outer_id=outer_sku_id,product=product)\
                         .update({ProductSku.wait_post_num:ProductSku.wait_post_num-order.num})
                 
                 session.query(Product).filter_by(outer_id=outer_id)\
@@ -335,8 +336,9 @@ class ScanWeightPanel(wx.Panel):
                 for order in return_orders:
                     outer_id = order.outer_id 
                     outer_sku_id = order.outer_sku_id 
-                    if outer_sku_id:
-                        session.query(ProductSku).filter_by(outer_id=outer_sku_id,prod_outer_id=outer_id)\
+                    product = session.query(Product).filter_by(outer_id=outer_id).first()
+                    if product and outer_sku_id:
+                        session.query(ProductSku).filter_by(outer_id=outer_sku_id,product=product)\
                             .update({ProductSku.quantity:ProductSku.quantity+order.num})
                     
                     session.query(Product).filter_by(outer_id=outer_id)\
