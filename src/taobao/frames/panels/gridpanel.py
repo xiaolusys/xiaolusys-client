@@ -41,6 +41,7 @@ scan_weight_btn_id = wx.NewId()
 review_orders_btn_id = wx.NewId()
 pickle_print_btn_id  = wx.NewId()
 fill_sid_btn2_id = wx.NewId()
+fill_sid_btn4_id = wx.NewId()  #核对单号按钮
 
 class GridPanel(wx.Panel):
     def __init__(self, parent, id= -1, colLabels=None, rowLabels=None): 
@@ -53,6 +54,8 @@ class GridPanel(wx.Panel):
         self.rowLabels = rowLabels
         self.colLabels = colLabels
         self.status_type = ''
+        self.start_sid   = ''
+        self.end_sid     = ''
         self.grid = grd.Grid(self, -1)
         
         self._selectedRows = set()
@@ -92,7 +95,13 @@ class GridPanel(wx.Panel):
         self.fill_sid_checkbox1   = wx.CheckBox(self.fill_sid_panel,-1)
         self.preview_btn      = wx.Button(self.fill_sid_panel,-1,u'预览')
         self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,u'确定')
-        self.fill_sid_btn3   = wx.Button(self.fill_sid_panel,-1,u'取消')
+        
+        self.out_sid_start_label  = wx.StaticText(self.fill_sid_panel,-1,u'连打始单号')
+        self.out_sid_start_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(120,-1))
+        self.out_sid_end_label  = wx.StaticText(self.fill_sid_panel,-1,u'连打尾单号')
+        self.out_sid_end_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(120,-1))
+        self.fill_sid_btn4   = wx.Button(self.fill_sid_panel,fill_sid_btn4_id,u'核对')
+        self.fill_sid_btn3   = wx.Button(self.fill_sid_panel,-1,u'折起')
 
         self.static_button_down = wx.Button(self,-1,label='^------------^',size=(-1,11))
         self.isSearchPanelShow = 1
@@ -124,6 +133,7 @@ class GridPanel(wx.Panel):
         self.button_array.append(self.express_print_btn)
         
         self.fill_sid_btn2.Enable(False)
+        self.fill_sid_btn4.Enable(False)
         self.review_orders_btn.Enable(False)
 
 
@@ -167,7 +177,12 @@ class GridPanel(wx.Panel):
         self.fill_sid_sizer.Add(self.fill_sid_checkbox1,0,3)
         self.fill_sid_sizer.Add(self.preview_btn,0,4)
         self.fill_sid_sizer.Add(self.fill_sid_btn2,0,5)
-        self.fill_sid_sizer.Add(self.fill_sid_btn3,0,6)
+        self.fill_sid_sizer.Add(self.out_sid_start_label,0,7)
+        self.fill_sid_sizer.Add(self.out_sid_start_text,0,8)
+        self.fill_sid_sizer.Add(self.out_sid_end_label,0,9)
+        self.fill_sid_sizer.Add(self.out_sid_end_text,0,10)
+        self.fill_sid_sizer.Add(self.fill_sid_btn4,0,11)
+        self.fill_sid_sizer.Add(self.fill_sid_btn3,0,12)
         self.fill_sid_panel.SetSizer(self.fill_sid_sizer)
 
         self.inner_box_sizer = wx.BoxSizer(wx.VERTICAL) 
@@ -207,6 +222,8 @@ class GridPanel(wx.Panel):
         
         #分页栏，订单操作事件
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn2)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn4)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.picking_print_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.express_print_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.post_print_btn)
@@ -383,6 +400,7 @@ class GridPanel(wx.Panel):
         is_auto_fill  = self.fill_sid_checkbox1.IsChecked()
         with create_session(self.Parent) as session:
             if start_out_sid.isdigit() and is_auto_fill:
+                self.start_sid = start_out_sid
                 start_out_sid = int(start_out_sid)
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
@@ -392,6 +410,7 @@ class GridPanel(wx.Panel):
                     if id_compile.match(str(start_out_sid)) and trade.sys_status == SYS_STATUS_PREPARESEND:
                         self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
                         start_out_sid += 1
+                self.end_sid = str(start_out_sid -1) 
             elif start_out_sid:
                 min_row_num = min(self._selectedRows)
                 trade_id = self.grid.GetCellValue(min_row_num,TRADE_ID_CELL_COL)
@@ -400,12 +419,20 @@ class GridPanel(wx.Panel):
                 id_compile = re.compile(company_regex)
                 if id_compile.match(str(start_out_sid)):
                     self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
-
+        
+        self.preview_btn.Enable(False)
         self.fill_sid_btn2.Enable(True)
         self.fill_sid_text.Clear()
         self.grid.ForceRefresh()
         evt.Skip()
     
+    def disablePicklePrintBtn(self):
+        """ 将打印配货单按钮设无效 """
+        self.post_print_btn.Enable(False)
+        
+    def enablePicklePrintBtn(self):
+        """ 将打印配货单按钮设有效 """
+        self.post_print_btn.Enable(True)
     
     def onClickActiveButton(self,evt):
         eventid = evt.GetId()
@@ -418,7 +445,6 @@ class GridPanel(wx.Panel):
                         trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                         out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
                         trade = session.query(MergeTrade).filter_by(id=trade_id).first()
-                        company_code = trade.logistics_company.code if trade else None
                         company_regex = trade.logistics_company.reg_mail_no if trade else None
                         is_match_pass = True
                         if company_regex:
@@ -432,9 +458,23 @@ class GridPanel(wx.Panel):
                         else:
                             break    
                     except:
-                        break        
+                        break
+                if len(self._selectedRows)>2:
+                    self.disablePicklePrintBtn()        
                 self.fill_sid_btn2.Enable(False)
+                self.fill_sid_btn4.Enable(True)
                 
+            elif eventid == fill_sid_btn4_id:
+                start_out_sid = self.out_sid_start_text.GetValue()
+                end_out_sid   = self.out_sid_end_text.GetValue()
+
+                if self.start_sid == start_out_sid and self.end_sid == end_out_sid:
+                    self.enablePicklePrintBtn()
+                    self.out_sid_start_text.Clear()
+                    self.out_sid_end_text.Clear()
+                    self.fill_sid_btn4.Enable(False)
+                    self.preview_btn.Enable(True)
+                    
             elif eventid == picking_print_btn_id:
                 trade_ids = []
                 for row in self._selectedRows:
