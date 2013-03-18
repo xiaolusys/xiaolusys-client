@@ -37,7 +37,9 @@ class GridTable(grd.PyGridTableBase):
         self.boolattr.SetReadOnly()
         self.boolattr.SetEditor(grd.GridCellBoolEditor())
         self.boolattr.SetRenderer(grd.GridCellBoolRenderer())
-         
+        self.sid_cell = grd.GridCellAttr()
+        self.sid_cell.SetReadOnly(1)
+        
         i=0
         for row in datasource:
             self.data[(i,0)] = attr
@@ -103,6 +105,9 @@ class GridTable(grd.PyGridTableBase):
             attr.IncRef()
         elif col == 13:
             attr = self.sid_attr
+            attr.IncRef()
+        elif col == 12:
+            attr = self.sid_cell
             attr.IncRef()
         else:
             attr = self.cell

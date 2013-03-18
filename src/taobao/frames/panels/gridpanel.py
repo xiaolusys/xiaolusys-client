@@ -136,7 +136,7 @@ class GridPanel(wx.Panel):
         self.fill_sid_btn4.Enable(False)
         self.review_orders_btn.Enable(False)
 
-
+        
         
     def __do_layout(self):
         self.main_sizer = main_sizer = wx.BoxSizer(wx.VERTICAL) 
@@ -249,6 +249,7 @@ class GridPanel(wx.Panel):
         self.review_orders_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED))
         self.scan_check_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK))
         self.scan_weight_btn.Show(status_type in (SYS_STATUS_WAITSCANWEIGHT))
+
         self.updateTableAndPaginator()
         self.select_all_check.SetValue(False)
         self.Layout()
@@ -460,9 +461,12 @@ class GridPanel(wx.Panel):
                     except:
                         break
                 if len(self._selectedRows)>2:
-                    self.disablePicklePrintBtn()        
-                self.fill_sid_btn2.Enable(False)
-                self.fill_sid_btn4.Enable(True)
+                    self.disablePicklePrintBtn() 
+                    self.fill_sid_btn2.Enable(False)
+                    self.fill_sid_btn4.Enable(True) 
+                else:      
+                    self.fill_sid_btn2.Enable(False)
+                    self.preview_btn.Enable(True)
                 
             elif eventid == fill_sid_btn4_id:
                 start_out_sid = self.out_sid_start_text.GetValue()

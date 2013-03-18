@@ -28,7 +28,7 @@ class OrderReview(wx.Frame):
         self.panel    = wx.Panel(self, wx.ID_ANY)
         #self.printer = HtmlPrinter(name=u'打印', parentWindow=self)
         self.trade_id = trade_id
-        self.html = iewin.IEHtmlWindow(self.panel)
+        self.html = iewin.IEHtmlWindow(self.panel,-1)
         #trade_ids = [200165044022938,165155430754126]
          
         cfg  = getconfig()
