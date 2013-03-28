@@ -4,10 +4,11 @@ Created on 2012-7-14
 
 @author: user1
 '''
+import json
 import wx
-from taobao.dao.models import MergeTrade
 from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.frames.panels.gridpanel import QueryObjectGridPanel
+from taobao.common.utils import getconfig,writeconfig
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,SYS_STATUS_WAITSCANWEIGHT,\
     SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_REGULAR_REMAIN,SYS_STATUS_ON_THE_FLY
 
@@ -32,7 +33,6 @@ class TradePanel(wx.Panel):
         
         self.Session = parent.Session
         self.selectedRowColour = (0, 128, 0, 255)
-        self.selecttailnums  = set()
         self.search_panel = SearchPanel(self,-1)
              
         self.buttons = [] 
@@ -115,6 +115,7 @@ class TradePanel(wx.Panel):
         main_sizer.Layout()
         self.search_panel.Layout()
         self.SetSizer(main_sizer)
+        self.showCheckboxByTailNums()
         
         
     def __evt_bind(self):
@@ -192,16 +193,33 @@ class TradePanel(wx.Panel):
         self.grid.refreshTable()   
     
     def onCheckTailNum(self,evt):
-        source = evt.GetEventObject()
-        if evt.IsChecked():
-            self.selecttailnums.add(int(source.GetLabelText()))
-        else :
-            try:
-                self.selecttailnums.remove(int(source.GetLabelText()))
-            except:
-                pass
-        self.grid.updateTableAndPaginator()
 
+        config = getconfig()
+        tail_nums = self.getAllTailNums()
+        config.set('custom','tail_nums',json.dumps(tail_nums))
+        writeconfig(config)
+        self.grid.updateTableAndPaginator()
+    
+    def getAllTailNums(self):
+        tail_nums = set()
+        if hasattr(self, 'checkbox_list'):
+            for cb in self.checkbox_list:
+                if cb.IsChecked():
+                    tail_nums.add(int(cb.GetLabelText()))
+        else:
+            config=getconfig()
+            tail_nums = json.loads(config.get('custom', 'tail_nums') or 'null')
+            tail_nums = set(tail_nums or [])
+        return list(tail_nums)
+    
+    def showCheckboxByTailNums(self):
+        config = getconfig()
+        tail_nums = config.get('custom', 'tail_nums')
+        for cb in self.checkbox_list:
+            cb_val = cb.GetLabelText()
+            if cb_val in tail_nums:
+                cb.SetValue(True)
+        
         
     def onClickTailNumBtn(self,evt):
         if self.istailnumshow:

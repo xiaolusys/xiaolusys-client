@@ -535,9 +535,10 @@ class GridPanel(wx.Panel):
     def refreshTable(self):
         #修改状态后 ，刷新当前表单  
         trade_ids = self.getSelectTradeIds(self._selectedRows)
+        tail_nums = self.Parent.getAllTailNums()
         if self.page:
             self.page = self.paginator.page(self.page.number)
-            object_list = self.parseObjectToList(self.page.object_list,self.Parent.selecttailnums)
+            object_list = self.parseObjectToList(self.page.object_list,tail_nums)
         else:
             object_list = ()
         gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels, self.Parent.selectedRowColour))
@@ -565,8 +566,9 @@ class GridPanel(wx.Panel):
     
     def updateTableAndPaginator(self):
         self._selectedRows.clear()
+        tail_nums = self.Parent.getAllTailNums()
         if self.page:
-            object_list = self.parseObjectToList(self.page.object_list,self.Parent.selecttailnums)
+            object_list = self.parseObjectToList(self.page.object_list,tail_nums)
         else:
             object_list = ()
            
@@ -620,28 +622,28 @@ class QueryObjectGridPanel(GridPanel):
         assert isinstance(object_list,(list,tuple))
         assert isinstance(object_list,(set,list,tuple))
         array_object = []
-        for object in object_list:
-            if not tailnums or object.id%10 in tailnums:
+        for order in object_list:
+            if not tailnums or order.id%10 in tailnums:
                 object_array = []
-                object_array.append(object.id)
-                object_array.append(object.seller_nick)
-                object_array.append(object.buyer_nick)
-                object_array.append(TRADE_TYPE.get(object.type,u'其他'))
-                object_array.append(TRADE_STATUS.get(object.status,u'其他'))
-                object_array.append(SYS_STATUS.get(object.sys_status,u'其他'))
-                object_array.append(object.receiver_state+'-'+object.receiver_city)
-                object_array.append(object.is_picking_print)
-                object_array.append(object.is_express_print)
-                object_array.append(object.can_review)
-                object_array.append(object.logistics_company and object.logistics_company.name or '')
-                object_array.append(object.out_sid)
-                object_array.append(object.operator)
-                object_array.append(str(object.total_num))
-                object_array.append(object.payment)
-                object_array.append(object.total_fee)
-                object_array.append(object.pay_time)
-                object_array.append(object.consign_time or '')
-                object_array.append(object.weight_time or '')
+                object_array.append(order.id)
+                object_array.append(order.seller_nick)
+                object_array.append(order.buyer_nick)
+                object_array.append(TRADE_TYPE.get(order.type,u'其他'))
+                object_array.append(TRADE_STATUS.get(order.status,u'其他'))
+                object_array.append(SYS_STATUS.get(order.sys_status,u'其他'))
+                object_array.append(order.receiver_state+'-'+order.receiver_city)
+                object_array.append(order.is_picking_print)
+                object_array.append(order.is_express_print)
+                object_array.append(order.can_review)
+                object_array.append(order.logistics_company and order.logistics_company.name or '')
+                object_array.append(order.out_sid)
+                object_array.append(order.operator)
+                object_array.append(str(order.total_num))
+                object_array.append(order.payment)
+                object_array.append(order.total_fee)
+                object_array.append(order.pay_time)
+                object_array.append(order.consign_time or '')
+                object_array.append(order.weight_time or '')
                 array_object.append(object_array)
         return array_object
     
@@ -692,24 +694,23 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
         
         with create_session(self.Parent) as session:
             orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id,sys_status=IN_EFFECT)
-            from taobao.dao.models import Product
             array_object = [] 
-            for object in orders:
+            for order in orders:
                 object_array = []
-                object_array.append(object.pic_path)
-                object_array.append(object.id)
-                object_array.append(object.outer_id or object.num_iid)
-                object_array.append(object.title)
-                object_array.append(object.outer_sku_id)
-                object_array.append(object.sku_properties_name)
-                object_array.append(object.num)
-                object_array.append(object.price)
-                object_array.append(object.payment)
-                object_array.append(object.refund_id)
-                object_array.append(REFUND_STATUS.get(object.refund_status,''))
-                object_array.append(ORDER_TYPE.get(object.gift_type,u'其他'))
-                object_array.append(TRADE_STATUS.get(object.status,'其他'))
-                object_array.append(SYS_ORDERS_STATUS.get(object.sys_status,'其他'))
+                object_array.append(order.pic_path)
+                object_array.append(order.id)
+                object_array.append(order.outer_id or order.num_iid)
+                object_array.append(order.title)
+                object_array.append(order.outer_sku_id)
+                object_array.append(order.sku_properties_name)
+                object_array.append(order.num)
+                object_array.append(order.price)
+                object_array.append(order.payment)
+                object_array.append(order.refund_id)
+                object_array.append(REFUND_STATUS.get(order.refund_status,''))
+                object_array.append(ORDER_TYPE.get(order.gift_type,u'其他'))
+                object_array.append(TRADE_STATUS.get(order.status,'其他'))
+                object_array.append(SYS_ORDERS_STATUS.get(order.sys_status,'其他'))
                 array_object.append(object_array)
         return array_object
       
@@ -780,20 +781,20 @@ class CheckOrdersGridPanel(SimpleGridPanel):
             orders = get_used_orders(session,trade.id)
             from taobao.dao.models import Product
             array_object = [] 
-            for object in orders:
+            for order in orders:
                 object_array = []     
-                product = session.query(Product).filter_by(outer_id=object.outer_id).first()
-                object_array.append(object.pic_path or product.pic_path)
-                object_array.append(str(object.id))
-                object_array.append(object.num_iid or object.outer_id)
+                product = session.query(Product).filter_by(outer_id=order.outer_id).first()
+                object_array.append(order.pic_path or product.pic_path)
+                object_array.append(str(order.id))
+                object_array.append(order.num_iid or order.outer_id)
                 
-                object_array.append(product.name if product else object.title)
-                object_array.append(object.num)
-                object_array.append(object.outer_id)
-                object_array.append(object.outer_sku_id)
-                object_array.append(object.sku_properties_name)
-                object_array.append(TRADE_STATUS.get(object.status,'其他'))
-                object_array.append(SYS_ORDERS_STATUS.get(object.sys_status,'其他'))
+                object_array.append(product.name if product else order.title)
+                object_array.append(order.num)
+                object_array.append(order.outer_id)
+                object_array.append(order.outer_sku_id)
+                object_array.append(order.sku_properties_name)
+                object_array.append(TRADE_STATUS.get(order.status,'其他'))
+                object_array.append(SYS_ORDERS_STATUS.get(order.sys_status,'其他'))
                 object_array.append(0)
                 
                 array_object.append(object_array)
@@ -825,7 +826,6 @@ class CheckGridPanel(wx.Panel):
         self.SetSizer(main_sizer)
       
     def getOrderCodeMapNumDict(self,trade):
-        is_fenxiao = trade.type =='fenxiao'
         with create_session(self.Parent) as session:
             orders = get_used_orders(session,trade.id)
             code_num_dict = {}    

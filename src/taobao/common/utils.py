@@ -58,10 +58,14 @@ def gen_string_image(font_path,code_string):
 
 def getconfig():
     cf = ConfigParser.ConfigParser()
-    config_path = os.path.abspath(os.path.dirname(taobao.__file__))
-    cf.read(config_path+'/system.conf')
+    config_path = os.path.abspath(os.path.dirname(taobao.__file__))+'/system.conf'
+    cf.read(config_path)
     return cf
 
+def writeconfig(config):
+    config_path = os.path.abspath(os.path.dirname(taobao.__file__))+'/system.conf'
+    with open(config_path, "w") as f:
+        config.write(f)
 
 class create_session():
     def __init__(self,parent):
