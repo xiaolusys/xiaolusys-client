@@ -8,7 +8,7 @@ import json
 import wx
 from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.frames.panels.gridpanel import QueryObjectGridPanel
-from taobao.common.utils import getconfig,writeconfig
+from taobao.common.utils import getconfig,writeconfig,create_session
 from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,SYS_STATUS_WAITSCANWEIGHT,\
     SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_REGULAR_REMAIN,SYS_STATUS_ON_THE_FLY
 
@@ -34,7 +34,7 @@ class TradePanel(wx.Panel):
         self.Session = parent.Session
         self.selectedRowColour = (0, 128, 0, 255)
         self.search_panel = SearchPanel(self,-1)
-             
+        self.client_num = self.getParallelNum() #客户端数量   
         self.buttons = [] 
         
         for button in self.buttons_tuple:
@@ -100,7 +100,7 @@ class TradePanel(wx.Panel):
         
         self.checksizer = wx.FlexGridSizer(hgap=2,vgap=10)
         self.checkbox_list = []
-        for i in xrange(0,10):
+        for i in xrange(0,self.client_num):
             check = wx.CheckBox(self,-1,str(i))
             self.checkbox_list.append(check)
             self.checksizer.Add(check,0,i)
@@ -230,3 +230,14 @@ class TradePanel(wx.Panel):
             self.istailnumshow = True
         self.Layout()
         
+    def getParallelNum(self):
+        parallel_num = 1
+        from taobao.dao.models import SystemConfig
+        with create_session(self.Parent) as session: 
+            try:
+                sys_config = session.query(SystemConfig).first()
+            except:
+                pass
+            else:
+                parallel_num = sys_config.client_num
+        return parallel_num>0 and parallel_num or 1

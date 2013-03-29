@@ -21,10 +21,13 @@ class SystemConfig(Base):
     is_rule_auto = Column(Boolean, default=False)
     is_sms_auto = Column(Boolean, default=False)
     
+    client_num = Column(Integer)
+    
     def __repr__(self):
         return "<SystemConfig('%s')>" % (str(self.id))
     
 
+    
 class User(Base):
     __tablename__ = 'shop_users_user'
         

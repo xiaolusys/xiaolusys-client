@@ -621,9 +621,10 @@ class QueryObjectGridPanel(GridPanel):
     def parseObjectToList(self, object_list, tailnums=set()):
         assert isinstance(object_list,(list,tuple))
         assert isinstance(object_list,(set,list,tuple))
+        parallel_num = self.Parent.client_num
         array_object = []
         for order in object_list:
-            if not tailnums or order.id%10 in tailnums:
+            if not tailnums or order.id%parallel_num in tailnums:
                 object_array = []
                 object_array.append(order.id)
                 object_array.append(order.seller_nick)
