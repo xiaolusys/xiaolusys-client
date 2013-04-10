@@ -21,18 +21,19 @@ class SearchPanel(wx.Panel):
         self.order_receiver_name_label = wx.StaticText(self,-1,u'收货人')
         self.order_receiver_name = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.taobao_status_label = wx.StaticText(self,-1,u'订单状态')
-        self.taobao_status_select = wx.ComboBox(self,-1)
+        self.taobao_status_select = wx.ComboBox(self,-1,size=(80,-1))
         self.seller_label = wx.StaticText(self,-1,u'店铺名称')
-        self.seller_select = wx.ComboBox(self,-1) 
+        self.seller_select = wx.ComboBox(self,-1,size=(80,-1)) 
         self.buyer_label = wx.StaticText(self,-1,u'买家称呼')
-        self.buyer_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.buyer_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER,size=(80,-1))
         self.outer_id_label = wx.StaticText(self,-1,u'商品编码')
         self.outer_id_text =  wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER) 
         self.sku_outer_id_label = wx.StaticText(self,-1,u'规格编码')
         self.sku_outer_id_text =  wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER) 
-        self.delivery_pick_label = wx.StaticText(self,-1,u'已打印发货单')
+        self.delivery_pick_label = wx.StaticText(self,-1,u'发货单')
         self.delivery_pick_check  = wx.CheckBox(self,-1)
-        
+        self.logistics_pick_label = wx.StaticText(self,-1,u'物流单')
+        self.logistics_pick_check  = wx.CheckBox(self,-1)
         
         self.start_time_label = wx.StaticText(self,-1,u'付款时起')
         self.start_time_select = wx.DatePickerCtrl(self, size=(80,-1),
@@ -41,19 +42,20 @@ class SearchPanel(wx.Panel):
         self.end_time_select =  wx.DatePickerCtrl(self, size=(80,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.logistics_label = wx.StaticText(self,-1,u'物流单号')
-        self.logistics_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.logistics_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER,size=(80,-1))
         self.trade_type_label = wx.StaticText(self,-1,u'订单类型')
-        self.trade_type_select =  wx.ComboBox(self,-1) 
+        self.trade_type_select =  wx.ComboBox(self,-1,size=(80,-1)) 
         self.logistics_company_label = wx.StaticText(self,-1,u'快递公司')
-        self.logistics_company_select = wx.ComboBox(self,-1)
+        self.logistics_company_select = wx.ComboBox(self,-1,size=(80,-1))
         self.weight_start_label = wx.StaticText(self,-1,u'称重日期起')
         self.weight_start_select = wx.DatePickerCtrl(self,size=(80,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.weight_end_label = wx.StaticText(self,-1,u'称重日期止')
         self.weight_end_select =  wx.DatePickerCtrl(self, size=(80,-1),
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
-        self.logistics_pick_label = wx.StaticText(self,-1,u'已打印物流单')
-        self.logistics_pick_check  = wx.CheckBox(self,-1)
+        self.urggent_doc_label = wx.StaticText(self,-1,u'紧急件')
+        self.urggent_doc_check  = wx.CheckBox(self,-1)
+        self.clear_btn  = wx.Button(self,-1,label=u'清空',size=(20,16))
         
         self.__set_properties()
         self.__do_layout()
@@ -86,8 +88,10 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.outer_id_text, pos=(0,11), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.sku_outer_id_label, pos=(0,12), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.sku_outer_id_text, pos=(0,13), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.delivery_pick_label, pos=(0,14), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.delivery_pick_check, pos=(0,15), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.logistics_pick_label, pos=(0,14), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.logistics_pick_check, pos=(0,15), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.delivery_pick_label, pos=(0,16), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.delivery_pick_check, pos=(0,17), span=(1,1), flag=wx.EXPAND)
         
         gridbagsizer.Add(self.start_time_label, pos=(1,0), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.start_time_select, pos=(1,1), span=(1,1), flag=wx.EXPAND)
@@ -103,8 +107,9 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.weight_start_select, pos=(1,11), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.weight_end_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.weight_end_select, pos=(1,13), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.logistics_pick_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.logistics_pick_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.urggent_doc_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.urggent_doc_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.clear_btn, pos=(1,16), span=(1,1), flag=wx.EXPAND)
 
         gridbagsizer.Layout()
         
@@ -133,10 +138,38 @@ class SearchPanel(wx.Panel):
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.delivery_pick_check)
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.logistics_pick_check)
         
+        self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.urggent_doc_check)
+        self.Bind(wx.EVT_BUTTON  , self.clearSearchPanel, self.clear_btn)
         
+    def clearSearchPanel(self,evt):
+        
+        self.order_text.Clear()
+        self.order_receiver_name.Clear()
+        self.taobao_status_select.SetValue('')
+        self.seller_select.SetValue('')
+        self.buyer_text.Clear()
+        
+        self.start_time_select.SetValue(wx.DefaultDateTime)
+        self.end_time_select.SetValue(wx.DefaultDateTime)
+
+        self.logistics_text.Clear()
+        self.trade_type_select.SetValue('')
+        self.logistics_company_select.SetValue('')
+        self.delivery_pick_check.SetValue(False)
+        self.logistics_pick_check.SetValue(False)
+        self.outer_id_text.Clear()
+        self.sku_outer_id_text.Clear()
+        self.urggent_doc_check.SetValue(False)
+        
+        self.weight_start_select.SetValue(wx.DefaultDateTime)
+        self.weight_end_select.SetValue(wx.DefaultDateTime)
+        
+        self.OnSearch(None)
+
     
     def OnSearch(self,evt):
         datasource = self.Parent.grid.datasource
+        
         trade_id   = self.order_text.GetValue()
         receiver_name = self.order_receiver_name.GetValue()
         trade_status = self.taobao_status_select.GetValue()
@@ -154,6 +187,7 @@ class SearchPanel(wx.Panel):
         is_express_print = self.logistics_pick_check.IsChecked()
         outer_id      = self.outer_id_text.GetValue()
         sku_outer_id  = self.sku_outer_id_text.GetValue()
+        is_urgent_doc = self.urggent_doc_check.IsChecked()
         
         weight_start_time = self.weight_start_select.GetValue()
         weight_end_time   = self.weight_end_select.GetValue()
@@ -189,6 +223,8 @@ class SearchPanel(wx.Panel):
                 with create_session(self.Parent) as session:
                     log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
                 datasource = datasource.filter_by(logistics_company_id=log_company.id)
+            if is_urgent_doc:
+                datasource = datasource.filter_by(priority=1)
             if is_picking_print:
                 datasource = datasource.filter_by(is_picking_print=True)
             if is_express_print:
@@ -199,9 +235,9 @@ class SearchPanel(wx.Panel):
                     datasource = datasource.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
                 elif outer_id:
                     datasource = datasource.filter(MergeOrder.outer_id==outer_id)
-        
+                    
         self.Parent.grid.setSearchData(datasource)
-        
+
         
 
     

@@ -6,10 +6,8 @@ Created on 2012-7-13
 '''
 import re
 import weakref
-import time
 import wx, wx.grid as grd
-from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,TRADE_STATUS_WAIT_CONFIRM_GOODS,\
-    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,IN_EFFECT,SYS_ORDERS_STATUS,ORDER_TYPE
+from taobao.dao import configparams as cfg 
 from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable
 from taobao.frames.panels.itempanel import ItemPanel
 from taobao.frames.tables.gridtable import CheckGridTable
@@ -17,7 +15,6 @@ from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session,getconfig
 from taobao.dao.models import MergeOrder,MergeTrade
-from taobao.dao.configparams import TRADE_TYPE,SHIPPING_TYPE,SYS_STATUS,TRADE_STATUS,REFUND_STATUS
 from taobao.dao.tradedao import get_used_orders
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
@@ -91,7 +88,7 @@ class GridPanel(wx.Panel):
         self.fill_sid_panel   = wx.Panel(self.inner_panel,-1)
         self.fill_sid_label1  = wx.StaticText(self.fill_sid_panel,-1,u'起始物流单号')
         self.fill_sid_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(200,-1))
-        self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,u'自增物流单号')
+        self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,u'单号自增')
         self.fill_sid_checkbox1   = wx.CheckBox(self.fill_sid_panel,-1)
         self.preview_btn      = wx.Button(self.fill_sid_panel,-1,u'预览')
         self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,u'确定')
@@ -236,40 +233,98 @@ class GridPanel(wx.Panel):
         self.status_type = status_type
         with create_session(self.Parent) as session: 
             datasource     = session.query(MergeTrade).order_by('priority desc','shop_trades_mergetrade.pay_time asc')
-            if status_type and status_type != SYS_STATUS_ALL:
+            if status_type and status_type != cfg.SYS_STATUS_ALL:
                 datasource = datasource.filter_by(sys_status=status_type)
         self.datasource = datasource
         self.paginator = paginator = Paginator(datasource, self.page_size)
         self.page = paginator.page(1)
         
-        self.fill_sid_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
-        self.picking_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
-        self.express_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
-        self.post_print_btn.Show(status_type in (SYS_STATUS_PREPARESEND))
-        self.review_orders_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK,SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_FINISHED))
-        self.scan_check_btn.Show(status_type in (SYS_STATUS_WAITSCANCHECK))
-        self.scan_weight_btn.Show(status_type in (SYS_STATUS_WAITSCANWEIGHT))
+        self.fill_sid_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
+        self.picking_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
+        self.express_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
+        self.post_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
+        self.review_orders_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK,cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_FINISHED))
+        self.scan_check_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK))
+        self.scan_weight_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANWEIGHT))
 
         self.updateTableAndPaginator()
-        self.select_all_check.SetValue(False)
         self.Layout()
         
     def setSearchData(self, datasource):
         self.paginator = paginator = Paginator(datasource, self.page_size)
         self.page = paginator.page(1)
         self.updateTableAndPaginator()
-        self.select_all_check.SetValue(False)
    
+
+##################checkbox 在grid中的事件绑定 ###################
     def onMouse(self,evt):
         if evt.Col == 0:
-            row  = evt.Row
-            wx.CallLater(100,self.toggleCheckBox,row)
+            wx.CallLater(100,self.toggleCheckBox)
         evt.Skip()
 
-    def toggleCheckBox(self,row):
-        if hasattr(self.grid,'cb'):
-            self.grid.cb.Value = not self.grid.cb.Value
-            self.afterCheckBox(self.grid.cb.Value,row)
+    def toggleCheckBox(self):
+        self.grid.cb.Value = not self.grid.cb.Value
+        self.afterCheckBox(self.grid.cb.Value)
+
+    def onCellSelected(self,evt):
+        if evt.Col == 0:
+            wx.CallAfter(self.grid.EnableCellEditControl)
+        evt.Skip()
+
+    def onEditorCreated(self,evt):
+        if evt.Col == 0:
+            self.grid.cb = evt.Control
+            self.grid.cb.WindowStyle |= wx.WANTS_CHARS
+            self.grid.cb.Bind(wx.EVT_KEY_DOWN,self.onKeyDown)
+            self.grid.cb.Bind(wx.EVT_CHECKBOX,self.onCheckBox)
+        evt.Skip()
+
+    def onKeyDown(self,evt):
+        if evt.KeyCode == wx.WXK_UP:
+            if self.GridCursorRow > 0:
+                self.grid.DisableCellEditControl()
+                self.grid.MoveCursorUp(False)
+        elif evt.KeyCode == wx.WXK_DOWN:
+            if self.grid.GridCursorRow < (self.grid.NumberRows-1):
+                self.grid.DisableCellEditControl()
+                self.grid.MoveCursorDown(False)
+        elif evt.KeyCode == wx.WXK_LEFT:
+            if self.grid.GridCursorCol > 0:
+                self.grid.DisableCellEditControl()
+                self.grid.MoveCursorLeft(False)
+        elif evt.KeyCode == wx.WXK_RIGHT:
+            if self.grid.GridCursorCol < (self.grid.NumberCols-1):
+                self.grid.DisableCellEditControl()
+                self.grid.MoveCursorRight(False)
+        else:
+            evt.Skip()
+
+    def onCheckBox(self,evt):
+        self.afterCheckBox(evt.IsChecked())
+
+    def afterCheckBox(self,isChecked,singleRecord=False):
+        row = 0 if singleRecord else self.grid.GridCursorRow
+        if isChecked:
+            self._selectedRows.add(row)
+            value = self.grid.GetCellValue(row,1)
+            self.itempanel.setData(value)
+            for btn in self.button_array:
+                btn.Enable(True)
+        else:
+            try:
+                self._selectedRows.remove(row)
+            except:
+                pass
+            if len(self._selectedRows) <1:
+                for btn in self.button_array:
+                    btn.Enable(False)
+        self.review_orders_btn.Enable(len(self._selectedRows) == 1)
+        self.selected_counts.SetLabel(str(len(self._selectedRows)))
+        self.updateSelectAllCheck()
+        self.Layout()
+        
+    #####################check 在grid中事件绑定结束#########################   
+    
     
     def showPopupMenu(self,evt):
         if not hasattr(self,"popupID1"):
@@ -286,25 +341,6 @@ class GridPanel(wx.Panel):
         eventid = evt.GetId()
         if eventid == self.popupID1:
             self.refreshTable()
-    
-    def onCellSelected(self, evt):
-        if evt.Col == 0:
-            self.grid._curow = evt.Row
-            wx.CallAfter(self.grid.EnableCellEditControl)
-        evt.Skip()
-
-    def onEditorCreated(self, evt):
-        if evt.Col == 0:
-            self.grid.cb = evt.Control
-            self.grid.cb.WindowStyle |= wx.WANTS_CHARS
-            self.grid.cb.Bind(wx.EVT_CHECKBOX, self.onCheckBox)
-        evt.Skip()
-
-
-    def onCheckBox(self, evt):
-        row = self.grid._curow
-        self.afterCheckBox(evt.IsChecked(),row)
-        evt.Skip()
     
     def onComboBox(self, evt):
         size = self.page_size_select.GetValue()
@@ -328,36 +364,6 @@ class GridPanel(wx.Panel):
         self.Layout()
         evt.Skip()
      
-    def afterCheckBox(self, isChecked,row):
-        self.grid._curow = row
-        if isChecked:
-            self._selectedRows.add(row)
-            value = self.grid.GetCellValue(row,1)
-            self.itempanel.setData(value)
-            for btn in self.button_array:
-                btn.Enable(True)
-        else:
-            try:
-                self._selectedRows.remove(row)
-            except:
-                pass
-            if len(self._selectedRows) <1:
-                for btn in self.button_array:
-                    btn.Enable(False)
-        self.review_orders_btn.Enable(len(self._selectedRows) == 1)
-        self.updateGridCheckBoxValue()
-        self.grid.ForceRefresh()
-        self.selected_counts.SetLabel(str(len(self._selectedRows)))
-        self.Layout()
-
-    
-    def updateGridCheckBoxValue(self):
-        rows  = self.grid.GetNumberRows()
-        for row in xrange(0,rows):
-            if row in self._selectedRows:
-                self.grid.SetCellValue(row,0,'1')
-            else:
-                self.grid.SetCellValue(row,0,'')
     
     def onSelectAllCheckbox(self,evt):
         rows = self.grid.NumberRows
@@ -408,9 +414,17 @@ class GridPanel(wx.Panel):
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     company_regex = trade.logistics_company.reg_mail_no
                     id_compile = re.compile(company_regex)
-                    if id_compile.match(str(start_out_sid)) and trade.sys_status == SYS_STATUS_PREPARESEND:
+                    is_out_sid_match = id_compile.match(str(start_out_sid))
+                    if is_out_sid_match and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
                         self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
                         start_out_sid += 1
+                    elif not is_out_sid_match:
+                        dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览错误', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                        dial.ShowModal()
+                        self.fill_sid_text.Clear()
+                        self.refreshTable()
+                        return
                 self.end_sid = str(start_out_sid -1) 
             elif start_out_sid:
                 min_row_num = min(self._selectedRows)
@@ -420,7 +434,10 @@ class GridPanel(wx.Panel):
                 id_compile = re.compile(company_regex)
                 if id_compile.match(str(start_out_sid)):
                     self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
-        
+                else:
+                    self.refreshTable()
+                    evt.Skip()
+                    return 
         self.preview_btn.Enable(False)
         self.fill_sid_btn2.Enable(True)
         self.fill_sid_text.Clear()
@@ -496,6 +513,9 @@ class GridPanel(wx.Panel):
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     if pre_company_id and pre_company_id != trade.logistics_company_id:
+                        dial = wx.MessageDialog(None, u'请确保批打订单快递相同', '快递单打印错误', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                        dial.ShowModal()
                         return
                     pre_company_id = trade.logistics_company_id
                     out_sid = trade.out_sid
@@ -546,7 +566,8 @@ class GridPanel(wx.Panel):
         self.grid.SetColSize(0, 20)
         self.grid.SetRowLabelSize(40)  
         self.updateCellBySelectedTradeIds(trade_ids)
-        self.grid.ForceRefresh() 
+        self.updateSelectAllCheck()
+#        self.grid.ForceRefresh() 
     
     def updateCellBySelectedTradeIds(self,trade_ids):
         self._selectedRows.clear()
@@ -555,7 +576,7 @@ class GridPanel(wx.Panel):
             trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
             if trade_id in trade_ids:
                 self._selectedRows.add(row)
-        self.updateGridCheckBoxValue()
+                self.grid.SetCellValue(row,0,'1')
             
     def getSelectTradeIds(self,selectRows):
         trade_ids = []
@@ -563,6 +584,13 @@ class GridPanel(wx.Panel):
             trade_id = self.grid.GetCellValue(int(row),TRADE_ID_CELL_COL)
             trade_ids.append(trade_id)
         return trade_ids
+    
+    def updateSelectAllCheck(self):
+        row = self.grid.GetNumberRows()
+        if row>0 and row==len(self._selectedRows):
+            self.select_all_check.SetValue(True)
+        else:
+            self.select_all_check.SetValue(False)
     
     def updateTableAndPaginator(self):
         self._selectedRows.clear()
@@ -581,7 +609,11 @@ class GridPanel(wx.Panel):
             btn.Enable(False)
         
         if len(object_list) == 1:
-            self.afterCheckBox(True, 0)
+            self.grid.SetCellValue(0,0,'1')
+            self.afterCheckBox(True,singleRecord=True)
+            
+        self.updateSelectAllCheck()
+        
         self.inner_panel.Hide()
         self.inner_panel.Layout()
         self.Layout()
@@ -617,7 +649,7 @@ class ListArrayGridPanel(GridPanel):
     
    
 class QueryObjectGridPanel(GridPanel):
-
+     
     def parseObjectToList(self, object_list, tailnums=set()):
         assert isinstance(object_list,(list,tuple))
         assert isinstance(object_list,(set,list,tuple))
@@ -629,9 +661,9 @@ class QueryObjectGridPanel(GridPanel):
                 object_array.append(order.id)
                 object_array.append(order.seller_nick)
                 object_array.append(order.buyer_nick)
-                object_array.append(TRADE_TYPE.get(order.type,u'其他'))
-                object_array.append(TRADE_STATUS.get(order.status,u'其他'))
-                object_array.append(SYS_STATUS.get(order.sys_status,u'其他'))
+                object_array.append(cfg.TRADE_TYPE.get(order.type,u'其他'))
+                object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
+                object_array.append(cfg.SYS_STATUS.get(order.sys_status,u'其他'))
                 object_array.append(order.receiver_state+'-'+order.receiver_city)
                 object_array.append(order.is_picking_print)
                 object_array.append(order.is_express_print)
@@ -647,6 +679,7 @@ class QueryObjectGridPanel(GridPanel):
                 object_array.append(order.weight_time or '')
                 array_object.append(object_array)
         return array_object
+    
     
     
 class SimpleGridPanel(wx.Panel):
@@ -694,7 +727,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
             return array_object
         
         with create_session(self.Parent) as session:
-            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id,sys_status=IN_EFFECT)
+            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id,sys_status=cfg.IN_EFFECT)
             array_object = [] 
             for order in orders:
                 object_array = []
@@ -708,16 +741,16 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(order.price)
                 object_array.append(order.payment)
                 object_array.append(order.refund_id)
-                object_array.append(REFUND_STATUS.get(order.refund_status,''))
-                object_array.append(ORDER_TYPE.get(order.gift_type,u'其他'))
-                object_array.append(TRADE_STATUS.get(order.status,'其他'))
-                object_array.append(SYS_ORDERS_STATUS.get(order.sys_status,'其他'))
+                object_array.append(cfg.REFUND_STATUS.get(order.refund_status,''))
+                object_array.append(cfg.ORDER_TYPE.get(order.gift_type,u'其他'))
+                object_array.append(cfg.TRADE_STATUS.get(order.status,'其他'))
+                object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status,'其他'))
                 array_object.append(object_array)
         return array_object
       
             
 class WeightGridPanel(wx.Panel):
-    def __init__(self, parent, id= -1): 
+    def __init__(self, parent, id=-1): 
         wx.Panel.__init__(self, parent, id) 
         
         self.grid = grd.Grid(self,-1)
@@ -750,11 +783,11 @@ class WeightGridPanel(wx.Panel):
         items = []
         items.append(str(trade.id))
         items.append(trade.seller_nick)
-        items.append(TRADE_TYPE.get(trade.type,u'其它'))
+        items.append(cfg.TRADE_TYPE.get(trade.type,u'其它'))
         items.append(trade.buyer_nick)
-        items.append(TRADE_STATUS.get(trade.status,u'其它'))
-        items.append(SYS_STATUS.get(trade.sys_status,u'其它'))
-        items.append(SHIPPING_TYPE.get(trade.shipping_type,u'其它'))
+        items.append(cfg.TRADE_STATUS.get(trade.status,u'其它'))
+        items.append(cfg.SYS_STATUS.get(trade.sys_status,u'其它'))
+        items.append(cfg.SHIPPING_TYPE.get(trade.shipping_type,u'其它'))
         items.append(trade.weight)
         items.append(trade.post_cost)
         
@@ -794,8 +827,8 @@ class CheckOrdersGridPanel(SimpleGridPanel):
                 object_array.append(order.outer_id)
                 object_array.append(order.outer_sku_id)
                 object_array.append(order.sku_properties_name)
-                object_array.append(TRADE_STATUS.get(order.status,'其他'))
-                object_array.append(SYS_ORDERS_STATUS.get(order.sys_status,'其他'))
+                object_array.append(cfg.TRADE_STATUS.get(order.status,'其他'))
+                object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status,'其他'))
                 object_array.append(0)
                 
                 array_object.append(object_array)

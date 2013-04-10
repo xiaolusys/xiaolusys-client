@@ -9,8 +9,7 @@ import wx
 from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.frames.panels.gridpanel import QueryObjectGridPanel
 from taobao.common.utils import getconfig,writeconfig,create_session
-from taobao.dao.configparams import SYS_STATUS_ALL,SYS_STATUS_WAITAUDIT,SYS_STATUS_PREPARESEND,SYS_STATUS_WAITSCANCHECK,SYS_STATUS_WAITSCANWEIGHT,\
-    SYS_STATUS_FINISHED,SYS_STATUS_INVALID,SYS_STATUS_REGULAR_REMAIN,SYS_STATUS_ON_THE_FLY
+from taobao.dao import configparams as cfg
 
 
 all_trade_id = wx.NewId()
@@ -42,8 +41,8 @@ class TradePanel(wx.Panel):
  
         colLabels = (u'订单号',u'卖家昵称',u'买家昵称',u'订单类型',u'订单状态',u'系统状态',u'省(市)',u'打印发货单',u'打印物流单',u'复审',
                      u'物流公司',u'物流单号',u'操作员',u'订单数',u'实付',u'总金额',u'付款时间',u'发货时间',u'称重时间')
-        self.grid = QueryObjectGridPanel(self,rowLabels=None,colLabels=colLabels)
-        self.grid.setDataSource(SYS_STATUS_PREPARESEND)
+        self.grid = QueryObjectGridPanel(self,-1,rowLabels=None,colLabels=colLabels)
+        self.grid.setDataSource(cfg.SYS_STATUS_PREPARESEND)
         
         self.static_button_up = wx.Button(self,-1,label='^------------^',size=(-1,11))
         self.isSearchPanelShow = False
@@ -151,23 +150,23 @@ class TradePanel(wx.Panel):
     def onClickGridBtn(self,evt):
         eventid = evt.GetId()
         if eventid == all_trade_id:
-            trades_status_type = SYS_STATUS_ALL
+            trades_status_type = cfg.SYS_STATUS_ALL
         elif eventid == prapare_send_id:
-            trades_status_type = SYS_STATUS_PREPARESEND 
+            trades_status_type = cfg.SYS_STATUS_PREPARESEND 
         elif eventid == check_barcode_id:
-            trades_status_type = SYS_STATUS_WAITSCANCHECK      
+            trades_status_type = cfg.SYS_STATUS_WAITSCANCHECK      
         elif eventid == scan_weight_id:
-            trades_status_type = SYS_STATUS_WAITSCANWEIGHT  
+            trades_status_type = cfg.SYS_STATUS_WAITSCANWEIGHT  
         elif eventid == has_send_id:
-            trades_status_type = SYS_STATUS_FINISHED 
+            trades_status_type = cfg.SYS_STATUS_FINISHED 
         elif eventid == audit_fail_id:
-            trades_status_type = SYS_STATUS_WAITAUDIT  
+            trades_status_type = cfg.SYS_STATUS_WAITAUDIT  
         elif eventid == invalid_id:
-            trades_status_type = SYS_STATUS_INVALID
+            trades_status_type = cfg.SYS_STATUS_INVALID
         elif eventid == merge_rule_id:
-            trades_status_type = SYS_STATUS_ON_THE_FLY
+            trades_status_type = cfg.SYS_STATUS_ON_THE_FLY
         elif eventid == regular_remain_id:
-            trades_status_type = SYS_STATUS_REGULAR_REMAIN 
+            trades_status_type = cfg.SYS_STATUS_REGULAR_REMAIN 
             
         for button in self.buttons:
             button.Enable(not eventid==button.GetId())

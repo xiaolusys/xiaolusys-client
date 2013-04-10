@@ -11,8 +11,7 @@ from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import CheckGridPanel
 from taobao.dao.tradedao import get_used_orders
-from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS,SYS_STATUS_FINISHED,\
-    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK
+from taobao.dao import configparams as cfg 
 
 
 
@@ -90,7 +89,7 @@ class ScanCheckPanel(wx.Panel):
             with create_session(self.Parent) as session:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                         logistics_company_id=logistics_company.id,sys_status=SYS_STATUS_WAITSCANCHECK)
+                         logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
         count = trades.count() if trades else 0   
         if count>1 :
             self.error_text.SetLabel(u'该快递单号已重复，请反审核后修改')
@@ -116,9 +115,9 @@ class ScanCheckPanel(wx.Panel):
             if company_name and out_sid:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                       logistics_company_id=logistics_company.id,sys_status=SYS_STATUS_WAITSCANCHECK)
+                       logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
             elif out_sid :
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=SYS_STATUS_WAITSCANCHECK)
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
                  
         count = trades.count() if trades else 0 
         if count>1 :
@@ -150,8 +149,8 @@ class ScanCheckPanel(wx.Panel):
                 if self.gridpanel.isCheckOver():
                     with create_session(self.Parent) as session: 
                         #库存减掉后，修改发货状态
-                        session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=SYS_STATUS_WAITSCANCHECK)\
-                            .update({'sys_status':SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
+                        session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)\
+                            .update({'sys_status':cfg.SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
                             
                     self.out_sid_text.Clear()
                     self.barcode_text.Clear()

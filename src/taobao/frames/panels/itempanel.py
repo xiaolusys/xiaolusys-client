@@ -7,7 +7,7 @@ Created on 2012-7-16
 import wx
 from taobao.common.utils import create_session,format_date,pydate2wxdate,wxdate2pydate
 from taobao.dao.models import MergeTrade,LogisticsCompany
-from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,SYS_STATUS
+from taobao.dao import configparams as cfg
 
 class BasicPanel(wx.Panel):
     def __init__(self, parent,id=-1):
@@ -189,7 +189,7 @@ class BasicPanel(wx.Panel):
             return 
         self.trade   = trade
         self.order_content1.SetValue(trade.seller_nick)
-        self.order_content2.SetValue(TRADE_TYPE.get(trade.type,u'其他'))
+        self.order_content2.SetValue(cfg.TRADE_TYPE.get(trade.type,u'其他'))
         self.order_content3.SetValue(str(trade.tid))
         self.order_content4.SetValue(trade.buyer_nick)
         self.order_content5.SetValue(str(trade.pay_time or '')) 
@@ -200,7 +200,7 @@ class BasicPanel(wx.Panel):
         self.order_content9.SetValue(trade.logistics_company and trade.logistics_company.code or '')
         self.order_content10.SetValue(str(trade.weight_time or ''))
         
-        self.order_content11.SetValue(SHIPPING_TYPE.get(trade.shipping_type,u'其他'))
+        self.order_content11.SetValue(cfg.SHIPPING_TYPE.get(trade.shipping_type,u'其他'))
         self.order_content12.SetValue(trade.post_fee)
         self.order_content13.SetValue(trade.logistics_company and trade.logistics_company.name or '')
         self.order_content14.SetValue(trade.out_sid) 
@@ -208,8 +208,8 @@ class BasicPanel(wx.Panel):
         
         self.order_content16.SetValue(trade.weight)
         self.order_content17.SetValue(trade.post_cost)
-        self.order_content18.SetValue(TRADE_STATUS.get(trade.status,u'其他'))
-        self.order_content19.SetValue(SYS_STATUS.get(trade.sys_status,u'其他'))
+        self.order_content18.SetValue(cfg.TRADE_STATUS.get(trade.status,u'其他'))
+        self.order_content19.SetValue(cfg.SYS_STATUS.get(trade.sys_status,u'其他'))
         self.order_content20.SetValue(str(trade.created or ''))
         
         self.order_content22.SetValue(trade.seller_memo)
@@ -435,7 +435,7 @@ class ItemPanel(wx.Panel):
     def setData(self,trade_id):
         self.is_changeable = False
         with create_session(self.Parent) as session: 
-            self.selected_trade = session.query(MergeTrade).filter_by(id=trade_id).one()
+            self.selected_trade = session.query(MergeTrade).filter_by(id=trade_id).first()
         self.base_trade_panel.setData(self.selected_trade)
         self.detail_trade_panel.setData(self.selected_trade)
         self.receiver_trade_panel.setData(self.selected_trade)

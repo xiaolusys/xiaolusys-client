@@ -14,9 +14,7 @@ from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,Pro
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.tradedao import get_used_orders,get_return_orders
 from taobao.common.utils import getconfig
-from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE,\
-    SYS_STATUS,SYS_STATUS_FINISHED,SYS_STATUS_INVALID,TRADE_STATUS_WAIT_SEND_GOODS,\
-    SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK,REAL_ORDER_GIT_TYPE,COMBOSE_SPLIT_GIT_TYPE
+from taobao.dao import configparams as cfg
 
 weight_regex=re.compile('[0-9\.]{1,7}$')
 
@@ -276,15 +274,15 @@ class ScanWeightPanel(wx.Panel):
  
         self.order_content1.SetValue(trade.seller_nick)
         self.order_content2.SetValue(str(trade.tid))
-        self.order_content3.SetValue(TRADE_TYPE.get(trade.type,u'其他'))
+        self.order_content3.SetValue(cfg.TRADE_TYPE.get(trade.type,u'其他'))
         self.order_content4.SetValue(trade.buyer_nick)
         self.order_content5.SetValue(trade.logistics_company.name)
         self.order_content6.SetValue(trade.out_sid)
         
-        self.order_content7.SetValue(TRADE_STATUS.get(trade.status,u'其他'))
-        self.order_content8.SetValue(SYS_STATUS.get(trade.sys_status,u'其他'))
+        self.order_content7.SetValue(cfg.TRADE_STATUS.get(trade.status,u'其他'))
+        self.order_content8.SetValue(cfg.SYS_STATUS.get(trade.sys_status,u'其他'))
         self.order_content9.SetValue(trade.receiver_name)
-        self.order_content10.SetValue(SHIPPING_TYPE.get(trade.shipping_type,u'其他'))
+        self.order_content10.SetValue(cfg.SHIPPING_TYPE.get(trade.shipping_type,u'其他'))
         self.order_content11.SetValue(trade.post_fee)
         self.order_content12.SetValue(trade.receiver_phone)
         
@@ -320,14 +318,14 @@ class ScanWeightPanel(wx.Panel):
                     session.query(ProductSku).filter_by(outer_id=outer_sku_id,product=product)\
                         .update({ProductSku.quantity:ProductSku.quantity-order.num})
                         
-                    if order.gift_type in (REAL_ORDER_GIT_TYPE,COMBOSE_SPLIT_GIT_TYPE):
+                    if order.gift_type in (cfg.REAL_ORDER_GIT_TYPE,cfg.COMBOSE_SPLIT_GIT_TYPE):
                         session.query(ProductSku).filter_by(outer_id=outer_sku_id,product=product)\
                         .update({ProductSku.wait_post_num:ProductSku.wait_post_num-order.num})
                 
                 session.query(Product).filter_by(outer_id=outer_id)\
                     .update({Product.collect_num:Product.collect_num-order.num})
                     
-                if order.gift_type in (REAL_ORDER_GIT_TYPE,COMBOSE_SPLIT_GIT_TYPE):
+                if order.gift_type in (cfg.REAL_ORDER_GIT_TYPE,cfg.COMBOSE_SPLIT_GIT_TYPE):
                     session.query(Product).filter_by(outer_id=outer_id)\
                     .update({Product.wait_post_num:Product.wait_post_num-order.num})
             
@@ -346,7 +344,7 @@ class ScanWeightPanel(wx.Panel):
                     
             #称重后，内部状态变为发货已发货
             session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
-                    .update({'weight':weight,'sys_status':SYS_STATUS_FINISHED,'weight_time':datetime.datetime.now()}
+                    .update({'weight':weight,'sys_status':cfg.SYS_STATUS_FINISHED,'weight_time':datetime.datetime.now()}
                     ,synchronize_session='fetch')
         self.gridpanel.InsertTradeRows(trade)
         self.trade = None
@@ -358,8 +356,8 @@ class ScanWeightPanel(wx.Panel):
         conf = getconfig()
         is_need_check = conf.get('custom', 'check_barcode')
         if is_need_check.lower() == 'true':
-            return (SYS_STATUS_WAITSCANWEIGHT,)
-        return (SYS_STATUS_WAITSCANWEIGHT,SYS_STATUS_WAITSCANCHECK)
+            return (cfg.SYS_STATUS_WAITSCANWEIGHT,)
+        return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_WAITSCANCHECK)
         
     def onClickCheckBox(self,evt):
         self.is_auto_save = evt.IsChecked()

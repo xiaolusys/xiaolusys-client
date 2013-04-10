@@ -268,6 +268,7 @@ class MergeTrade(Base):
     can_review       = Column(Boolean)
     priority         = Column(Integer,index=True)
     operator         = Column(String(32))
+    is_locked        = Column(Boolean)
     sys_status       = Column(String(32),index=True)  
     def __repr__(self):
         return "<Trade('%s','%s','%s','%s')>" % (str(self.id),str(self.tid), self.seller_nick, self.buyer_nick)
