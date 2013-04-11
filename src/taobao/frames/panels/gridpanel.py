@@ -7,7 +7,7 @@ Created on 2012-7-13
 import re
 import weakref
 import wx, wx.grid as grd
-from taobao.dao import configparams as cfg 
+from taobao.dao import configparams as cfg
 from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable
 from taobao.frames.panels.itempanel import ItemPanel
 from taobao.frames.tables.gridtable import CheckGridTable
@@ -62,7 +62,7 @@ class GridPanel(wx.Panel):
         self.pt1 = wx.StaticText(pag_panel, -1, u",第")
         self.pt2 = wx.StaticText(pag_panel, -1, u"/")
         self.pt3 = wx.StaticText(pag_panel, -1, u"页(共")
-        self.pt5 = wx.StaticText(pag_panel, -1, u"条,已选") 
+        self.pt5 = wx.StaticText(pag_panel, -1, u" 条,已选")
         self.pt6 = wx.StaticText(pag_panel,-1,u" 条),每页")
         self.lblPageIndex = wx.StaticText(pag_panel, -1, "0")
         self.lblPageCount = wx.StaticText(pag_panel, -1, "0")
@@ -435,6 +435,10 @@ class GridPanel(wx.Panel):
                 if id_compile.match(str(start_out_sid)):
                     self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
                 else:
+                    dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览错误', 
+                        wx.OK | wx.ICON_EXCLAMATION)
+                    dial.ShowModal()
+                    self.fill_sid_text.Clear()
                     self.refreshTable()
                     evt.Skip()
                     return 
@@ -530,7 +534,7 @@ class GridPanel(wx.Panel):
             
             elif eventid == review_orders_btn_id:
                 if len(self._selectedRows)==1:
-                    trade_id = self.grid.GetCellValue(self._selectedRows.pop(),TRADE_ID_CELL_COL)
+                    trade_id = self.grid.GetCellValue(list(self._selectedRows)[0],TRADE_ID_CELL_COL)
                     OrderReview(parent=self,trade_id=trade_id).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()
 
             elif eventid == scan_check_btn_id:

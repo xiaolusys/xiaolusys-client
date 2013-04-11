@@ -339,9 +339,11 @@ class CheckGridTable(grd.PyGridTableBase):
             attr = self.cell
             attr.IncRef() #引用加1
         if check_num>0 and check_num<origin_num:
-            attr.SetBackgroundColour('RED')
-        elif check_num >= origin_num:
+            attr.SetBackgroundColour('#49AFCD')
+        elif check_num == origin_num:
             attr.SetBackgroundColour('GREEN')
+        elif check_num > origin_num:
+            attr.SetBackgroundColour('RED')
         else :
             attr.SetBackgroundColour('WHITE')
         return attr

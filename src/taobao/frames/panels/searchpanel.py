@@ -9,7 +9,7 @@ import wx
 from   sqlalchemy import or_
 from taobao.dao.models import MergeTrade,MergeOrder,User,LogisticsCompany
 from taobao.common.utils import wxdate2pydate,create_session
-from taobao.dao.configparams import TRADE_TYPE,TRADE_STATUS,SHIPPING_TYPE
+from taobao.dao import configparams as cfg
 
 class SearchPanel(wx.Panel):
     def __init__(self,parent,id=-1):
@@ -69,8 +69,8 @@ class SearchPanel(wx.Panel):
         self.seller_select.AppendItems([user.nick for user in users])
         self.logistics_company_select.AppendItems([company.name for company in logistics_companies])
         
-        self.taobao_status_select.AppendItems([ v for k,v in TRADE_STATUS.items()])
-        self.trade_type_select.AppendItems([v for k,v in TRADE_TYPE.items()])       
+        self.taobao_status_select.AppendItems([ v for k,v in cfg.TRADE_STATUS.items()])
+        self.trade_type_select.AppendItems([v for k,v in cfg.TRADE_TYPE.items()])       
         
     def __do_layout(self):    
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)
@@ -166,6 +166,27 @@ class SearchPanel(wx.Panel):
         
         self.OnSearch(None)
 
+    def setPanelMode(self,mode):
+        self.order_text.Enable(mode in (cfg.NORMAL_MODE))
+        self.order_receiver_name.Enable(mode in (cfg.NORMAL_MODE))
+        self.taobao_status_select.Enable(mode in (cfg.NORMAL_MODE))
+        self.seller_select.Enable(mode in (cfg.NORMAL_MODE))
+        self.buyer_text.Enable(mode in (cfg.NORMAL_MODE))
+
+        self.start_time_select.Enable(mode in (cfg.NORMAL_MODE))
+        self.end_time_select.Enable(mode in (cfg.NORMAL_MODE))
+        self.logistics_text.Enable(mode in (cfg.NORMAL_MODE))
+        self.trade_type_select.Enable(mode in (cfg.NORMAL_MODE))
+        self.logistics_company_select.Enable(mode in (cfg.NORMAL_MODE,cfg.DIVIDE_MODE))
+        self.delivery_pick_check.Enable(mode in (cfg.NORMAL_MODE,cfg.DIVIDE_MODE))
+        self.logistics_pick_check.Enable(mode in (cfg.NORMAL_MODE,cfg.DIVIDE_MODE))
+        self.outer_id_text.Enable(mode in (cfg.NORMAL_MODE))
+        self.sku_outer_id_text.Enable(mode in (cfg.NORMAL_MODE))
+        self.urggent_doc_check.Enable(mode in (cfg.NORMAL_MODE))
+        self.weight_start_select.Enable(mode in (cfg.NORMAL_MODE))
+        self.weight_end_select.Enable(mode in (cfg.NORMAL_MODE))
+
+        self.clearSearchPanel()
     
     def OnSearch(self,evt):
         datasource = self.Parent.grid.datasource
@@ -202,7 +223,7 @@ class SearchPanel(wx.Panel):
             if receiver_name:
                 datasource = datasource.filter_by(receiver_name=receiver_name)
             if trade_status:
-                status_dict = dict([(v,k) for k,v in TRADE_STATUS.items()])
+                status_dict = dict([(v,k) for k,v in cfg.TRADE_STATUS.items()])
                 datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(),None))
             if seller_id:
                 datasource = datasource.filter_by(seller_nick=seller_id.strip())
@@ -217,7 +238,7 @@ class SearchPanel(wx.Panel):
             if weight_end_time:
                 datasource = datasource.filter("weight_time <=:end").params(end=weight_end_time)
             if trade_type:
-                trade_type_dict = dict([(v,k) for k,v in TRADE_TYPE.items()])
+                trade_type_dict = dict([(v,k) for k,v in cfg.TRADE_TYPE.items()])
                 datasource = datasource.filter_by(type=trade_type_dict.get(trade_type.strip(),None))
             if logistics_company :
                 with create_session(self.Parent) as session:

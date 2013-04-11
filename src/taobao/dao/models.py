@@ -21,6 +21,7 @@ class SystemConfig(Base):
     is_rule_auto = Column(Boolean, default=False)
     is_sms_auto = Column(Boolean, default=False)
     
+    per_request_num = Column(Integer)
     client_num = Column(Integer)
     
     def __repr__(self):
