@@ -42,13 +42,10 @@ class GridTable(grd.PyGridTableBase):
         
         i=0
         for row in datasource:
-            self.data[(i,0)] = attr
+            self.data[(i,0)] = ''
             j = 1
             for v in row:
-                if j in (8,9,10):
-                    self.data[(i,j)]= v
-                else:
-                    self.data[(i,j)] = v#给每一个单元格赋值的方法
+                self.data[(i,j)] = v#给每一个单元格赋值的方法
                 j+=1
             i+=1
             
