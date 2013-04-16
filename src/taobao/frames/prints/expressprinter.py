@@ -118,6 +118,7 @@ class ExpressPrinter(wx.Frame):
  
     #----------------------------------------------------------------------
     def onCancel(self, event):
+        
         self.Close()
  
     

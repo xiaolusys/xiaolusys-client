@@ -4,11 +4,9 @@ Created on 2012-7-14
 
 @author: user1
 '''
-import json
 import wx
 from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.frames.panels.gridpanel import QueryObjectGridPanel
-from taobao.common.utils import getconfig,writeconfig,create_session
 from taobao.dao import configparams as cfg
 
 
@@ -33,25 +31,25 @@ class TradePanel(wx.Panel):
         self.Session = parent.Session
         self.selectedRowColour = (0, 128, 0, 255)
         self.search_panel = SearchPanel(self,-1)
-        self.client_num = self.getParallelNum() #客户端数量   
         self.buttons = [] 
         
         for button in self.buttons_tuple:
             self.buttons.append(wx.Button(self,button[0],button[1]))
- 
-        colLabels = (u'订单号',u'卖家昵称',u'买家昵称',u'订单类型',u'订单状态',u'系统状态',u'省(市)',u'打印发货单',u'打印物流单',u'复审',
+            
+        self.dividradio  = wx.RadioButton(self, -1, '分打模式', pos=(20, 50), style=wx.RB_GROUP)
+        self.normalradio = wx.RadioButton(self, -1, '单打模式', pos=(20, 50), )  
+  
+        colLabels = (u'订单号',u'卖家昵称',u'买家昵称',u'订单类型',u'订单状态',u'系统状态',u'省-市-区','锁定',u'发货单',u'物流单',u'复审',
                      u'物流公司',u'物流单号',u'操作员',u'订单数',u'实付',u'总金额',u'付款时间',u'发货时间',u'称重时间')
         self.grid = QueryObjectGridPanel(self,-1,rowLabels=None,colLabels=colLabels)
         self.grid.setDataSource(cfg.SYS_STATUS_PREPARESEND)
         
         self.static_button_up = wx.Button(self,-1,label='^------------^',size=(-1,11))
         self.isSearchPanelShow = False
-        self.istailnumshow = False
         
         self.refresh_btn = wx.Button(self,-1,u'刷新',size=(35,23))
-        self.filter_number_btn = wx.Button(self,-1,'>',size=(23,23)) 
-        self.colorpicker = wx.ColourPickerCtrl(self,-1)
-   
+        self.colorpicker = wx.ColourPickerCtrl(self,-1) 
+        
         self.__set_properties()
         self.__do_layout()   
         self.__evt_bind()
@@ -77,7 +75,6 @@ class TradePanel(wx.Panel):
         self.FindWindowById(prapare_send_id).Enable(False)  
         self.refresh_btn.SetToolTip(wx.ToolTip(u'刷新当前表单'))
         self.colorpicker.SetToolTip(wx.ToolTip(u'设置选中行颜色'))
-        self.filter_number_btn.SetToolTip(wx.ToolTip(u'选择显示的订单尾号'))  
         
         self.search_panel.Hide()
         for button in self.buttons_tuple:
@@ -96,25 +93,18 @@ class TradePanel(wx.Panel):
             trade_naming_sizer.Add(self.FindWindowById(button[0]),0,index)
         
         trade_naming_sizer.Add((250,-1))
-        
-        self.checksizer = wx.FlexGridSizer(hgap=2,vgap=10)
-        self.checkbox_list = []
-        for i in xrange(0,self.client_num):
-            check = wx.CheckBox(self,-1,str(i))
-            self.checkbox_list.append(check)
-            self.checksizer.Add(check,0,i)
-        trade_naming_sizer.Add(self.refresh_btn,0,index+1)
-        trade_naming_sizer.Add(self.colorpicker,0,index+2)
-        trade_naming_sizer.Add(self.filter_number_btn,0,index+3)
-        trade_naming_sizer.Add(self.checksizer,0,index+3)
-        trade_naming_sizer.Hide(self.checksizer)
+  
+        trade_naming_sizer.Add(self.dividradio,0,index+1)
+        trade_naming_sizer.Add(self.normalradio,0,index+2)
+        trade_naming_sizer.Add((10,-1))
+        trade_naming_sizer.Add(self.refresh_btn,0,index+4)
+        trade_naming_sizer.Add(self.colorpicker,0,index+5)
         
         main_sizer.Add(trade_naming_sizer,flag=wx.EXPAND)
         main_sizer.Add(self.grid,1,flag=wx.EXPAND)
         main_sizer.Layout()
         self.search_panel.Layout()
         self.SetSizer(main_sizer)
-        self.showCheckboxByTailNums()
         
         
     def __evt_bind(self):
@@ -127,9 +117,9 @@ class TradePanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_up)
         self.Bind(wx.EVT_BUTTON, self.onClickRefreshBtn,self.refresh_btn)
         self.Bind(wx.EVT_COLOURPICKER_CHANGED, self.onClickColorPickerChange,self.colorpicker)
-        self.Bind(wx.EVT_BUTTON, self.onClickTailNumBtn,self.filter_number_btn)
-        for checkbox in self.checkbox_list:
-            self.Bind(wx.EVT_CHECKBOX, self.onCheckTailNum,checkbox)
+        
+        self.Bind(wx.EVT_RADIOBUTTON, self.onSelectRadioBtn, self.normalradio)
+        self.Bind(wx.EVT_RADIOBUTTON, self.onSelectRadioBtn, self.dividradio)
             
     def onClickExpandFoldBtn(self,evt):
         eventid = evt.GetId()
@@ -146,6 +136,7 @@ class TradePanel(wx.Panel):
             self.FindWindowById(fold_id).Hide()
             self.FindWindowById(expand_id).Show()
         self.Layout()
+
             
     def onClickGridBtn(self,evt):
         eventid = evt.GetId()
@@ -191,52 +182,17 @@ class TradePanel(wx.Panel):
     def onClickRefreshBtn(self,evt):
         self.grid.refreshTable()   
     
-    def onCheckTailNum(self,evt):
+    def onSelectRadioBtn(self,evt):
+        print_mode = self.getPrintMode()
+        is_divid_mode = print_mode == cfg.DIVIDE_MODE 
+        self.grid.enableAutoIncrSidBtn(is_divid_mode)
+        self.grid.setDataSource(self.grid.status_type)
+        
+    def getPrintMode(self):
+        if self.normalradio.GetValue():
+            return cfg.NORMAL_MODE
+        else:
+            return cfg.DIVIDE_MODE
 
-        config = getconfig()
-        tail_nums = self.getAllTailNums()
-        config.set('custom','tail_nums',json.dumps(tail_nums))
-        writeconfig(config)
-        self.grid.updateTableAndPaginator()
+        
     
-    def getAllTailNums(self):
-        tail_nums = set()
-        if hasattr(self, 'checkbox_list'):
-            for cb in self.checkbox_list:
-                if cb.IsChecked():
-                    tail_nums.add(int(cb.GetLabelText()))
-        else:
-            config=getconfig()
-            tail_nums = json.loads(config.get('custom', 'tail_nums') or 'null')
-            tail_nums = set(tail_nums or [])
-        return list(tail_nums)
-    
-    def showCheckboxByTailNums(self):
-        config = getconfig()
-        tail_nums = config.get('custom', 'tail_nums')
-        for cb in self.checkbox_list:
-            cb_val = cb.GetLabelText()
-            if cb_val in tail_nums:
-                cb.SetValue(True)
-        
-        
-    def onClickTailNumBtn(self,evt):
-        if self.istailnumshow:
-            self.trade_naming_sizer.Hide(self.checksizer)
-            self.istailnumshow = False
-        else:
-            self.trade_naming_sizer.Show(self.checksizer)
-            self.istailnumshow = True
-        self.Layout()
-        
-    def getParallelNum(self):
-        parallel_num = 1
-        from taobao.dao.models import SystemConfig
-        with create_session(self.Parent) as session: 
-            try:
-                sys_config = session.query(SystemConfig).first()
-            except:
-                pass
-            else:
-                parallel_num = sys_config.client_num
-        return parallel_num>0 and parallel_num or 1

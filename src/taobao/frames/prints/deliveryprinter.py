@@ -116,6 +116,7 @@ class DeliveryPrinter(wx.Frame):
  
     #----------------------------------------------------------------------
     def onCancel(self, event):
+        self.Parent.grid.ForceRefresh()
         self.Close()
 
     #----------------------------------------------------------------------

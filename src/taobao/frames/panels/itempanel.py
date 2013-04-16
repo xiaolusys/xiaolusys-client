@@ -63,8 +63,8 @@ class BasicPanel(wx.Panel):
         self.reason_code_text  = wx.TextCtrl(self,-1)
         self.cod_fee_label = wx.StaticText(self,-1,u'货到付款服务费')
         self.cod_fee_text  = wx.TextCtrl(self,-1)
-        self.send_sms_label = wx.StaticText(self,-1,u'短信提醒')
-        self.send_sms_check  = wx.CheckBox(self,-1)
+        self.is_locked_label = wx.StaticText(self,-1,u'锁定')
+        self.is_locked_check  = wx.CheckBox(self,-1)
         
         
         self.order_label16  = wx.StaticText(self,-1,u'称重重量')
@@ -81,8 +81,8 @@ class BasicPanel(wx.Panel):
         self.refund_num_text  = wx.TextCtrl(self,-1)
         self.cod_status_label = wx.StaticText(self,-1,u'货到付款状态')
         self.cod_status_text  = wx.TextCtrl(self,-1)
-        self.has_refund_label = wx.StaticText(self,-1,u'待退款')
-        self.has_refund_check  = wx.CheckBox(self,-1)
+        self.is_review_label = wx.StaticText(self,-1,u'复审')
+        self.is_review_check  = wx.CheckBox(self,-1)
         
         self.order_label22  = wx.StaticText(self,-1,u'卖家留言')
         self.order_content22  = wx.TextCtrl(self,-1,'',size=(-1,120),style=wx.TE_MULTILINE)
@@ -150,8 +150,8 @@ class BasicPanel(wx.Panel):
         base_order_sizer.Add(self.reason_code_text,pos=(2,11),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.cod_fee_label,pos=(2,12),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.cod_fee_text,pos=(2,13),span=(1,1),flag=wx.EXPAND)
-        base_order_sizer.Add(self.send_sms_label,pos=(2,14),span=(1,1),flag=wx.EXPAND)
-        base_order_sizer.Add(self.send_sms_check,pos=(2,15),span=(1,1),flag=wx.EXPAND)
+        base_order_sizer.Add(self.is_locked_label,pos=(2,14),span=(1,1),flag=wx.EXPAND)
+        base_order_sizer.Add(self.is_locked_check,pos=(2,15),span=(1,1),flag=wx.EXPAND)
         
         base_order_sizer.Add(self.order_label16,pos=(3,0),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.order_content16,pos=(3,1),span=(1,1),flag=wx.EXPAND)
@@ -167,8 +167,8 @@ class BasicPanel(wx.Panel):
         base_order_sizer.Add(self.refund_num_text,pos=(3,11),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.cod_status_label,pos=(3,12),span=(1,1),flag=wx.EXPAND)
         base_order_sizer.Add(self.cod_status_text,pos=(3,13),span=(1,1),flag=wx.EXPAND)
-        base_order_sizer.Add(self.has_refund_label,pos=(3,14),span=(1,1),flag=wx.EXPAND)
-        base_order_sizer.Add(self.has_refund_check,pos=(3,15),span=(1,1),flag=wx.EXPAND)
+        base_order_sizer.Add(self.is_review_label,pos=(3,14),span=(1,1),flag=wx.EXPAND)
+        base_order_sizer.Add(self.is_review_check,pos=(3,15),span=(1,1),flag=wx.EXPAND)
         
 
         base_order_sizer.Add(self.order_label22,pos=(4,0),span=(1,1),flag=wx.EXPAND)
@@ -227,8 +227,8 @@ class BasicPanel(wx.Panel):
         
         self.delivery_pick_check.SetValue(trade.is_picking_print)
         self.logistics_pick_check.SetValue(trade.is_express_print)
-        self.send_sms_check.SetValue(trade.is_send_sms)
-        self.has_refund_check.SetValue(trade.has_refund)
+        self.is_locked_check.SetValue(trade.is_locked)
+        self.is_review_check.SetValue(trade.can_review)
         
         self.Layout()
         

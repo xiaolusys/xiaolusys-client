@@ -5,6 +5,7 @@ Created on 2012-7-13
 @author: user1
 '''
 import re
+import datetime
 import weakref
 import wx, wx.grid as grd
 from taobao.dao import configparams as cfg
@@ -13,22 +14,27 @@ from taobao.frames.panels.itempanel import ItemPanel
 from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
-from taobao.common.utils import create_session,getconfig
+from taobao.common.utils import create_session
 from taobao.dao.models import MergeOrder,MergeTrade
-from taobao.dao.tradedao import get_used_orders
+from taobao.dao.tradedao import get_used_orders,get_oparetor,get_datasource_by_type_and_mode,locking_trade
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
 from taobao.frames.prints.pickleprinter import PicklePrinter
 from taobao.frames.prints.revieworder import OrderReview
 
 TRADE_ID_CELL_COL = 1
-LOG_COMPANY_CELL_COL = 11
-OUT_SID_CELL_COL = 12
-OPERATOR_CELL_COL = 13
+LOCKED_CELL_COL  = 8
+EXPRESS_CELL_COL = 9
+PICKLE_CELL_COL  = 10
+REVIEW_CELL_COL  = 11
+LOG_COMPANY_CELL_COL = 12
+OUT_SID_CELL_COL = 13
+OPERATOR_CELL_COL = 14
 OUTER_ID_COL = 5
 OUTER_SKU_ID_COL = 6
 ORIGIN_NUL_COL = 4
 NUM_STATUS_COL = 10
+
 
 fill_sid_btn_id = wx.NewId()
 picking_print_btn_id = wx.NewId()
@@ -53,6 +59,7 @@ class GridPanel(wx.Panel):
         self.status_type = ''
         self.start_sid   = ''
         self.end_sid     = ''
+        self.curRow      = None
         self.grid = grd.Grid(self, -1)
         
         self._selectedRows = set()
@@ -136,7 +143,7 @@ class GridPanel(wx.Panel):
         
         
     def __do_layout(self):
-        self.main_sizer = main_sizer = wx.BoxSizer(wx.VERTICAL) 
+        self.main_sizer = wx.BoxSizer(wx.VERTICAL) 
         
         fg = wx.FlexGridSizer(hgap=2, vgap=2)
         fg.Add(self.select_all_label,0,0)
@@ -230,13 +237,13 @@ class GridPanel(wx.Panel):
 
         
     def setDataSource(self, status_type): 
+        """设置数据源"""
         self.status_type = status_type
-        with create_session(self.Parent) as session: 
-            datasource     = session.query(MergeTrade).order_by('priority desc','shop_trades_mergetrade.pay_time asc')
-            if status_type and status_type != cfg.SYS_STATUS_ALL:
-                datasource = datasource.filter_by(sys_status=status_type)
-        self.datasource = datasource
-        self.paginator = paginator = Paginator(datasource, self.page_size)
+        print_mode       = self.Parent.getPrintMode()
+        session          = self.Parent.Session
+        
+        self.datasource = get_datasource_by_type_and_mode(status_type,print_mode=print_mode,session=session)
+        self.paginator = paginator = Paginator(self.datasource, self.page_size)
         self.page = paginator.page(1)
         
         self.fill_sid_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
@@ -249,13 +256,14 @@ class GridPanel(wx.Panel):
 
         self.updateTableAndPaginator()
         self.Layout()
+    
         
     def setSearchData(self, datasource):
         self.paginator = paginator = Paginator(datasource, self.page_size)
         self.page = paginator.page(1)
         self.updateTableAndPaginator()
    
-
+    
 ##################checkbox 在grid中的事件绑定 ###################
     def onMouse(self,evt):
         if evt.Col == 0:
@@ -263,8 +271,9 @@ class GridPanel(wx.Panel):
         evt.Skip()
 
     def toggleCheckBox(self):
-        self.grid.cb.Value = not self.grid.cb.Value
-        self.afterCheckBox(self.grid.cb.Value)
+        if hasattr(self.grid,'cb'):
+            self.grid.cb.Value = not self.grid.cb.Value
+            self.afterCheckBox(self.grid.cb.Value)
 
     def onCellSelected(self,evt):
         if evt.Col == 0:
@@ -303,26 +312,35 @@ class GridPanel(wx.Panel):
         self.afterCheckBox(evt.IsChecked())
 
     def afterCheckBox(self,isChecked,singleRecord=False):
-        row = 0 if singleRecord else self.grid.GridCursorRow
+        self.curRow = 0 if singleRecord else self.grid.GridCursorRow
         if isChecked:
-            self._selectedRows.add(row)
-            value = self.grid.GetCellValue(row,1)
-            self.itempanel.setData(value)
-            for btn in self.button_array:
-                btn.Enable(True)
+            self._selectedRows.add(self.curRow)
+            self.grid.SetCellValue(self.curRow,0,'1')
         else:
             try:
-                self._selectedRows.remove(row)
+                self._selectedRows.remove(self.curRow)
             except:
                 pass
-            if len(self._selectedRows) <1:
-                for btn in self.button_array:
-                    btn.Enable(False)
+            self.grid.SetCellValue(self.curRow,0,'')
+        wx.CallLater(100,self.updateStatuAfterCheck) 
+
+       
+    def updateStatuAfterCheck(self):
+        
+        value = self.grid.GetCellValue(self.curRow,1)
+        self.itempanel.setData(value)
+        
+        if len(self._selectedRows) <1:
+            for btn in self.button_array:
+                btn.Enable(False)
+        else:
+            for btn in self.button_array:
+                btn.Enable(True)        
         self.review_orders_btn.Enable(len(self._selectedRows) == 1)
         self.selected_counts.SetLabel(str(len(self._selectedRows)))
-        self.updateSelectAllCheck()
-        self.Layout()
-        
+        self.updateSelectAllCheck() 
+        #self.grid.ForceRefresh()
+        #self.refreshTable()
     #####################check 在grid中事件绑定结束#########################   
     
     
@@ -419,7 +437,7 @@ class GridPanel(wx.Panel):
                         self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
                         start_out_sid += 1
                     elif not is_out_sid_match:
-                        dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览错误', 
+                        dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览提示', 
                             wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         self.fill_sid_text.Clear()
@@ -433,9 +451,21 @@ class GridPanel(wx.Panel):
                 company_regex = trade.logistics_company.reg_mail_no
                 id_compile = re.compile(company_regex)
                 if id_compile.match(str(start_out_sid)):
+                    print_mode    = self.Parent.getPrintMode()
+                    operator      = get_oparetor()
+                    if print_mode == cfg.NORMAL_MODE:
+                        is_locked = locking_trade(trade.id,operator,session=session)
+                        if not is_locked: 
+                            dial = wx.MessageDialog(None, u'订单已被其他用户锁定', '订单预览提示', 
+                                                    wx.OK | wx.ICON_EXCLAMATION)
+                            dial.ShowModal()
+                            self.fill_sid_text.Clear()
+                            self.refreshTable()
+                            evt.Skip()
+                            return 
                     self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
                 else:
-                    dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览错误', 
+                    dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览提示', 
                         wx.OK | wx.ICON_EXCLAMATION)
                     dial.ShowModal()
                     self.fill_sid_text.Clear()
@@ -458,10 +488,10 @@ class GridPanel(wx.Panel):
     
     def onClickActiveButton(self,evt):
         eventid = evt.GetId()
-        cf = getconfig()
-        operator = cf.get('user','username') 
+        operator = get_oparetor() 
         with create_session(self.Parent) as session: 
             if eventid == fill_sid_btn2_id:
+                effect_row = 0
                 for row in self._selectedRows:
                     try:
                         trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
@@ -477,11 +507,12 @@ class GridPanel(wx.Panel):
                                 .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
                             self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
                             self.grid.SetCellValue(row,OPERATOR_CELL_COL,operator)
+                            effect_row += 1
                         else:
                             break    
                     except:
                         break
-                if len(self._selectedRows)>2:
+                if effect_row>1:
                     self.disablePicklePrintBtn() 
                     self.fill_sid_btn2.Enable(False)
                     self.fill_sid_btn4.Enable(True) 
@@ -517,7 +548,7 @@ class GridPanel(wx.Panel):
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     if pre_company_id and pre_company_id != trade.logistics_company_id:
-                        dial = wx.MessageDialog(None, u'请确保批打订单快递相同', '快递单打印错误', 
+                        dial = wx.MessageDialog(None, u'请确保批打订单快递相同', '快递单打印提示', 
                             wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         return
@@ -558,20 +589,30 @@ class GridPanel(wx.Panel):
     
     def refreshTable(self):
         #修改状态后 ，刷新当前表单  
+         
         trade_ids = self.getSelectTradeIds(self._selectedRows)
-        tail_nums = self.Parent.getAllTailNums()
         if self.page:
             self.page = self.paginator.page(self.page.number)
-            object_list = self.parseObjectToList(self.page.object_list,tail_nums)
+            object_list = self.parseObjectToList(self.page.object_list)
         else:
             object_list = ()
+        
+        print_mode = self.Parent.getPrintMode()
+        if not object_list and self.status_type == cfg.SYS_STATUS_PREPARESEND and print_mode==cfg.DIVIDE_MODE:
+            self.setDataSource(self.status_type)
+            return 
         gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels, self.Parent.selectedRowColour))
         self.grid.SetTable(gridtable())
         self.grid.SetColSize(0, 20)
+        self.grid.SetColSize(LOCKED_CELL_COL,35)
+        self.grid.SetColSize(EXPRESS_CELL_COL,50)
+        self.grid.SetColSize(PICKLE_CELL_COL,50)
+        self.grid.SetColSize(REVIEW_CELL_COL,35)
+        self.grid.SetColSize(OUT_SID_CELL_COL,100)
         self.grid.SetRowLabelSize(40)  
         self.updateCellBySelectedTradeIds(trade_ids)
         self.updateSelectAllCheck()
-#        self.grid.ForceRefresh() 
+        self.grid.ForceRefresh() 
     
     def updateCellBySelectedTradeIds(self,trade_ids):
         self._selectedRows.clear()
@@ -598,15 +639,19 @@ class GridPanel(wx.Panel):
     
     def updateTableAndPaginator(self):
         self._selectedRows.clear()
-        tail_nums = self.Parent.getAllTailNums()
         if self.page:
-            object_list = self.parseObjectToList(self.page.object_list,tail_nums)
+            object_list = self.parseObjectToList(self.page.object_list)
         else:
             object_list = ()
            
         gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels,self.Parent.selectedRowColour))
         self.grid.SetTable(gridtable())
         self.grid.SetColSize(0, 20)
+        self.grid.SetColSize(LOCKED_CELL_COL,35)
+        self.grid.SetColSize(EXPRESS_CELL_COL,50)
+        self.grid.SetColSize(PICKLE_CELL_COL,50)
+        self.grid.SetColSize(REVIEW_CELL_COL,35)
+        self.grid.SetColSize(OUT_SID_CELL_COL,100)
         self.grid.SetRowLabelSize(40)
         self.setupPager()
         for btn in self.button_array:
@@ -644,7 +689,12 @@ class GridPanel(wx.Panel):
     def onBtnNextClick(self, evt):
         self.page = self.paginator.page(self.page.next_page_number())
         self.updateTableAndPaginator()
+    
+    def enableAutoIncrSidBtn(self,is_enable):
+        self.fill_sid_checkbox1.Enable(is_enable)
+        self.fill_sid_checkbox1.SetValue(is_enable)
 
+            
 
 class ListArrayGridPanel(GridPanel):
     
@@ -654,13 +704,11 @@ class ListArrayGridPanel(GridPanel):
    
 class QueryObjectGridPanel(GridPanel):
      
-    def parseObjectToList(self, object_list, tailnums=set()):
+    def parseObjectToList(self, object_list):
         assert isinstance(object_list,(list,tuple))
         assert isinstance(object_list,(set,list,tuple))
-        parallel_num = self.Parent.client_num
         array_object = []
         for order in object_list:
-            if not tailnums or order.id%parallel_num in tailnums:
                 object_array = []
                 object_array.append(order.id)
                 object_array.append(order.seller_nick)
@@ -668,13 +716,14 @@ class QueryObjectGridPanel(GridPanel):
                 object_array.append(cfg.TRADE_TYPE.get(order.type,u'其他'))
                 object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
                 object_array.append(cfg.SYS_STATUS.get(order.sys_status,u'其他'))
-                object_array.append(order.receiver_state+'-'+order.receiver_city)
+                object_array.append(order.receiver_state+'-'+order.receiver_city+'-'+order.receiver_district)
+                object_array.append(order.is_locked)
                 object_array.append(order.is_picking_print)
                 object_array.append(order.is_express_print)
                 object_array.append(order.can_review)
                 object_array.append(order.logistics_company and order.logistics_company.name or '')
                 object_array.append(order.out_sid)
-                object_array.append(order.operator)
+                object_array.append(order.out_sid and order.operator or '')
                 object_array.append(str(order.total_num))
                 object_array.append(order.payment)
                 object_array.append(order.total_fee)

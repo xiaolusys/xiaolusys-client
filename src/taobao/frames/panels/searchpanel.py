@@ -21,11 +21,11 @@ class SearchPanel(wx.Panel):
         self.order_receiver_name_label = wx.StaticText(self,-1,u'收货人')
         self.order_receiver_name = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.taobao_status_label = wx.StaticText(self,-1,u'订单状态')
-        self.taobao_status_select = wx.ComboBox(self,-1,size=(80,-1))
+        self.taobao_status_select = wx.ComboBox(self,-1,size=(90,-1))
         self.seller_label = wx.StaticText(self,-1,u'店铺名称')
-        self.seller_select = wx.ComboBox(self,-1,size=(80,-1)) 
+        self.seller_select = wx.ComboBox(self,-1,size=(90,-1)) 
         self.buyer_label = wx.StaticText(self,-1,u'买家称呼')
-        self.buyer_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER,size=(80,-1))
+        self.buyer_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER,size=(90,-1))
         self.outer_id_label = wx.StaticText(self,-1,u'商品编码')
         self.outer_id_text =  wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER) 
         self.sku_outer_id_label = wx.StaticText(self,-1,u'规格编码')
@@ -36,22 +36,22 @@ class SearchPanel(wx.Panel):
         self.logistics_pick_check  = wx.CheckBox(self,-1)
         
         self.start_time_label = wx.StaticText(self,-1,u'付款时起')
-        self.start_time_select = wx.DatePickerCtrl(self, size=(80,-1),
+        self.start_time_select = wx.DatePickerCtrl(self,
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.end_time_label = wx.StaticText(self,-1,u'付款时终')
-        self.end_time_select =  wx.DatePickerCtrl(self, size=(80,-1),
+        self.end_time_select =  wx.DatePickerCtrl(self,
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.logistics_label = wx.StaticText(self,-1,u'物流单号')
-        self.logistics_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER,size=(80,-1))
+        self.logistics_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER,size=(90,-1))
         self.trade_type_label = wx.StaticText(self,-1,u'订单类型')
-        self.trade_type_select =  wx.ComboBox(self,-1,size=(80,-1)) 
+        self.trade_type_select =  wx.ComboBox(self,-1,size=(90,-1)) 
         self.logistics_company_label = wx.StaticText(self,-1,u'快递公司')
-        self.logistics_company_select = wx.ComboBox(self,-1,size=(80,-1))
+        self.logistics_company_select = wx.ComboBox(self,-1,size=(90,-1))
         self.weight_start_label = wx.StaticText(self,-1,u'称重日期起')
-        self.weight_start_select = wx.DatePickerCtrl(self,size=(80,-1),
+        self.weight_start_select = wx.DatePickerCtrl(self,
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.weight_end_label = wx.StaticText(self,-1,u'称重日期止')
-        self.weight_end_select =  wx.DatePickerCtrl(self, size=(80,-1),
+        self.weight_end_select =  wx.DatePickerCtrl(self,
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.urggent_doc_label = wx.StaticText(self,-1,u'紧急件')
         self.urggent_doc_check  = wx.CheckBox(self,-1)
@@ -70,7 +70,8 @@ class SearchPanel(wx.Panel):
         self.logistics_company_select.AppendItems([company.name for company in logistics_companies])
         
         self.taobao_status_select.AppendItems([ v for k,v in cfg.TRADE_STATUS.items()])
-        self.trade_type_select.AppendItems([v for k,v in cfg.TRADE_TYPE.items()])       
+        self.trade_type_select.AppendItems([v for k,v in cfg.TRADE_TYPE.items()])   
+ 
         
     def __do_layout(self):    
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)

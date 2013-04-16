@@ -80,7 +80,7 @@ class GridTable(grd.PyGridTableBase):
     def SetValue(self, row, col, value):#给表赋值
         if col ==0:
             self.data[(row,col)]= True if value else False
-        elif col in (8,9,10):
+        elif col in (8,9,10,11):
             self.data[(row,col)]= True if value == 'True' else False
         else:    
             self.data[(row,col)] = value
@@ -97,13 +97,13 @@ class GridTable(grd.PyGridTableBase):
         if col == 0:
             attr = self.attr
             attr.IncRef()
-        elif col in (8,9,10):
+        elif col in (8,9,10,11):
             attr = self.boolattr
             attr.IncRef()
-        elif col == 13:
+        elif col == 14:
             attr = self.sid_attr
             attr.IncRef()
-        elif col == 12:
+        elif col == 13:
             attr = self.sid_cell
             attr.IncRef()
         else:
