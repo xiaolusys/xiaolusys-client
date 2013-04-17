@@ -17,6 +17,6 @@ def get_session():
     db_pwd  = cf.get('db','db_pwd')
     engine = create_engine('mysql://%s:%s@%s:%s/%s?charset=utf8'%(db_user,db_pwd,db_host,db_port,db_name), encoding='utf8', echo=False)
 
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(bind=engine,autocommit=True)
     return Session()
 

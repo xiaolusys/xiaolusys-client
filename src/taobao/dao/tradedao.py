@@ -68,7 +68,7 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         if status_type == pcfg.SYS_STATUS_PREPARESEND and divid_source.count() == 0:
 
             for trade in datasource.filter_by(is_locked=False).order_by(
-                            'priority desc',sqlalchemy.func.day(MergeTrade.pay_time),'logistics_company_id'):
+                            'priority desc',sqlalchemy.func.date(MergeTrade.pay_time),'logistics_company_id'):
                 if locked_num >= per_request_num:
                     break
                 row = session.query(MergeTrade).filter_by(id=trade.id,is_locked=False).update(
@@ -76,12 +76,11 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
 
                 if row >0:
                     locked_num += 1
- 
-        return divid_source  
-                
+        datasource = divid_source  
     else:
         datasource     = datasource.order_by('priority desc','pay_time asc')
-        return datasource
+ 
+    return datasource
             
 def locking_trade(trade_id,operator,session=None):
     """ 锁定交易   """
@@ -90,7 +89,7 @@ def locking_trade(trade_id,operator,session=None):
     
     is_locked = False
     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
-    print trade.operator, operator
+
     if not trade.is_locked:
         updaterows = session.query(MergeTrade).filter_by(id=trade_id,is_locked=False).update(
                     {'is_locked':True,'operator':operator},synchronize_session='fetch')

@@ -55,7 +55,9 @@ class SearchPanel(wx.Panel):
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.urggent_doc_label = wx.StaticText(self,-1,u'紧急件')
         self.urggent_doc_check  = wx.CheckBox(self,-1)
-        self.clear_btn  = wx.Button(self,-1,label=u'清空',size=(20,16))
+        self.is_locked_label = wx.StaticText(self,-1,u'已锁定')
+        self.is_locked_check  = wx.CheckBox(self,-1)
+        self.clear_btn  = wx.Button(self,-1,label=u'清空',size=(40,16))
         
         self.__set_properties()
         self.__do_layout()
@@ -110,7 +112,9 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.weight_end_select, pos=(1,13), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.urggent_doc_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.urggent_doc_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.clear_btn, pos=(1,16), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.is_locked_label, pos=(1,16), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.is_locked_check, pos=(1,17), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.clear_btn, pos=(1,18), span=(1,1), flag=wx.EXPAND)
 
         gridbagsizer.Layout()
         
@@ -140,6 +144,7 @@ class SearchPanel(wx.Panel):
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.logistics_pick_check)
         
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.urggent_doc_check)
+        self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.is_locked_check)
         self.Bind(wx.EVT_BUTTON  , self.clearSearchPanel, self.clear_btn)
         
     def clearSearchPanel(self,evt):
@@ -161,6 +166,7 @@ class SearchPanel(wx.Panel):
         self.outer_id_text.Clear()
         self.sku_outer_id_text.Clear()
         self.urggent_doc_check.SetValue(False)
+        self.is_locked_check.SetValue(False)
         
         self.weight_start_select.SetValue(wx.DefaultDateTime)
         self.weight_end_select.SetValue(wx.DefaultDateTime)
@@ -210,6 +216,7 @@ class SearchPanel(wx.Panel):
         outer_id      = self.outer_id_text.GetValue()
         sku_outer_id  = self.sku_outer_id_text.GetValue()
         is_urgent_doc = self.urggent_doc_check.IsChecked()
+        is_locked     = self.is_locked_check.IsChecked()
         
         weight_start_time = self.weight_start_select.GetValue()
         weight_end_time   = self.weight_end_select.GetValue()
@@ -257,7 +264,8 @@ class SearchPanel(wx.Panel):
                     datasource = datasource.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
                 elif outer_id:
                     datasource = datasource.filter(MergeOrder.outer_id==outer_id)
-                    
+            if is_locked:
+                datasource = datasource.filter_by(is_locked=True)        
         self.Parent.grid.setSearchData(datasource)
 
         
