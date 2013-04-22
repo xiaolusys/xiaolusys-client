@@ -15,6 +15,18 @@ from taobao.common.utils import getconfig
 def get_oparetor():
     cfg = getconfig()
     return cfg.get('user','username')
+
+def is_normal_print_limit(session=None):
+    
+    if not session:
+        session = get_session()
+    try:
+        sys_config = session.query(SystemConfig).first()
+    except:
+        return True
+    else:
+        return sys_config.normal_print_limit
+    
     
 def get_per_request_num(session=None):
     per_request_num = 1
@@ -64,22 +76,23 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         per_request_num  = get_per_request_num(session)
         locked_num       = 0
         
-        divid_source     = datasource.filter_by(is_locked=True,operator=operator)
-        if status_type == pcfg.SYS_STATUS_PREPARESEND and divid_source.count() == 0:
-
+        unfinish_divid_source     = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(
+            (pcfg.SYS_STATUS_PREPARESEND,pcfg.SYS_STATUS_WAITSCANCHECK,pcfg.SYS_STATUS_WAITSCANWEIGHT)))\
+            .filter_by(is_locked=True,operator=operator,reason_code='')
+        if status_type == pcfg.SYS_STATUS_PREPARESEND and unfinish_divid_source.count() == 0:
             for trade in datasource.filter_by(is_locked=False).order_by(
                             'priority desc',sqlalchemy.func.date(MergeTrade.pay_time),'logistics_company_id'):
                 if locked_num >= per_request_num:
                     break
                 row = session.query(MergeTrade).filter_by(id=trade.id,is_locked=False).update(
                      {'is_locked':True,'operator':operator},synchronize_session='fetch')
-
                 if row >0:
                     locked_num += 1
-        datasource = divid_source  
+        datasource = datasource.filter_by(is_locked=True,operator=operator)  
+        print 'divid',datasource.count(),operator
     else:
         datasource     = datasource.order_by('priority desc','pay_time asc')
- 
+    
     return datasource
             
 def locking_trade(trade_id,operator,session=None):

@@ -8,6 +8,7 @@ import wx
 from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.frames.panels.gridpanel import QueryObjectGridPanel
 from taobao.dao import configparams as cfg
+from taobao.dao.tradedao import is_normal_print_limit
 
 
 all_trade_id = wx.NewId()
@@ -184,8 +185,9 @@ class TradePanel(wx.Panel):
     
     def onSelectRadioBtn(self,evt):
         print_mode = self.getPrintMode()
-        is_divid_mode = print_mode == cfg.DIVIDE_MODE 
-        self.grid.enableAutoIncrSidBtn(is_divid_mode)
+        normal_print_limit = is_normal_print_limit(session=self.Session)
+        is_auto_incr = normal_print_limit or (print_mode == cfg.DIVIDE_MODE) 
+        self.grid.enableAutoIncrSidBtn(is_auto_incr)
         self.grid.setDataSource(self.grid.status_type)
         
     def getPrintMode(self):
