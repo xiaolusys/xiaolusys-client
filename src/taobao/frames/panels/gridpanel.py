@@ -718,8 +718,7 @@ class QueryObjectGridPanel(GridPanel):
         assert isinstance(object_list,(set,list,tuple))
         array_object = []
         for order in object_list:
-            if self.status_type == cfg.SYS_STATUS_PREPARESEND:
-                self.Session.refresh(order,['is_locked','is_picking_print','is_express_print','operator','out_sid'])
+            self.Session.refresh(order,['is_locked','is_picking_print','is_express_print','operator','out_sid','logistics_company_id'])
             object_array = []
             object_array.append(order.id)
             object_array.append(order.seller_nick)
