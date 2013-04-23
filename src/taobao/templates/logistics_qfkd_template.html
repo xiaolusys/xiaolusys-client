@@ -1,0 +1,130 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<style type='text/css'>
+body {
+	backgroup-color: #9cc2a9;
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+	font-size:16px;
+}
+
+div {
+	margin: 0;
+	padding: 0;
+}
+
+.express {
+	width: 660px;
+	height: 1000px;
+	text-align:left;
+}
+
+.head-panel {
+	width: 100%;
+	height: 300px;
+	margin-top: 0px;
+}
+
+.left-panel {
+	float: left;
+	width: 440px;
+	display: inline;
+}
+
+.right-panel {
+	float: right;
+	height: 160px;
+	width: 440px;
+	display: inline;
+	text-align: left;
+}
+
+.receiver-name {
+	height: 25px;
+	width: 150px;
+	margin-top: 10px;
+	margin-left: 120px;
+}
+
+.receiver-addr {
+	height: 60px;
+	width: 260px;
+	margin-top: 20px;
+	margin-left: 120px;
+}
+
+.receiver-info {
+	height: 30px;
+	width: 300px;
+	margin-left: 120px;
+}
+
+.left-panel-bottom {
+	height: 30px;
+	width: 300px;
+	margin-top: 0px;
+	margin-left: 120px;
+}
+
+.receiver-mobile {
+	float: left;
+	display: inline;
+	width: 160px;
+}
+
+.post-code {
+	float: right;
+	display: inline;
+	width: 100px;
+}
+
+.botton-panel {
+	clear: left;
+	width: 100%;
+	height: 250px;
+}
+
+.post-fill{
+	width:100%;
+	height:20%;
+}
+
+.post-date{
+	width:100%;
+	height:10%;
+	margin-left:80px;
+}
+
+</style>
+</head>
+<body>
+	{% for trade in trades %}
+	<div class='express'>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
+		<div class='head-panel'>
+			<div class='left-panel'></div>
+			<div class='right-panel'>
+				<div class='receiver-name'>{{ trade.receiver_name }}</div>
+				<div class='receiver-addr'>
+					<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{
+						trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }} <br>
+					<br> {{ trade.receiver_address }}
+					</span>
+				</div>
+				<!--<div class='receiver-info'></div>-->
+				<div class='left-panel-bottom'>
+					<div class='receiver-mobile'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
+					<div class='post-code'>{{ trade.receiver_zip }}</div>
+				</div>
+			</div>
+		</div>
+		<div class='bottom-panel'>
+			<div class='post-fill'></div>
+			<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+		</div>
+	</div>
+	{% endfor %}
+</body>
+</html>

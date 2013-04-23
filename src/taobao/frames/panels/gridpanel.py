@@ -425,22 +425,28 @@ class GridPanel(wx.Panel):
         
         operator      = get_oparetor()
         start_out_sid = self.fill_sid_text.GetValue()
-        is_auto_fill  = self.fill_sid_checkbox1.IsChecked()
+        is_auto_fill  = self.fill_sid_checkbox1.IsChecked() 
         with create_session(self.Parent) as session:
             if start_out_sid.isdigit() and is_auto_fill:
                 self.start_sid = start_out_sid
                 start_out_sid = int(start_out_sid)
+                incr_value    = 1
+                
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     company_regex = trade.logistics_company.reg_mail_no
+                    company_code  = trade.logistics_company.code
                     id_compile = re.compile(company_regex)
                     is_out_sid_match = id_compile.match(str(start_out_sid))
+                    
+                    if company_code == "ZJS":
+                        incr_value = 11
                     if is_out_sid_match and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
                         is_locked = locking_trade(trade.id,operator,session=session)
                         if is_locked: 
                             self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
-                            start_out_sid += 1
+                            start_out_sid += incr_value
                     elif not is_out_sid_match:
                         dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览提示', 
                             wx.OK | wx.ICON_EXCLAMATION)
