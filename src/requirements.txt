@@ -1,6 +1,5 @@
-MySQL-python==1.2.3
+#MySQL-python==1.2.3
 SQLAlchemy==0.7.7
 Jinja2==2.6
-py2exe=0.6.9
 pywin32==214
 #download wxpython28.exe,and install it
