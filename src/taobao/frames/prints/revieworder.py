@@ -119,6 +119,7 @@ class OrderReview(wx.Frame):
         
             picking_data_list = []
             for trade in send_trades[0:1]:
+                self.Session.refresh(trade,['is_locked','is_picking_print','is_express_print','operator','out_sid'])
                 trade_data = {}
                 dt         = datetime.datetime.now() 
                         
@@ -192,11 +193,13 @@ class OrderReview(wx.Frame):
     
     #----------------------------------------------------------------------
     def getLogisticsData(self ,trade_ids=[]):
+        
         with create_session(self.Parent) as session: 
             send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
         
         express_data_list = []
         for trade in send_trades:
+            self.Session.refresh(trade,['is_locked','is_picking_print','is_express_print','operator','out_sid'])
             trade_data = {}
             dt         = datetime.datetime.now() 
                     
