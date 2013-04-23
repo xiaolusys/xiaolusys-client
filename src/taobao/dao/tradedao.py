@@ -89,7 +89,7 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
                 if row >0:
                     locked_num += 1
         datasource = datasource.filter_by(is_locked=True,operator=operator)  
-        print 'divid',datasource.count(),operator
+       
     else:
         datasource     = datasource.order_by('priority desc','pay_time asc')
     
