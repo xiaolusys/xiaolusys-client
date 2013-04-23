@@ -119,7 +119,7 @@ class OrderReview(wx.Frame):
         
             picking_data_list = []
             for trade in send_trades[0:1]:
-                self.Session.refresh(trade,['is_locked','is_picking_print','is_express_print','operator','out_sid'])
+                session.refresh(trade,['is_locked','is_picking_print','is_express_print','operator','out_sid'])
                 trade_data = {}
                 dt         = datetime.datetime.now() 
                         
@@ -199,7 +199,7 @@ class OrderReview(wx.Frame):
         
         express_data_list = []
         for trade in send_trades:
-            self.Session.refresh(trade,['is_locked','is_picking_print','is_express_print','operator','out_sid'])
+            session.refresh(trade,['is_locked','is_picking_print','is_express_print','operator','out_sid'])
             trade_data = {}
             dt         = datetime.datetime.now() 
                     
