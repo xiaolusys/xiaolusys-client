@@ -112,22 +112,22 @@ div {
 			<div class='left-panel'>
 				<div class='up-inner-panel'>
 					<div class='name'>{{ trade.seller_nick }}</div>
-					<div class='base-info'><div class='partment'></div><div class='nick'></div></div>
 					<div class='address'>
 						<span>{{ trade.seller_location }}</span>
 					</div>
+					<div class='base-info'><div class='partment'></div><div class='nick'></div></div>
 					<div class='bottom-inner-panel' >
 						<div class='area_no'></div><div class='phone'>{{ trade.seller_phone }}</div>
 					</div>
 				</div>
 				<div class='down-inner-panel'>
 					<div class='name'>{{ trade.receiver_name }}</div>
-					<div class='base-info'><div class='partment'></div><div class='nick'></div></div>
 					<div class='address'>
 						<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{ trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }} 
 						<br> {{ trade.receiver_address }} 
 						</span>
 					</div>
+					<div class='base-info'><div class='partment'></div><div class='nick'></div></div>
 					<div class='bottom-inner-panel'>
 						<div class='area_no'></div>
 						<div class='phone'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
