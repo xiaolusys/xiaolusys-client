@@ -43,6 +43,7 @@ scan_check_btn_id = wx.NewId()
 scan_weight_btn_id = wx.NewId()
 review_orders_btn_id = wx.NewId()
 pickle_print_btn_id  = wx.NewId()
+tag_trade_btn2_id = wx.NewId()
 fill_sid_btn2_id = wx.NewId()
 fill_sid_btn4_id = wx.NewId()  #核对单号按钮
 
@@ -253,7 +254,7 @@ class GridPanel(wx.Panel):
         self.review_orders_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK,cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_FINISHED))
         self.scan_check_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK))
         self.scan_weight_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANWEIGHT))
-
+        
         self.updateTableAndPaginator()
         self.Layout()
     
@@ -421,6 +422,8 @@ class GridPanel(wx.Panel):
             
     def fillOutSidToCell(self,evt):
         self.refreshTable()
+        
+        operator      = get_oparetor()
         start_out_sid = self.fill_sid_text.GetValue()
         is_auto_fill  = self.fill_sid_checkbox1.IsChecked()
         with create_session(self.Parent) as session:
@@ -434,8 +437,10 @@ class GridPanel(wx.Panel):
                     id_compile = re.compile(company_regex)
                     is_out_sid_match = id_compile.match(str(start_out_sid))
                     if is_out_sid_match and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
-                        self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
-                        start_out_sid += 1
+                        is_locked = locking_trade(trade.id,operator,session=session)
+                        if is_locked: 
+                            self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
+                            start_out_sid += 1
                     elif not is_out_sid_match:
                         dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览提示', 
                             wx.OK | wx.ICON_EXCLAMATION)
@@ -451,18 +456,15 @@ class GridPanel(wx.Panel):
                 company_regex = trade.logistics_company.reg_mail_no
                 id_compile = re.compile(company_regex)
                 if id_compile.match(str(start_out_sid)):
-                    print_mode    = self.Parent.getPrintMode()
-                    operator      = get_oparetor()
-                    if print_mode == cfg.NORMAL_MODE:
-                        is_locked = locking_trade(trade.id,operator,session=session)
-                        if not is_locked: 
-                            dial = wx.MessageDialog(None, u'订单已被其他用户锁定', '订单预览提示', 
-                                                    wx.OK | wx.ICON_EXCLAMATION)
-                            dial.ShowModal()
-                            self.fill_sid_text.Clear()
-                            self.refreshTable()
-                            evt.Skip()
-                            return 
+                    is_locked = locking_trade(trade.id,operator,session=session)
+                    if not is_locked: 
+                        dial = wx.MessageDialog(None, u'订单已被其他用户锁定', '订单预览提示', 
+                                                wx.OK | wx.ICON_EXCLAMATION)
+                        dial.ShowModal()
+                        self.fill_sid_text.Clear()
+                        self.refreshTable()
+                        evt.Skip()
+                        return 
                     self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
                 else:
                     dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览提示', 
@@ -665,6 +667,7 @@ class GridPanel(wx.Panel):
         
         self.inner_panel.Hide()
         self.inner_panel.Layout()
+        self.pag_panel.Layout()
         self.Layout()
         self.grid.ForceRefresh()
     
@@ -748,7 +751,7 @@ class SimpleGridPanel(wx.Panel):
         self.setData(None)
         self.__set_properties()
         self.__do_layout()
-
+    
         
     def __set_properties(self):
         self.SetName('simple_grid_panel')

@@ -93,7 +93,7 @@ class GridTable(grd.PyGridTableBase):
         
     # the table can also provide the attribute for each cell
     def GetAttr(self, row, col, kind):
-        row_select = self.data[(row,0)]
+        row_select = self.data[(row,0)]  
         if col == 0:
             attr = self.attr
             attr.IncRef()

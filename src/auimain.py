@@ -4,8 +4,6 @@ Created on 2012-7-11
 
 @author: user1
 '''
-import sys
-import wx
 import wx.aui
 from taobao.dao.dbsession import get_session
 from taobao.frames.panels.tradepanel import TradePanel

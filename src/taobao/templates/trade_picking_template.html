@@ -123,29 +123,37 @@ td{
 				</tr>
 				{% for order in trade.orders %}
 				<tr >
-					<td>{{ loop.index }}</td>
-					<td>{{ order.outer_id }}</td>
-					<td>{{ order.item_name }}</td>
-					<td>({{ order.outer_sku_id }}){{ order.properties }}</td>
-					<td>{{ order.num }}</td>
-					<!-- <td>{{ order.price }}</td>
-					<td>{{ order.discount_fee }}</td>
-					<td>{{ order.payment }}</td> -->
+					{% set parentloop = loop %}
+					{% set outer_id,order = order %}
+					{% set sku_len = order.skus|length %}
+				    {% if sku_len > 0 %}
+					    {% for sku_id,sku in order.skus %}
+					    <tr>
+					    	{% if loop.first %}
+					    	<td rowspan="{{ sku_len }}">{{ parentloop.index }}</td>
+					    	<td rowspan="{{ sku_len }}">{{ outer_id }}</td>
+					    	<td rowspan="{{ sku_len }}">{{ order.title }}</td>
+							{% endif %}
+							<td >({{ sku_id }}){{ sku.sku_name }}</td>
+							<td >{{ sku.num }}</td>
+					    </tr>
+					    {% endfor %}
+				    {% else %}
+				    	<tr>
+				    		<td >{{ loop.index }}</td>
+					    	<td >{{ outer_id }}</td>
+					    	<td >{{ order.title }}</td>
+					    	<td >{{ order.num }}</td>
+							<td colspan="2">--</td>
+						</tr>
+				    {% endif %}
 				</tr>
 				{% endfor %}
-				<!-- <tr>
-					<td colspan='4'>合计 </td>
-					<td >{{ trade.order_nums }}</td>
-					<td >{{ trade.total_fee }}</td>
-					<td >{{ trade.discount_fee }}</td>
-					<td >{{ trade.payment }}</td>
-				</tr> -->
 			</table>
 		</div>
 		<div class='memo-style'><label>留言：</label><span>{% if trade.buyer_message %}(买家:{{ trade.buyer_message|cut_string() }}){% endif %}
 		&nbsp;&nbsp;{% if trade.seller_memo %}(卖家:{{ trade.seller_memo|cut_string() }}){% endif %}
 		&nbsp;&nbsp;{% if trade.sys_memo %}(系统:{{ trade.sys_memo|cut_string() }}){% endif %}</span></div>
-		
 	</div>
 	{% endfor %}
 </body>

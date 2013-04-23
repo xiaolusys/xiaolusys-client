@@ -118,7 +118,7 @@ class OrderReview(wx.Frame):
             send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
         
             picking_data_list = []
-            for trade in send_trades:
+            for trade in send_trades[0:1]:
                 trade_data = {}
                 dt         = datetime.datetime.now() 
                         
@@ -145,29 +145,46 @@ class OrderReview(wx.Frame):
                 trade_data['buyer_message']   = trade.buyer_message
                 trade_data['seller_memo']   = trade.seller_memo
                 trade_data['sys_memo']   = trade.sys_memo
-                trade_data['orders']       = [] 
                 
+                order_items = {}
                 orders = get_used_orders(session,trade.id)  
                 for order in orders:
-                    order_data = {} 
-                    product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
-                    prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
+                    
                     trade_data['order_nums']     += order.num
                     trade_data['discount_fee']   += float(order.discount_fee or 0)
                     trade_data['total_fee']      += float(order.total_fee or 0) 
                     trade_data['payment']      += float(order.payment or 0)
-                    order_data['outer_id']  = order.outer_id
-                    order_data['outer_sku_id']  = order.outer_sku_id
-                    order_data['item_name'] = product.name if product else order.title
-                    order_data['num']       = order.num
-                    order_data['price']     = order.price
-                    order_data['discount_fee'] = float(order.discount_fee or 0)
-                    order_data['payment']   = order.payment 
-                    order_data['properties'] = (prod_sku.properties_alias or prod_sku.properties_name)\
-                        if prod_sku else order.sku_properties_name
                     
-                    trade_data['orders'].append(order_data)
-
+                    outer_id = order.outer_id or str(order.num_iid)
+                    outer_sku_id = order.outer_sku_id or str(order.sku_id)
+                    
+                    if order_items.has_key(outer_id):
+                        order_items[outer_id]['num'] += order.num
+                        skus = order_items[outer_id]['skus']
+                        if skus.has_key(outer_sku_id):
+                            skus[outer_sku_id]['num'] += order.num
+                        else:
+                            product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
+                            prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
+                            prod_sku_name = (prod_sku.properties_alias or prod_sku.properties_name ) if prod_sku else order.sku_properties_name
+                            skus[outer_sku_id] = {'sku_name':prod_sku_name,'num':order.num}
+                    else:
+                        product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
+                        prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
+                        prod_sku_name =prod_sku.properties_name if prod_sku else order.sku_properties_name
+                        
+                        order_items[outer_id]={
+                                               'num':order.num,
+                                               'title': product.name if product else order.title,
+                                               'skus':{outer_sku_id:{'sku_name':prod_sku_name,'num':order.num}}
+                                               }
+                    
+                order_list = sorted(order_items.items(),key=lambda d:d[1]['num'],reverse=True)
+                for trade in order_list:
+                    skus = trade[1]['skus']
+                    trade[1]['skus'] = sorted(skus.items(),key=lambda d:d[1]['num'],reverse=True)    
+                
+                trade_data['orders'] = order_list    
                 picking_data_list.append(trade_data)
                                            
         return picking_data_list
