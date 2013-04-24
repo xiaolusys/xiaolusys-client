@@ -599,6 +599,7 @@ class GridPanel(wx.Panel):
          
         trade_ids = self.getSelectTradeIds(self._selectedRows)
         if self.page:
+            self.paginator = Paginator(self.datasource, self.page_size)
             self.page = self.paginator.page(self.page.number)
             object_list = self.parseObjectToList(self.page.object_list)
         else:
