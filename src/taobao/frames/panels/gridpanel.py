@@ -599,7 +599,6 @@ class GridPanel(wx.Panel):
          
         trade_ids = self.getSelectTradeIds(self._selectedRows)
         if self.page:
-            self.paginator = Paginator(self.datasource, self.page_size)
             self.page = self.paginator.page(self.page.number)
             object_list = self.parseObjectToList(self.page.object_list)
         else:
@@ -722,7 +721,8 @@ class QueryObjectGridPanel(GridPanel):
         assert isinstance(object_list,(set,list,tuple))
         array_object = []
         for order in object_list:
-            self.Session.refresh(order,['is_locked','is_picking_print','is_express_print','operator','out_sid','logistics_company_id'])
+            self.Session.refresh(order,['is_locked','is_picking_print','is_express_print'
+                                        ,'operator','out_sid','logistics_company_id','sys_status'])
             object_array = []
             object_array.append(order.id)
             object_array.append(order.seller_nick)
