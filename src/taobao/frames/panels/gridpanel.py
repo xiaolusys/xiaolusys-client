@@ -337,8 +337,7 @@ class GridPanel(wx.Panel):
         else:
             for btn in self.button_array:
                 btn.Enable(True)        
-        self.review_orders_btn.Enable(len(self._selectedRows) == 1)
-        self.selected_counts.SetLabel(str(len(self._selectedRows)))
+    
         self.updateSelectAllCheck() 
         #self.grid.ForceRefresh()
         #self.refreshTable()
@@ -639,11 +638,16 @@ class GridPanel(wx.Panel):
         return trade_ids
     
     def updateSelectAllCheck(self):
+        
+        self.review_orders_btn.Enable(len(self._selectedRows) == 1)
+        self.selected_counts.SetLabel(str(len(self._selectedRows)))
+        self.setupPager()
         row = self.grid.GetNumberRows()
         if row>0 and row==len(self._selectedRows):
             self.select_all_check.SetValue(True)
         else:
             self.select_all_check.SetValue(False)
+        
     
     def updateTableAndPaginator(self):
         self._selectedRows.clear()
@@ -661,7 +665,6 @@ class GridPanel(wx.Panel):
         self.grid.SetColSize(REVIEW_CELL_COL,35)
         self.grid.SetColSize(OUT_SID_CELL_COL,100)
         self.grid.SetRowLabelSize(40)
-        self.setupPager()
         for btn in self.button_array:
             btn.Enable(False)
         
