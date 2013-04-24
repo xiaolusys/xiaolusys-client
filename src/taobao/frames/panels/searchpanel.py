@@ -11,6 +11,8 @@ from taobao.dao.models import MergeTrade,MergeOrder,User,LogisticsCompany
 from taobao.common.utils import wxdate2pydate,create_session
 from taobao.dao import configparams as cfg
 
+CHECKBOX_THIRD_VALUE = 2
+
 class SearchPanel(wx.Panel):
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,-1)
@@ -31,9 +33,9 @@ class SearchPanel(wx.Panel):
         self.sku_outer_id_label = wx.StaticText(self,-1,u'规格编码')
         self.sku_outer_id_text =  wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER) 
         self.delivery_pick_label = wx.StaticText(self,-1,u'发货单')
-        self.delivery_pick_check  = wx.CheckBox(self,-1)
+        self.delivery_pick_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
         self.logistics_pick_label = wx.StaticText(self,-1,u'物流单')
-        self.logistics_pick_check  = wx.CheckBox(self,-1)
+        self.logistics_pick_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
         
         self.start_time_label = wx.StaticText(self,-1,u'付款时起')
         self.start_time_select = wx.DatePickerCtrl(self,
@@ -54,9 +56,9 @@ class SearchPanel(wx.Panel):
         self.weight_end_select =  wx.DatePickerCtrl(self,
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.urggent_doc_label = wx.StaticText(self,-1,u'紧急件')
-        self.urggent_doc_check  = wx.CheckBox(self,-1)
+        self.urggent_doc_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
         self.is_locked_label = wx.StaticText(self,-1,u'已锁定')
-        self.is_locked_check  = wx.CheckBox(self,-1)
+        self.is_locked_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
         self.clear_btn  = wx.Button(self,-1,label=u'清空',size=(40,16))
         
         self.__set_properties()
@@ -173,27 +175,6 @@ class SearchPanel(wx.Panel):
         
         self.OnSearch(None)
 
-    def setPanelMode(self,mode):
-        self.order_text.Enable(mode in (cfg.NORMAL_MODE))
-        self.order_receiver_name.Enable(mode in (cfg.NORMAL_MODE))
-        self.taobao_status_select.Enable(mode in (cfg.NORMAL_MODE))
-        self.seller_select.Enable(mode in (cfg.NORMAL_MODE))
-        self.buyer_text.Enable(mode in (cfg.NORMAL_MODE))
-
-        self.start_time_select.Enable(mode in (cfg.NORMAL_MODE))
-        self.end_time_select.Enable(mode in (cfg.NORMAL_MODE))
-        self.logistics_text.Enable(mode in (cfg.NORMAL_MODE))
-        self.trade_type_select.Enable(mode in (cfg.NORMAL_MODE))
-        self.logistics_company_select.Enable(mode in (cfg.NORMAL_MODE,cfg.DIVIDE_MODE))
-        self.delivery_pick_check.Enable(mode in (cfg.NORMAL_MODE,cfg.DIVIDE_MODE))
-        self.logistics_pick_check.Enable(mode in (cfg.NORMAL_MODE,cfg.DIVIDE_MODE))
-        self.outer_id_text.Enable(mode in (cfg.NORMAL_MODE))
-        self.sku_outer_id_text.Enable(mode in (cfg.NORMAL_MODE))
-        self.urggent_doc_check.Enable(mode in (cfg.NORMAL_MODE))
-        self.weight_start_select.Enable(mode in (cfg.NORMAL_MODE))
-        self.weight_end_select.Enable(mode in (cfg.NORMAL_MODE))
-
-        self.clearSearchPanel()
     
     def OnSearch(self,evt):
         datasource = self.Parent.grid.datasource
@@ -211,18 +192,18 @@ class SearchPanel(wx.Panel):
         logistics_id = self.logistics_text.GetValue()
         trade_type = self.trade_type_select.GetValue()
         logistics_company = self.logistics_company_select.GetValue()
-        is_picking_print = self.delivery_pick_check.IsChecked()
-        is_express_print = self.logistics_pick_check.IsChecked()
+        pick_print_state  = self.delivery_pick_check.Get3StateValue()
+        express_print_state = self.logistics_pick_check.Get3StateValue()
         outer_id      = self.outer_id_text.GetValue()
         sku_outer_id  = self.sku_outer_id_text.GetValue()
-        is_urgent_doc = self.urggent_doc_check.IsChecked()
-        is_locked     = self.is_locked_check.IsChecked()
+        urgent_doc_state = self.urggent_doc_check.Get3StateValue()
+        locke_state     = self.is_locked_check.Get3StateValue()
         
         weight_start_time = self.weight_start_select.GetValue()
         weight_end_time   = self.weight_end_select.GetValue()
         weight_start_time = wxdate2pydate(weight_start_time)
         weight_end_time = wxdate2pydate(weight_end_time)
-   
+
         if trade_id:
             datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
         elif logistics_id:
@@ -252,20 +233,23 @@ class SearchPanel(wx.Panel):
                 with create_session(self.Parent) as session:
                     log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
                 datasource = datasource.filter_by(logistics_company_id=log_company.id)
-            if is_urgent_doc:
-                datasource = datasource.filter_by(priority=1)
-            if is_picking_print:
-                datasource = datasource.filter_by(is_picking_print=True)
-            if is_express_print:
-                datasource = datasource.filter_by(is_express_print=True)
+            if urgent_doc_state:
+                if urgent_doc_state == 1:
+                    datasource = datasource.filter_by(priority=1)
+                else:
+                    datasource = datasource.filter(MergeTrade.priority!=1)
+            if pick_print_state:
+                datasource = datasource.filter_by(is_picking_print=pick_print_state == 1 and True or False)
+            if express_print_state:
+                datasource = datasource.filter_by(is_express_print=express_print_state == 1 and True or False)
             if outer_id:
                 datasource = datasource.join(MergeOrder,MergeTrade.id==MergeOrder.merge_trade_id)
                 if outer_id and sku_outer_id:
                     datasource = datasource.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
                 elif outer_id:
                     datasource = datasource.filter(MergeOrder.outer_id==outer_id)
-            if is_locked:
-                datasource = datasource.filter_by(is_locked=True)        
+            if locke_state:
+                datasource = datasource.filter_by(is_locked=locke_state == 1 and True or False)        
         self.Parent.grid.setSearchData(datasource)
 
         
