@@ -46,8 +46,8 @@ def get_sentry_logger():
             },
     
         'loggers': {
-            '': {
-                'handlers': ['console', 'sentry'],
+            'default': {
+                'handlers': ['console'],
                 'level': 'DEBUG',
                 'propagate': False,
                 },
@@ -60,3 +60,13 @@ def get_sentry_logger():
     })
     logger = logging.getLogger('taobao.erp.client')
     return logger
+
+def log_exception(fn):
+    def _wrap(*args,**kwargs):
+        try:
+            return fn(*args,**kwargs)
+        except Exception,exc:
+            logger = get_sentry_logger()
+            logger.error(exc.message,exc_info=True)
+            raise exc
+    return _wrap

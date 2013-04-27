@@ -4,7 +4,7 @@ Created on 2012-7-13
 
 @author: user1
 '''
-import re,os
+import re
 import datetime
 import weakref
 import wx, wx.grid as grd
@@ -22,7 +22,7 @@ from taobao.frames.prints.deliveryprinter import DeliveryPrinter
 from taobao.frames.prints.expressprinter import ExpressPrinter
 from taobao.frames.prints.pickleprinter import PicklePrinter
 from taobao.frames.prints.revieworder import OrderReview
-
+from taobao.common.logger import log_exception
 
 
 TRADE_ID_CELL_COL = 1
@@ -421,10 +421,10 @@ class GridPanel(wx.Panel):
             self.static_button_down.SetLabel('^------------^')
             self.itempanel.Hide()
         self.Layout()    
-            
+    
+    @log_exception        
     def fillOutSidToCell(self,evt):
         self.refreshTable()
-        
         operator      = get_oparetor()
         start_out_sid = self.fill_sid_text.GetValue()
         is_auto_fill  = self.fill_sid_checkbox1.IsChecked() 
@@ -442,7 +442,7 @@ class GridPanel(wx.Panel):
                     id_compile = re.compile(company_regex)
                     is_out_sid_match = id_compile.match(str(start_out_sid))
                     
-                    if company_code == "ZJS":
+                    if company_code.upper() == "ZJS":
                         incr_value = 11
                     if is_out_sid_match and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
                         is_locked = locking_trade(trade.id,operator,session=session)
@@ -496,6 +496,7 @@ class GridPanel(wx.Panel):
         """ 将打印配货单按钮设有效 """
         self.post_print_btn.Enable(True)
     
+    @log_exception 
     def onClickActiveButton(self,evt):
         eventid = evt.GetId()
         operator = get_oparetor() 
