@@ -10,7 +10,6 @@ from taobao.frames.panels.tradepanel import TradePanel
 from taobao.frames.panels.weightpanel import ScanWeightPanel
 from taobao.frames.panels.checkpanel import ScanCheckPanel
 
-
 ID_TradeMainPage   = wx.NewId()
 ID_ScanCheck       = wx.NewId()
 ID_ScanWeight      = wx.NewId()
@@ -96,7 +95,9 @@ class MainFrame(wx.Frame):
     def OnExit(self,event):
         self.Close()
     
-#sys.setdefaultencoding('utf8')    
+    
+#sys.setdefaultencoding('utf8') 
+    
 app = wx.PySimpleApp()
 wx.InitAllImageHandlers()
 frm = MainFrame(None)

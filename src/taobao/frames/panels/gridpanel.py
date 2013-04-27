@@ -4,10 +4,11 @@ Created on 2012-7-13
 
 @author: user1
 '''
-import re
+import re,os
 import datetime
 import weakref
 import wx, wx.grid as grd
+import taobao
 from taobao.dao import configparams as cfg
 from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable
 from taobao.frames.panels.itempanel import ItemPanel
@@ -21,6 +22,8 @@ from taobao.frames.prints.deliveryprinter import DeliveryPrinter
 from taobao.frames.prints.expressprinter import ExpressPrinter
 from taobao.frames.prints.pickleprinter import PicklePrinter
 from taobao.frames.prints.revieworder import OrderReview
+
+
 
 TRADE_ID_CELL_COL = 1
 LOCKED_CELL_COL  = 8

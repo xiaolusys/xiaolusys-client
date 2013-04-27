@@ -2,4 +2,5 @@
 SQLAlchemy==0.7.7
 Jinja2==2.6
 pywin32==214
+raven==2.0.6
 #download wxpython28.exe,and install it
