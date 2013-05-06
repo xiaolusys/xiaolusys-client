@@ -441,13 +441,16 @@ class GridPanel(wx.Panel):
                     company_code  = trade.logistics_company.code
                     id_compile = re.compile(company_regex)
                     is_out_sid_match = id_compile.match(str(start_out_sid))
-                    
-                    if company_code.upper() == "ZJS":
-                        incr_value = 11
+ 
                     if is_out_sid_match and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
                         is_locked = locking_trade(trade.id,operator,session=session)
                         if is_locked: 
-                            self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))  
+                            self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))
+                            if company_code.upper() == "ZJS":
+                                if (start_out_sid%10)/6==1:
+                                    incr_value = 4
+                                else:
+                                    incr_value = 11 
                             start_out_sid += incr_value
                     elif not is_out_sid_match:
                         dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览提示', 

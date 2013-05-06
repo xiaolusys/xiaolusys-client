@@ -86,8 +86,8 @@ class ExpressPrinter(wx.Frame):
         Creates an html file in the home directory of the application
         that contains the information to display the snapshot
         '''
+        trades = self.getLogisticsData(trade_ids)
         try:
-            trades = self.getLogisticsData(trade_ids)
             template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
             template = get_template(template_name) 
             html = template.render(trades=trades)
@@ -124,6 +124,8 @@ class ExpressPrinter(wx.Frame):
     
     #----------------------------------------------------------------------
     def getLogisticsData(self ,trade_ids=[]):
+        
+        print 'trade ids:',trade_ids
         with create_session(self.Parent) as session: 
             send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
         

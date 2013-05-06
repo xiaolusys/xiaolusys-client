@@ -84,19 +84,20 @@ class create_session():
         except:
             self.session = get_session()
             self.parent.Session = self.session
+            
         return self.session
 
     def __exit__(self,type,value,traceback):
         
         if self.session:
             try:
-                self.session.commit()
-            except:
-                try:
-                    self.session.rollback()
-                except:
-                    pass
+                self.session.flush()
+            except Exception,exc:
+                from taobao.common.logger import get_sentry_logger
+                logger = get_sentry_logger()
+                logger.error(exc.message,exc_info=True)
 
+                    
 
 def logtime(tag=''):
     def outer(func):
