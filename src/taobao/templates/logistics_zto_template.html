@@ -23,7 +23,7 @@ div {
 
 .head-panel {
 	width: 100%;
-	height: 300px;
+	height: 220px;
 	margin-top: 0px;
 }
 
@@ -88,12 +88,17 @@ div {
 
 .post-fill{
 	width:100%;
-	height:10%;
+	height:50px;
 	
 }
 
+.post-date-dest{
+	height:50px;
+	clear:both;
+}
+
 .post-date{
-	height:20%;
+	margin-top:30px;
 	margin-left:80px;
 	display:inline;
 }
@@ -129,8 +134,10 @@ div {
 		</div>
 		<div class='bottom-panel'>
 			<div class='post-fill'></div>
-			<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
-			<div class='destination'>{{ trade.receiver_city[0:-1] }}-{{ trade.receiver_district[0:-1] }}</div>
+			<div class='post-date-dest'>
+				<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+				<div class='destination'>{{ trade.receiver_city[0:-1] }}-{{ trade.receiver_district[0:-1] }}</div>
+			</div>
 		</div>
 	</div>
 	{% endfor %}
