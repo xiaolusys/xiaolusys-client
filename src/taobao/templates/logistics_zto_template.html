@@ -39,6 +39,8 @@ div {
 	width: 440px;
 	display: inline;
 	text-align: left;
+	position:relative;
+	overflow:hidden;
 }
 
 .receiver-name {
@@ -95,6 +97,8 @@ div {
 .post-date-dest{
 	height:50px;
 	clear:both;
+	position:relative;
+	overflow:hidden;
 }
 
 .post-date{
@@ -110,6 +114,7 @@ div {
 	float:right;
 	margin-right:10px;
 	margin-top:0px;
+	position:absolute;
 }
 </style>
 </head>
@@ -122,8 +127,8 @@ div {
 			<div class='right-panel'>
 				<div class='receiver-name'>{{ trade.receiver_name }}</div>
 				<div class='receiver-addr'>
-					<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{
-						trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }} <br>
+					<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{trade.receiver_city }}
+					&nbsp;&nbsp;{{ trade.receiver_district }} <br>
 					<br> {{ trade.receiver_address }}
 					</span>
 				</div>
