@@ -459,7 +459,7 @@ class GridPanel(wx.Panel):
                         self.fill_sid_text.Clear()
                         self.refreshTable()
                         return
-                self.end_sid = str(start_out_sid -1) 
+                self.end_sid = str(start_out_sid - incr_value) 
             elif start_out_sid:
                 min_row_num = min(self._selectedRows)
                 trade_id = self.grid.GetCellValue(min_row_num,TRADE_ID_CELL_COL)

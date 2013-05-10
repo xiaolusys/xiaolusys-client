@@ -111,7 +111,7 @@ class DeliveryPrinter(wx.Frame):
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_picking_print':True},synchronize_session='fetch')
         self.html.PrintPreview()
-        self.Parent.refreshTable() 
+        #self.Parent.refreshTable() 
         event.Skip()
  
     #----------------------------------------------------------------------
