@@ -453,7 +453,7 @@ class GridPanel(wx.Panel):
                                     incr_value = 11 
                             start_out_sid += incr_value
                     elif not is_out_sid_match:
-                        dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览提示', 
+                        dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示', 
                             wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         self.fill_sid_text.Clear()
@@ -469,7 +469,7 @@ class GridPanel(wx.Panel):
                 if id_compile.match(str(start_out_sid)):
                     is_locked = locking_trade(trade.id,operator,session=session)
                     if not is_locked: 
-                        dial = wx.MessageDialog(None, u'订单已被其他用户锁定', '订单预览提示', 
+                        dial = wx.MessageDialog(None, u'订单已被其他用户锁定', u'订单预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         self.fill_sid_text.Clear()
@@ -478,7 +478,7 @@ class GridPanel(wx.Panel):
                         return 
                     self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
                 else:
-                    dial = wx.MessageDialog(None, u'物流单号快递不符', '快递单号预览提示', 
+                    dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示', 
                         wx.OK | wx.ICON_EXCLAMATION)
                     dial.ShowModal()
                     self.fill_sid_text.Clear()
@@ -562,7 +562,7 @@ class GridPanel(wx.Panel):
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     if pre_company_id and pre_company_id != trade.logistics_company_id:
-                        dial = wx.MessageDialog(None, u'请确保批打订单快递相同', '快递单打印提示', 
+                        dial = wx.MessageDialog(None, u'请确保批打订单快递相同', u'快递单打印提示', 
                             wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         return
