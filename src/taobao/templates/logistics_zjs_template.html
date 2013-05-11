@@ -27,6 +27,12 @@ div {
 	margin-top: 40px;
 }
 
+.trade-indent{
+	height:14px;
+	width:100%;
+	text-align:center;
+}
+
 .left-panel {
 	float: left;
 	height: 100%;
@@ -100,7 +106,7 @@ div {
 .botton-panel {
 	clear: both;
 	width: 100%;
-	height: 100px;
+	height: 20px;
 	border:1px solid;
 }
 
@@ -109,7 +115,7 @@ div {
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
+		<div class="trade-indent">{{ trade.trade_id }}</div>
 		<div class='head-panel'>
 			<div class='left-panel'>
 				<div class='up-inner-panel'>
@@ -139,12 +145,7 @@ div {
 			<div class='right-panel'>
 			</div>
 		</div>
-		<div class='bottom-panel'>
-			<!--  <div class='post-date-dest'>
-				<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
-				<div class='destination'><!--{{ trade.receiver_city[0:-1] }}-{{ trade.receiver_district[0:-1] }}--></div>
-			</div>-->
-		</div>
+
 	</div>
 	{% endfor %}
 </body>
