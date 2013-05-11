@@ -98,10 +98,12 @@ div {
 }
 
 .botton-panel {
-	clear: left;
+	clear: both;
 	width: 100%;
 	height: 100px;
+	border:1px solid;
 }
+
 </style>
 </head>
 <body>
@@ -137,7 +139,12 @@ div {
 			<div class='right-panel'>
 			</div>
 		</div>
-		<div class='bottom-panel'></div>
+		<div class='bottom-panel'>
+			<div class='post-date-dest'>
+				<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+				<div class='destination'><!--{{ trade.receiver_city[0:-1] }}-{{ trade.receiver_district[0:-1] }}--></div>
+			</div>
+		</div>
 	</div>
 	{% endfor %}
 </body>

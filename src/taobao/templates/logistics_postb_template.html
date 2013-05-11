@@ -1,0 +1,166 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<style type='text/css'>
+body {
+	backgroup-color: #9cc2a9;
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+	font-size:16px;
+}
+
+div {
+	margin: 0;
+	padding: 0;
+	
+}
+
+.express {
+	width: 660px;
+	height: 1000px;
+	text-align:left;
+}
+
+.trade-indent{
+	height:14px;
+	width:100%;
+	text-align:center;
+}
+
+.head-panel {
+	width: 100%;
+	height: 220px;
+	
+}
+
+.left-panel {
+	float: left;
+	width: 45%;
+	height: 160px;
+	text-align: left;
+	display: inline;
+}
+
+.right-panel {
+	float: right;
+	height: 160px;
+
+}
+
+.empty-fill{
+	height:90px;
+	width:100%;
+}
+
+.receiver-name {
+	height: 16px;
+	width: 35%;
+	margin-left: 20px;
+	display:inline;
+	float:left;
+}
+
+.receiver-addr {
+	height: 30px;
+	width: 100%;
+	margin-top: 10px;
+	margin-left: 60px;
+	clear:both;
+}
+
+.receiver-info {
+	height: 20px;
+	width: 100%;
+	margin-left: 15px;
+}
+
+.left-panel-bottom {
+	height: 30px;
+	width: 100%;
+	margin-top: 30px;
+	margin-left: 15px;
+}
+
+.receiver-mobile {
+	float: right;
+	display: inline;
+}
+
+.post-code {
+	float: right;
+	display: inline;
+	width: 100px;
+}
+
+.botton-panel {
+	clear: left;
+	width: 100%;
+	height: 250px;
+}
+
+.post-fill{
+	width:100%;
+	height:30px;
+	
+}
+
+.post-date-dest{
+	height:40px;
+	clear:both;
+
+}
+
+.post-date{
+	margin-top:25px;
+	margin-left:10px;
+	display:inline;
+	float:left;
+}
+
+.destination{
+	font-size:42px;
+	display:inline;
+	float:right;
+	margin-right:10px;
+	margin-top:0px;
+	position:absolute;
+	width:300px;
+	right:10px;
+}
+</style>
+</head>
+<body>
+	{% for trade in trades %}
+	<div class='express'>
+		<div class="trade-indent">{{ trade.trade_id }}</div>
+		<div class='head-panel'>
+			<div class='left-panel'>
+				<div class="empty-fill"></div>
+				<div class="base-info">
+					<div class="receiver-name">{{ trade.receiver_name }}</div>
+					<div class="receiver-mobile">{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
+				</div>
+				<div class="receiver-addr">
+					<span>{{ trade.receiver_state }}  {{trade.receiver_city }} {{ trade.receiver_district }}
+					<br/> {{ trade.receiver_address }}
+					</span>
+				</div>
+				<div class="left-panel-bottom">
+					<div class='name'>{{ trade.seller_nick }}</div>
+					<div class="post-code"><!-- {{ trade.receiver_zip }}  --></div>
+				</div>
+			</div>
+			<div class='right-panel'>	
+			</div>
+		</div>
+		<div class='bottom-panel'>
+			<div class='post-date-dest'>
+				<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+				<div class='destination'><!--{{ trade.receiver_city[0:-1] }}-{{ trade.receiver_district[0:-1] }}--></div>
+			</div>
+		</div>
+	</div>
+	{% endfor %}
+</body>
+</html>
