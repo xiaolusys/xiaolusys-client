@@ -96,7 +96,7 @@ class Product(Base):
     name = Column(String(64))
     category_id =  Column(Integer, ForeignKey('shop_categorys_category.cid'))
     
-    skus = relationship("ProductSku", backref="product")
+    skus = relationship("ProductSku",backref='product')
     
     pic_path    = Column(String(256))
     collect_num = Column(Integer)
@@ -154,7 +154,7 @@ class LogisticsCompany(Base):
     district = Column(String(1000))
     status   = Column(Boolean)
     
-    merge_trades = relationship("MergeTrade", backref="logistics_company")
+    merge_trades = relationship("MergeTrade",backref='logistics_company')
     def __repr__(self):
         return "<LogisticsCompany('%s','%s','%s')>" % (str(self.id), str(self.code), str(self.name))
     

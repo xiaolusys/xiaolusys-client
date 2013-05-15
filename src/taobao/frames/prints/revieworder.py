@@ -13,7 +13,7 @@ import wx.lib.iewin as iewin
 from taobao.common.utils import getconfig
 from taobao.common.utils import create_session
 from taobao.common.environment import get_template
-from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
+from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
 from taobao.dao.tradedao import get_used_orders
 
 FONTSIZE = 10
@@ -196,37 +196,40 @@ class OrderReview(wx.Frame):
         with create_session(self.Parent) as session: 
             send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
         
-        express_data_list = []
-        for trade in send_trades:
-            
-            trade_data = {}
-            dt         = datetime.datetime.now() 
-                    
-            trade_data['trade_id']     = trade.id
-            trade_data['seller_nick']  = trade.seller_nick
-            trade_data['seller_contacter']  = trade.user.contacter
-            trade_data['seller_phone']  = trade.user.phone
-            trade_data['seller_mobile']  = trade.user.mobile
-            trade_data['seller_area_code']  = trade.user.area_code
-            trade_data['seller_location']  = trade.user.location
-            
-            trade_data['post_date']    = dt
-            trade_data['buyer_nick']        = trade.buyer_nick
-            trade_data['out_sid']      = trade.out_sid
-            trade_data['company_name'] = trade.logistics_company.name
-            trade_data['company_code'] = trade.logistics_company.code
-            
-            trade_data['receiver_name']     = trade.receiver_name
-            trade_data['receiver_phone']    = trade.receiver_phone
-            trade_data['receiver_mobile']   = trade.receiver_mobile
-            trade_data['receiver_zip']      = trade.receiver_zip
-            
-            trade_data['receiver_state']    = trade.receiver_state
-            trade_data['receiver_city']     = trade.receiver_city
-            trade_data['receiver_district'] = trade.receiver_district
-            trade_data['receiver_address']  = trade.receiver_address
-            
-            express_data_list.append(trade_data)
+            express_data_list = []
+            for trade in send_trades:
+                
+                session.refresh(trade,['is_locked','is_picking_print','is_express_print'
+                                        ,'operator','out_sid','logistics_company_id','sys_status'])
+                logistic_company = session.query(LogisticsCompany).filter_by(id=trade.logistics_company_id).first()
+                trade_data = {}
+                dt         = datetime.datetime.now() 
+                        
+                trade_data['trade_id']     = trade.id
+                trade_data['seller_nick']  = trade.seller_nick
+                trade_data['seller_contacter']  = trade.user.contacter
+                trade_data['seller_phone']  = trade.user.phone
+                trade_data['seller_mobile']  = trade.user.mobile
+                trade_data['seller_area_code']  = trade.user.area_code
+                trade_data['seller_location']  = trade.user.location
+                
+                trade_data['post_date']    = dt
+                trade_data['buyer_nick']        = trade.buyer_nick
+                trade_data['out_sid']      = trade.out_sid
+                trade_data['company_name'] = logistic_company and logistic_company.name
+                trade_data['company_code'] = logistic_company and logistic_company.code
+                
+                trade_data['receiver_name']     = trade.receiver_name
+                trade_data['receiver_phone']    = trade.receiver_phone
+                trade_data['receiver_mobile']   = trade.receiver_mobile
+                trade_data['receiver_zip']      = trade.receiver_zip
+                
+                trade_data['receiver_state']    = trade.receiver_state
+                trade_data['receiver_city']     = trade.receiver_city
+                trade_data['receiver_district'] = trade.receiver_district
+                trade_data['receiver_address']  = trade.receiver_address
+                
+                express_data_list.append(trade_data)
                                
         return express_data_list
     

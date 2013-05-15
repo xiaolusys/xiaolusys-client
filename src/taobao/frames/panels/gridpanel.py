@@ -16,7 +16,7 @@ from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session
-from taobao.dao.models import MergeOrder,MergeTrade
+from taobao.dao.models import MergeOrder,MergeTrade,LogisticsCompany
 from taobao.dao.tradedao import get_used_orders,get_oparetor,get_datasource_by_type_and_mode,locking_trade
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
@@ -726,10 +726,17 @@ class QueryObjectGridPanel(GridPanel):
     def parseObjectToList(self, object_list):
         assert isinstance(object_list,(list,tuple))
         assert isinstance(object_list,(set,list,tuple))
+        
         array_object = []
+        session      = self.Session
         for order in object_list:
-            self.Session.refresh(order,['is_locked','is_picking_print','is_express_print'
+            session.refresh(order,['is_locked','is_picking_print','is_express_print'
                                         ,'operator','out_sid','logistics_company_id','sys_status'])
+            
+            logistic_company = None
+            if order.logistics_company_id:
+                logistic_company = session.query(LogisticsCompany).filter_by(id=order.logistics_company_id).first()
+            
             object_array = []
             object_array.append(order.id)
             object_array.append(order.seller_nick)
@@ -742,7 +749,7 @@ class QueryObjectGridPanel(GridPanel):
             object_array.append(order.is_picking_print)
             object_array.append(order.is_express_print)
             object_array.append(order.can_review)
-            object_array.append(order.logistics_company and order.logistics_company.name or '')
+            object_array.append(logistic_company and logistic_company.name or '')
             object_array.append(order.out_sid)
             object_array.append(order.out_sid and order.operator or '')
             object_array.append(str(order.total_num))
