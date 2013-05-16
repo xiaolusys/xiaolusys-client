@@ -125,6 +125,7 @@ class OrderReview(wx.Frame):
                 trade_data['trade_id']     = trade.id
                 trade_data['seller_nick']  = trade.seller_nick
                 trade_data['post_date']    = dt
+                trade_data['pay_time']    = trade.pay_time
                 trade_data['buyer_nick']   = trade.buyer_nick
                 trade_data['out_sid']      = trade.out_sid
                 trade_data['company_name'] = trade.logistics_company.name
