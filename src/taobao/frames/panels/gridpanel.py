@@ -109,7 +109,7 @@ class GridPanel(wx.Panel):
         self.out_sid_end_label  = wx.StaticText(self.fill_sid_panel,-1,u'连打尾单号')
         self.out_sid_end_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(120,-1))
         self.fill_sid_btn4   = wx.Button(self.fill_sid_panel,fill_sid_btn4_id,u'核对')
-        self.fill_sid_btn3   = wx.Button(self.fill_sid_panel,-1,u'折起')
+        self.fill_sid_btn3   = wx.Button(self.fill_sid_panel,-1,u'复原')
 
         self.static_button_down = wx.Button(self,-1,label='^------------^',size=(-1,11))
         self.isSearchPanelShow = 1
@@ -139,9 +139,9 @@ class GridPanel(wx.Panel):
         self.button_array.append(self.fill_sid_btn)
         self.button_array.append(self.picking_print_btn)
         self.button_array.append(self.express_print_btn)
+        self.button_array.append(self.fill_sid_btn3)
         
-        self.fill_sid_btn2.Enable(False)
-        self.fill_sid_btn4.Enable(False)
+        self.initialFillSidPanel()
         self.review_orders_btn.Enable(False)
 
         
@@ -224,7 +224,7 @@ class GridPanel(wx.Panel):
         
         self.Bind(wx.EVT_BUTTON, self.onChangeFlexSizer,self.fill_sid_btn)
         
-        self.Bind(wx.EVT_BUTTON, self.onClickHideInnerPanel,self.fill_sid_btn3 )
+        self.Bind(wx.EVT_BUTTON, self.onClickRollBackBtn,self.fill_sid_btn3 )
         self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_down)
         self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell,self.preview_btn)
         
@@ -261,6 +261,10 @@ class GridPanel(wx.Panel):
         self.updateTableAndPaginator()
         self.Layout()
     
+    def initialFillSidPanel(self):
+        self.preview_btn.Enable()
+        self.fill_sid_btn2.Enable(False)
+        self.fill_sid_btn4.Enable(False)
         
     def setSearchData(self, datasource):
         self.paginator = paginator = Paginator(datasource, self.page_size)
@@ -373,16 +377,27 @@ class GridPanel(wx.Panel):
             
     def onChangeFlexSizer(self,evt):
         eventid= evt.GetId()
-        self.inner_panel.Show()
-        self.fill_sid_panel.Show(eventid == fill_sid_btn_id)
+        if not self.fill_sid_panel.IsShown() and eventid == fill_sid_btn_id:
+            self.inner_panel.Show()
+            self.fill_sid_panel.Show()
+        else:
+            self.inner_panel.Hide()
+            self.fill_sid_panel.Hide()
         self.inner_panel.Layout()
         self.itempanel.Layout()
         self.Layout()
     
-    def onClickHideInnerPanel(self,evt):
-        self.inner_panel.Hide()
-        self.itempanel.Layout()
-        self.Layout()
+    def onClickRollBackBtn(self,evt):
+        """ 复原所选数据打印状态  """
+        with create_session(self.Parent) as session:
+            for row in self._selectedRows:
+                trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                session.query(MergeTrade).filter_by(id=trade_id).update({
+                          'is_express_print':False,'is_picking_print':False,'out_sid':''})
+
+        self.initialFillSidPanel()
+            
+        self.refreshTable()
         evt.Skip()
      
     
@@ -622,7 +637,7 @@ class GridPanel(wx.Panel):
         self.grid.SetColSize(EXPRESS_CELL_COL,50)
         self.grid.SetColSize(PICKLE_CELL_COL,50)
         self.grid.SetColSize(REVIEW_CELL_COL,35)
-        self.grid.SetColSize(OUT_SID_CELL_COL,100)
+        self.grid.SetColSize(OUT_SID_CELL_COL,120)
         self.grid.SetRowLabelSize(40)  
         self.updateCellBySelectedTradeIds(trade_ids)
         self.updateSelectAllCheck()
@@ -670,7 +685,7 @@ class GridPanel(wx.Panel):
         self.grid.SetColSize(EXPRESS_CELL_COL,50)
         self.grid.SetColSize(PICKLE_CELL_COL,50)
         self.grid.SetColSize(REVIEW_CELL_COL,35)
-        self.grid.SetColSize(OUT_SID_CELL_COL,100)
+        self.grid.SetColSize(OUT_SID_CELL_COL,120)
         self.grid.SetRowLabelSize(40)
         for btn in self.button_array:
             btn.Enable(False)
@@ -682,6 +697,7 @@ class GridPanel(wx.Panel):
         self.updateSelectAllCheck()
         
         self.inner_panel.Hide()
+        self.fill_sid_panel.Hide()
         self.inner_panel.Layout()
         self.pag_panel.Layout()
         self.Layout()

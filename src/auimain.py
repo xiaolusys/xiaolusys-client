@@ -13,7 +13,7 @@ from taobao.frames.panels.checkpanel import ScanCheckPanel
 ID_TradeMainPage   = wx.NewId()
 ID_ScanCheck       = wx.NewId()
 ID_ScanWeight      = wx.NewId()
-ID_Help            = wx.NewId() 
+ID_Help            = wx.NewId()
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, id=-1, title=u"优尼世界ERP客户端", pos=wx.DefaultPosition,
@@ -26,7 +26,6 @@ class MainFrame(wx.Frame):
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
      
-        
         # create menu
         mb = wx.MenuBar()
         view_menu = wx.Menu()

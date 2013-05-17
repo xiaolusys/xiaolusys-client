@@ -81,7 +81,7 @@ class GridTable(grd.PyGridTableBase):
         if col ==0:
             self.data[(row,col)]= True if value else False
         elif col in (8,9,10,11):
-            self.data[(row,col)]= True if value == 'True' else False
+            self.data[(row,col)]= True if value == 'True' or value=='1' else False
         else:    
             self.data[(row,col)] = value
         

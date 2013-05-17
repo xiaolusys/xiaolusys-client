@@ -17,7 +17,7 @@ from taobao.common.environment import get_template
 from taobao.dao.dbsession import get_session
 from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,Item,MergeOrder
-from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS
+from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
 
 FONTSIZE = 10
  
@@ -47,7 +47,7 @@ class ExpressPrinter(wx.Frame):
     #----------------------------------------------------------------------
     def __init__(self,parent=None, title=u'打印快递单',trade_ids=[]):
         wx.Frame.__init__(self, parent, wx.ID_ANY, title, size=(850,500))
- 
+        
         self.trade_ids = trade_ids
         self.panel = wx.Panel(self, wx.ID_ANY)
         #self.printer = HtmlPrinter(name=u'打印', parentWindow=self)
@@ -118,7 +118,16 @@ class ExpressPrinter(wx.Frame):
  
     #----------------------------------------------------------------------
     def onCancel(self, event):
-        
+        """ onCancel """
+        with create_session(self.Parent) as session:
+            grid = self.Parent.grid
+            rows = self.Parent.grid.GetNumberRows()
+            for row in xrange(0,rows):
+                trade_id = grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                grid.SetCellValue(row,EXPRESS_CELL_COL,trade.is_express_print and '1' or '')
+                    
+        self.Parent.grid.ForceRefresh()
         self.Close()
  
     
@@ -136,13 +145,13 @@ class ExpressPrinter(wx.Frame):
             trade_data['trade_id']     = trade.id
             trade_data['seller_nick']  = trade.seller_nick
             trade_data['seller_contacter']  = trade.user.contacter
-            trade_data['seller_phone']  = trade.user.phone
-            trade_data['seller_mobile']  = trade.user.mobile
+            trade_data['seller_phone']      = trade.user.phone
+            trade_data['seller_mobile']     = trade.user.mobile
             trade_data['seller_area_code']  = trade.user.area_code
-            trade_data['seller_location']  = trade.user.location
+            trade_data['seller_location']   = trade.user.location
             
             trade_data['post_date']    = dt
-            trade_data['buyer_nick']        = trade.buyer_nick
+            trade_data['buyer_nick']   = trade.buyer_nick
             trade_data['out_sid']      = trade.out_sid
             trade_data['company_name'] = trade.logistics_company.name
             trade_data['company_code'] = trade.logistics_company.code

@@ -18,7 +18,8 @@ from taobao.common.environment import get_template
 from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders
-from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,IN_EFFECT
+from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,\
+    IN_EFFECT,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
 
 from taobao.common.utils import IMAGE_ROOT
 
@@ -116,6 +117,14 @@ class DeliveryPrinter(wx.Frame):
  
     #----------------------------------------------------------------------
     def onCancel(self, event):
+        with create_session(self.Parent) as session:
+            grid = self.Parent.grid
+            rows = self.Parent.grid.GetNumberRows()
+            for row in xrange(0,rows):
+                trade_id = grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                grid.SetCellValue(row,PICKLE_CELL_COL,trade.is_picking_print and '1' or '')
+                
         self.Parent.grid.ForceRefresh()
         self.Close()
 
