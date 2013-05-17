@@ -94,7 +94,7 @@ td{
 		<div class='base-info'>
 			<div class='left-label'><label>订单编号:</label><span>{{ trade.trade_id }}</span></div>
 			<div class='middle-label'><label>物流编号:</label><span>{{ trade.out_sid }}（{{trade.company_name}}）</span></div>
-			<div class='right-label'><label>打单日期:</label><span>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}/{{ trade.pay_time|datetimeformat(format='%m.%d') }}</span></div>
+			<div class='right-label'><label>付款打单日期:</label><span>{{ trade.pay_time|datetimeformat(format='%m.%d') }}/{{ trade.post_date|datetimeformat(format='%m.%d') }}</span></div>
 		</div>
 		<div class='seller-info'>
 			<table >
