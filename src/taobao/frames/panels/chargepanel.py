@@ -125,8 +125,7 @@ class ScanChargePanel(wx.Panel):
             if charge_end_date:
                 charge_trades = charge_trades.filter("charge_time <=:end").params(end=charge_end_date)
             
-        datasource = self.get_datasource_by_trades(charge_trades)    
-        self.set_datasource(datasource)
+        self.set_datasource(charge_trades)
         
         evt.Skip()
         
@@ -170,22 +169,6 @@ class ScanChargePanel(wx.Panel):
 
         self.gridpanel.InsertChargeRows(trade)
         
-        
-    def get_datasource_by_trades(self,trades): 
-        
-        trade_list = []
-        for trade in trades:
-            
-            t = []
-            t.append(trade.out_sid)
-            t.append(trade.weight)
-            t.append(trade.receiver_state)
-            t.append(trade.receiver_city)
-            t.append(trade.receiver_district)
-            t.append(trade.receiver_zip)
-            
-            trade_list.append(t)
-        return trade_list
                  
     def set_datasource(self,datasource):
         self.gridpanel.setData(datasource)
@@ -201,7 +184,7 @@ class ScanChargePanel(wx.Panel):
         out_sid_set = set([])
         for i in xrange(0,rows):
             out_sid = tables.GetValue(i,0)
-            if out_sid not in out_sid_set:
+            if out_sid and out_sid not in out_sid_set:
                 item_list.append([tables.GetValue(i,j) for j in range(0,cols)])
                 out_sid_set.add(out_sid)
 

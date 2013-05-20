@@ -906,7 +906,7 @@ class ChargeGridPanel(wx.Panel):
         wx.Panel.__init__(self, parent, id) 
         
         self.grid = grd.Grid(self,-1)
-        self.colLabels = (u'快递单号',u'重量',u'省',u'市',u'区',u'邮编')
+        self.colLabels = (u'快递单号',u'重量(kg)',u'省',u'市',u'区',u'邮编')
         gridtable = weakref.ref(ChargeGridTable(datasource=datasource,colLabels=self.colLabels))
         self.grid.SetTable(gridtable(),True)  
         self.grid.SetRowLabelSize(40)
@@ -923,25 +923,47 @@ class ChargeGridPanel(wx.Panel):
         self.grid.ProcessTableMessage(grd.GridTableMessage(
                                     self.grid.Table,grd.GRIDTABLE_NOTIFY_ROWS_INSERTED,0,1))
         
-        items = self.getItems(trade)
+        items = self.getItem(trade)
         self.grid.InsertRows(0,1,True)
         for index,item in enumerate(items):
             self.grid.SetCellValue(0,index,item)    
         
         self.grid.ForceRefresh()
 
-    def getItems(self,trade):
+    def getItem(self,trade):
         items = []
         items.append(trade.out_sid)
-        items.append(trade.weight)
+        items.append(self.formatWeight(trade.weight))
         items.append(trade.receiver_state)
         items.append(trade.receiver_city)
         items.append(trade.receiver_district)
         items.append(trade.receiver_zip)
         return items
       
-    def setData(self,logistic_list):
-        gridtable = weakref.ref(ChargeGridTable(logistic_list,colLabels=self.colLabels))
+    def formatWeight(self,weight):
+        if not weight:
+            return '0'
+        v  = float(weight)
+        if weight.isdigit():
+            v = v/1000
+        
+        if v<1.3:
+            return '1.0'
+        return '%.2g'%v
+        
+      
+    def getItems(self,trades):
+        
+        trade_list = []
+        for trade in trades:
+            t = self.getItem(trade)
+            trade_list.append(t)
+        
+        return trade_list
+      
+    def setData(self,datasource):
+        source = self.getItems(datasource)
+        gridtable = weakref.ref(ChargeGridTable(source,colLabels=self.colLabels))
         self.grid.SetTable(gridtable())
         self.grid.ForceRefresh()
     
