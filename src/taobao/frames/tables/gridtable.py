@@ -263,9 +263,8 @@ class ChargeGridTable(grd.PyGridTableBase):
         self.data={}
         self.colLabels = colLabels
         self.rowLabels = rowLabels
-        self.rows = 1
+        self.rows = len(datasource)
         self.cols=len(self.colLabels)#行数
-        
         i=0
         for row in datasource:
             j = 0

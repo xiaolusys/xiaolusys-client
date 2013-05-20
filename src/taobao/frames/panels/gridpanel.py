@@ -965,6 +965,7 @@ class ChargeGridPanel(wx.Panel):
         source = self.getItems(datasource)
         gridtable = weakref.ref(ChargeGridTable(source,colLabels=self.colLabels))
         self.grid.SetTable(gridtable())
+        self.grid.SetColSize(0,120)
         self.grid.ForceRefresh()
     
         
