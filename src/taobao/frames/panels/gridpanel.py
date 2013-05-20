@@ -10,7 +10,7 @@ import weakref
 import wx, wx.grid as grd
 import taobao
 from taobao.dao import configparams as cfg
-from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable
+from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable,ChargeGridTable
 from taobao.frames.panels.itempanel import ItemPanel
 from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
@@ -901,6 +901,51 @@ class WeightGridPanel(wx.Panel):
         return items
       
       
+class ChargeGridPanel(wx.Panel):
+    def __init__(self, parent, id=-1, datasource=()): 
+        wx.Panel.__init__(self, parent, id) 
+        
+        self.grid = grd.Grid(self,-1)
+        self.colLabels = (u'快递单号',u'重量',u'省',u'市',u'区',u'邮编')
+        gridtable = weakref.ref(ChargeGridTable(datasource=datasource,colLabels=self.colLabels))
+        self.grid.SetTable(gridtable(),True)  
+        self.grid.SetRowLabelSize(40)
+        
+        box_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        box_sizer.Add(self.grid,flag=wx.EXPAND)
+        
+        self.grid.SetMinSize((1300,500))
+        self.SetSizer(box_sizer)
+        self.Layout()
+        
+    def InsertChargeRows(self,trade):
+            
+        self.grid.ProcessTableMessage(grd.GridTableMessage(
+                                    self.grid.Table,grd.GRIDTABLE_NOTIFY_ROWS_INSERTED,0,1))
+        
+        items = self.getItems(trade)
+        self.grid.InsertRows(0,1,True)
+        for index,item in enumerate(items):
+            self.grid.SetCellValue(0,index,item)    
+        
+        self.grid.ForceRefresh()
+
+    def getItems(self,trade):
+        items = []
+        items.append(trade.out_sid)
+        items.append(trade.weight)
+        items.append(trade.receiver_state)
+        items.append(trade.receiver_city)
+        items.append(trade.receiver_district)
+        items.append(trade.receiver_zip)
+        return items
+      
+    def setData(self,logistic_list):
+        gridtable = weakref.ref(ChargeGridTable(logistic_list,colLabels=self.colLabels))
+        self.grid.SetTable(gridtable())
+        self.grid.ForceRefresh()
+    
+        
 class CheckOrdersGridPanel(SimpleGridPanel):
     #商品检验部分的panel 
     def parseObjectToList(self, trade):

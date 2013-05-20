@@ -96,7 +96,6 @@ class ScanWeightPanel(wx.Panel):
         with create_session(self.Parent) as session: 
             logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
         self.company_select.AppendItems([company.name for company in logistics_companies])
-        self.out_sid_text.SetFocus()
         self.auto_add_checkbox.SetValue(True)
         
         self.control_array = []

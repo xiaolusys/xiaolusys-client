@@ -238,6 +238,7 @@ class MergeTrade(Base):
     modified = Column(DateTime, index=True, nullable=True)
     consign_time = Column(DateTime, index=True, nullable=True)
     weight_time  = Column(DateTime, index=True, nullable=True)
+    charge_time  = Column(DateTime, index=True, nullable=True)
     
     buyer_message = Column(String(1000))
     seller_memo   = Column(String(1000))
@@ -271,6 +272,7 @@ class MergeTrade(Base):
     priority         = Column(Integer,index=True)
     operator         = Column(String(32))
     is_locked        = Column(Boolean)
+    is_charged       = Column(Boolean)
     sys_status       = Column(String(32),index=True)  
     def __repr__(self):
         return "<Trade('%s','%s','%s','%s')>" % (str(self.id),str(self.tid), self.seller_nick, self.buyer_nick)
