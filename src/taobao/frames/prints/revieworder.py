@@ -32,7 +32,8 @@ class OrderReview(wx.Frame):
         #trade_ids = [200165044022938,165155430754126]
          
         cfg  = getconfig()
-        self.html.LoadUrl(cfg.get('url','review_url')%trade_id)
+        host_name = cfg.get('db','db_host')
+        self.html.LoadUrl(cfg.get('url','review_url')%(host_name,trade_id))
         
         previewExpressBtn = wx.Button(self.panel,wx.ID_ANY,u'物流单打印预览')
         previewDeliveryBtn = wx.Button(self.panel,wx.ID_ANY,u'发货单打印预览')

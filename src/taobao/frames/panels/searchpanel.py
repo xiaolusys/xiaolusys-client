@@ -36,6 +36,8 @@ class SearchPanel(wx.Panel):
         self.delivery_pick_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
         self.logistics_pick_label = wx.StaticText(self,-1,u'物流单')
         self.logistics_pick_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
+        self.single_prod_label  = wx.StaticText(self,-1,u'单品')
+        self.single_prod_check  = wx.CheckBox(self,-1,style=wx.CHK_2STATE)
         
         self.start_time_label = wx.StaticText(self,-1,u'付款时起')
         self.start_time_select = wx.DatePickerCtrl(self,
@@ -97,6 +99,8 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.logistics_pick_check, pos=(0,15), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.delivery_pick_label, pos=(0,16), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.delivery_pick_check, pos=(0,17), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.single_prod_label, pos=(0,18), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.single_prod_check, pos=(0,19), span=(1,1), flag=wx.EXPAND)
         
         gridbagsizer.Add(self.start_time_label, pos=(1,0), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.start_time_select, pos=(1,1), span=(1,1), flag=wx.EXPAND)
@@ -116,7 +120,7 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.urggent_doc_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.is_locked_label, pos=(1,16), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.is_locked_check, pos=(1,17), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.clear_btn, pos=(1,18), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.clear_btn, pos=(1,19), span=(1,1), flag=wx.EXPAND)
 
         gridbagsizer.Layout()
         
@@ -146,6 +150,7 @@ class SearchPanel(wx.Panel):
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.logistics_pick_check)
         
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.urggent_doc_check)
+        self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.single_prod_check)
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.is_locked_check)
         self.Bind(wx.EVT_BUTTON  , self.clearSearchPanel, self.clear_btn)
         
@@ -169,6 +174,7 @@ class SearchPanel(wx.Panel):
         self.sku_outer_id_text.Clear()
         self.urggent_doc_check.SetValue(False)
         self.is_locked_check.SetValue(False)
+        self.single_prod_check.SetValue(False)
         
         self.weight_start_select.SetValue(wx.DefaultDateTime)
         self.weight_end_select.SetValue(wx.DefaultDateTime)
@@ -197,7 +203,8 @@ class SearchPanel(wx.Panel):
         outer_id      = self.outer_id_text.GetValue()
         sku_outer_id  = self.sku_outer_id_text.GetValue()
         urgent_doc_state = self.urggent_doc_check.Get3StateValue()
-        locke_state     = self.is_locked_check.Get3StateValue()
+        locke_state     = self.is_locked_check.Get3StateValue() 
+        single_prod     = self.single_prod_check.Get3StateValue()
         
         weight_start_time = self.weight_start_select.GetValue()
         weight_end_time   = self.weight_end_select.GetValue()
@@ -238,6 +245,8 @@ class SearchPanel(wx.Panel):
                     datasource = datasource.filter_by(priority=1)
                 else:
                     datasource = datasource.filter(MergeTrade.priority!=1)
+            if single_prod:
+                datasource = datasource.filter(MergeTrade.order_num==1)
             if pick_print_state:
                 datasource = datasource.filter_by(is_picking_print=pick_print_state == 1 and True or False)
             if express_print_state:

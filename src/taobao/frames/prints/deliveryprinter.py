@@ -15,13 +15,13 @@ import time
 import datetime
 from wx.html import HtmlEasyPrinting,HtmlWindow 
 from taobao.common.environment import get_template
-from taobao.common.utils import create_session
+from taobao.common.utils import create_session,format_datetime
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,\
     IN_EFFECT,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
 
-from taobao.common.utils import IMAGE_ROOT
+from taobao.common.utils import IMAGE_ROOT,TEMP_FILE_ROOT
 
 FONTSIZE = 10
  
@@ -59,6 +59,8 @@ class DeliveryPrinter(wx.Frame):
         self.html = iewin.IEHtmlWindow(self.panel,-1)
         #trade_ids = [200165044022938,165155430754126]
         html_text = self.createHtml(trade_ids)
+        
+        self.saveHtml2File(html_text,len(trade_ids))
         self.html.LoadString(html_text)
  
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
@@ -92,7 +94,7 @@ class DeliveryPrinter(wx.Frame):
 
         template = get_template('trade_picking_template.html') 
         html =template.render(trades=trades)
-
+        
         return html
 
 
@@ -127,7 +129,16 @@ class DeliveryPrinter(wx.Frame):
                 
         self.Parent.grid.ForceRefresh()
         self.Close()
-
+    
+    #----------------------------------------------------------------------
+    def saveHtml2File(self,html_text,nums):
+        
+        dt = datetime.datetime.now()
+        file_name = TEMP_FILE_ROOT+'fahuodan(%d)-%s.html'%(nums,format_datetime(dt,format="%Y.%m.%d %H.%M.%S"))
+        with open(file_name,'w') as f:
+            print >> f,html_text
+    
+    
     #----------------------------------------------------------------------
     def getTradePickingData(self ,trade_ids=[]):
         

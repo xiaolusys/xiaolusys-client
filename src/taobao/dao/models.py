@@ -219,7 +219,7 @@ class MergeTrade(Base):
     type = Column(String(32), nullable=True)
     shipping_type = Column(String(12), default='')
     
-    total_num  = Column(Integer)
+    order_num  = Column(Integer)
     refund_num = Column(Integer)
     payment = Column(String(10), nullable=True)
     discount_fee = Column(String(10), nullable=True)

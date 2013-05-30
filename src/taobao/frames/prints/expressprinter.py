@@ -15,10 +15,11 @@ import datetime
 from wx.html import HtmlEasyPrinting,HtmlWindow 
 from taobao.common.environment import get_template
 from taobao.dao.dbsession import get_session
-from taobao.common.utils import create_session
+from taobao.common.utils import create_session,format_datetime
 from taobao.dao.models import MergeTrade,Item,MergeOrder
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
 
+from taobao.common.utils import TEMP_FILE_ROOT
 FONTSIZE = 10
  
 class HtmlPrinter(HtmlEasyPrinting):
@@ -55,7 +56,8 @@ class ExpressPrinter(wx.Frame):
         self.html = iewin.IEHtmlWindow(self.panel,-1)
         #trade_ids = [200165044022938,165155430754126]
         html_text = self.createHtml(trade_ids)
-
+        
+        self.saveHtml2File(html_text,len(trade_ids))
         #self.printer.PreviewText(html_text, u'物流单')
         self.html.LoadString(html_text)
         
@@ -115,7 +117,15 @@ class ExpressPrinter(wx.Frame):
         self.html.PrintPreview()
         #self.Parent.refreshTable()  
         event.Skip()
- 
+    
+    #----------------------------------------------------------------------
+    def saveHtml2File(self,html_text,nums):
+        
+        dt = datetime.datetime.now()
+        file_name = TEMP_FILE_ROOT+'kuaididan(%d)-%s.html'%(nums,format_datetime(dt,format="%Y.%m.%d %H.%M.%S"))
+        with open(file_name,'w') as f:
+            print >> f,html_text
+    
     #----------------------------------------------------------------------
     def onCancel(self, event):
         """ onCancel """

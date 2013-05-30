@@ -27,7 +27,9 @@ class PicklePrinter(wx.Frame):
         #trade_ids = [200165044022938,165155430754126]
          
         cfg  = getconfig()
-        self.html.LoadUrl(cfg.get('url','post_url'))
+        host_name   = cfg.get('db','db_host')
+        client_name = cfg.get('user','username')
+        self.html.LoadUrl(cfg.get('url','post_url')%(host_name,client_name))
         
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
         cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'关闭窗口')
