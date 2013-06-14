@@ -57,7 +57,7 @@ class ExpressPrinter(wx.Frame):
         #trade_ids = [200165044022938,165155430754126]
         html_text = self.createHtml(trade_ids)
         
-        self.saveHtml2File(html_text,len(trade_ids))
+        #self.saveHtml2File(html_text,len(trade_ids))
         #self.printer.PreviewText(html_text, u'物流单')
         self.html.LoadString(html_text)
         
@@ -124,7 +124,7 @@ class ExpressPrinter(wx.Frame):
         dt = datetime.datetime.now()
         file_name = TEMP_FILE_ROOT+'kuaididan(%d)-%s.html'%(nums,format_datetime(dt,format="%Y.%m.%d %H.%M.%S"))
         with open(file_name,'w') as f:
-            print >> f,html_text
+            print >> f,html_text.encode('gbk')
     
     #----------------------------------------------------------------------
     def onCancel(self, event):

@@ -60,7 +60,7 @@ class DeliveryPrinter(wx.Frame):
         #trade_ids = [200165044022938,165155430754126]
         html_text = self.createHtml(trade_ids)
         
-        self.saveHtml2File(html_text,len(trade_ids))
+        #self.saveHtml2File(html_text,len(trade_ids))
         self.html.LoadString(html_text)
  
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
