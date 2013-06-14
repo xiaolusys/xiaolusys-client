@@ -6,10 +6,12 @@ Created on 2012-7-11
 '''
 import wx.aui
 from taobao.dao.dbsession import get_session
+from taobao.common.utils import pinghost,getconfig
 from taobao.frames.panels.tradepanel import TradePanel
 from taobao.frames.panels.weightpanel import ScanWeightPanel
 from taobao.frames.panels.checkpanel import ScanCheckPanel
 from taobao.frames.panels.chargepanel import ScanChargePanel
+
 
 ID_TradeMainPage   = wx.NewId()
 ID_ScanCheck       = wx.NewId()
@@ -108,9 +110,21 @@ class MainFrame(wx.Frame):
     
     
 #sys.setdefaultencoding('utf8') 
-    
 app = wx.PySimpleApp()
-wx.InitAllImageHandlers()
-frm = MainFrame(None)
-frm.Show()
+try:
+    config = getconfig()
+    db_host = config.get('db','db_host')
+    if pinghost(db_host):
+        dial = wx.MessageDialog(None, u'数据库连接失败(host:%s)'%db_host, 
+                                u'数据库连接失败提示', wx.OK | wx.ICON_EXCLAMATION)
+        dial.ShowModal()
+    else:     
+        wx.InitAllImageHandlers()
+        frm = MainFrame(None)
+        frm.Show()
+except Exception,exc:
+    dial = wx.MessageDialog(None, u'程序错误：%s'%exc.message,
+                             u'错误提示', wx.OK | wx.ICON_EXCLAMATION)
+    dial.ShowModal()
+    
 app.MainLoop()    

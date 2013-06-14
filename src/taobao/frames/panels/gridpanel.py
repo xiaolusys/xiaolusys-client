@@ -389,12 +389,13 @@ class GridPanel(wx.Panel):
     
     def onClickRollBackBtn(self,evt):
         """ 复原所选数据打印状态  """
+        operator      = get_oparetor()
         with create_session(self.Parent) as session:
             for row in self._selectedRows:
                 trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                session.query(MergeTrade).filter_by(id=trade_id).update({
+                session.query(MergeTrade).filter_by(id=trade_id,operator=operator).update({
                           'is_express_print':False,'is_picking_print':False,'out_sid':''})
-
+        
         self.initialFillSidPanel()
             
         self.refreshTable()
@@ -768,7 +769,7 @@ class QueryObjectGridPanel(GridPanel):
             object_array.append(logistic_company and logistic_company.name or '')
             object_array.append(order.out_sid)
             object_array.append(order.out_sid and order.operator or '')
-            object_array.append(str(order.total_num))
+            object_array.append(str(order.prod_num))
             object_array.append(order.payment)
             object_array.append(order.total_fee)
             object_array.append(order.pay_time)

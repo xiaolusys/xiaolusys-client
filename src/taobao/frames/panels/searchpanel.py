@@ -246,7 +246,7 @@ class SearchPanel(wx.Panel):
                 else:
                     datasource = datasource.filter(MergeTrade.priority!=1)
             if single_prod:
-                datasource = datasource.filter(MergeTrade.order_num==1)
+                datasource = datasource.filter(MergeTrade.prod_num==1)
             if pick_print_state:
                 datasource = datasource.filter_by(is_picking_print=pick_print_state == 1 and True or False)
             if express_print_state:

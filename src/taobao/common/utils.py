@@ -111,8 +111,15 @@ def logtime(tag=''):
         return wrap
     return outer
 
+def pinghost(hostid):
+    try:
+        pingurl = 'ping %s -n 2'%hostid
+        ret = os.system(pingurl)
+    except:
+        ret = -1
+    return ret
   
-    
+
 
 #if __name__ == "__main__":
 #    app = wx.PySimpleApp(0)
