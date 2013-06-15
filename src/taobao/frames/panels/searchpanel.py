@@ -252,11 +252,18 @@ class SearchPanel(wx.Panel):
             if express_print_state:
                 datasource = datasource.filter_by(is_express_print=express_print_state == 1 and True or False)
             if outer_id:
-                datasource = datasource.join(MergeOrder,MergeTrade.id==MergeOrder.merge_trade_id)
-                if outer_id and sku_outer_id:
-                    datasource = datasource.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
-                elif outer_id:
-                    datasource = datasource.filter(MergeOrder.outer_id==outer_id)
+                trade_ids = [t.id for t in datasource]
+                with create_session(self.Parent) as session:
+                    
+                    merge_orders = session.query(MergeOrder).filter(MergeOrder.merge_trade_id.in_(trade_ids))
+                    if outer_id and sku_outer_id:
+                        merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
+                    else :
+                        merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id)
+                    
+                    trade_ids = set([o.merge_trade_id for o in merge_orders])
+                    datasource = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))
+                    
             if locke_state:
                 datasource = datasource.filter_by(is_locked=locke_state == 1 and True or False)        
         self.Parent.grid.setSearchData(datasource)
