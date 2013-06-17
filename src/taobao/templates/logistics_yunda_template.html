@@ -42,10 +42,9 @@ div {
 }
 
 .receiver-name {
-	height: 25px;
-	width: 150px;
+	float:left;
+	display: inline;
 	margin-top: 10px;
-	margin-left: 120px;
 }
 
 .receiver-addr {
@@ -69,15 +68,17 @@ div {
 }
 
 .receiver-mobile {
-	float: left;
-	display: inline;
-	width: 160px;
+	display: block;
+	width: 100%;
+	text-align:right;
+	margin-right:20px;
 }
 
 .post-code {
 	float: right;
 	display: inline;
 	width: 100px;
+	margin-top: 10px;
 }
 
 .botton-panel {
@@ -106,7 +107,7 @@ div {
 		<div class='head-panel'>
 			<div class='left-panel'></div>
 			<div class='right-panel'>
-				<div class='receiver-name'>{{ trade.receiver_name }}</div>
+				<div class='receiver-mobile'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
 				<div class='receiver-addr'>
 					<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{
 						trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }} <br>
@@ -115,7 +116,7 @@ div {
 				</div>
 				<!--<div class='receiver-info'></div>-->
 				<div class='left-panel-bottom'>
-					<div class='receiver-mobile'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
+					<div class='receiver-name'>{{ trade.receiver_name }}</div>
 					<div class='post-code'>{{ trade.receiver_zip }}</div>
 				</div>
 			</div>
