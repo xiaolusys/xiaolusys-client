@@ -538,6 +538,10 @@ class GridPanel(wx.Panel):
                             self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
                             self.grid.SetCellValue(row,OPERATOR_CELL_COL,operator)
                             effect_row += 1  
+                        elif not out_sid:
+                            pass
+                        else:
+                            break
                     except:
                         break
                 if effect_row>1:
