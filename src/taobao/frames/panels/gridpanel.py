@@ -569,7 +569,10 @@ class GridPanel(wx.Panel):
                     self.out_sid_end_text.Clear()
                     self.fill_sid_btn4.Enable(False)
                     self.preview_btn.Enable(True)
-                    
+                else:
+                    dial = wx.MessageDialog(None, u'输入的起始单号与所填单号不符', u'快递单打印提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                    dial.ShowModal()
             elif eventid == picking_print_btn_id:
                 trade_ids = []
                 for row in self._selectedRows:
