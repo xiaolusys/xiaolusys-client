@@ -528,6 +528,7 @@ class GridPanel(wx.Panel):
                         out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
                         trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                         company_regex = trade.logistics_company.reg_mail_no if trade else None
+                        company_name  = trade.logistics_company.name
                         is_match_pass = True
                         if company_regex:
                             id_compile = re.compile(company_regex)
@@ -541,8 +542,14 @@ class GridPanel(wx.Panel):
                         elif not out_sid:
                             pass
                         else:
+                            dial = wx.MessageDialog(None, u'快递单号(%s)不符合%s单号规则'%(out_sid,company_name), u'快递单打印提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                            dial.ShowModal()
                             break
-                    except:
+                    except Exception,exc:
+                        dial = wx.MessageDialog(None, '单号填充错误:'+exc.message, u'快递单打印提示', 
+                                                wx.OK | wx.ICON_EXCLAMATION)
+                        dial.ShowModal()
                         break
                 if effect_row>1:
                     self.disablePicklePrintBtn() 
