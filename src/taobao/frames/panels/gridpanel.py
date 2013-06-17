@@ -537,9 +537,7 @@ class GridPanel(wx.Panel):
                                 .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
                             self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
                             self.grid.SetCellValue(row,OPERATOR_CELL_COL,operator)
-                            effect_row += 1
-                        else:
-                            break    
+                            effect_row += 1  
                     except:
                         break
                 if effect_row>1:
