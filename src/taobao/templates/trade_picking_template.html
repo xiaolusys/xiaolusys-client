@@ -153,7 +153,8 @@ td{
 		</div>
 		<div class='memo-style'><label>留言：</label><span>{% if trade.buyer_message %}(买家:{{ trade.buyer_message|cut_string() }}){% endif %}
 		&nbsp;&nbsp;{% if trade.seller_memo %}(卖家:{{ trade.seller_memo|cut_string() }}){% endif %}
-		&nbsp;&nbsp;{% if trade.sys_memo %}(系统:{{ trade.sys_memo|cut_string() }}){% endif %}</span></div>
+		&nbsp;&nbsp;{% if trade.sys_memo %}(系统:{{ trade.sys_memo|cut_string() }}){% endif %}
+		&nbsp;&nbsp;{% if trade.buyer_prompt %}(温馨提示:{{ trade.buyer_prompt|cut_string() }}){% endif %}</span></div>
 	</div>
 	{% endfor %}
 </body>

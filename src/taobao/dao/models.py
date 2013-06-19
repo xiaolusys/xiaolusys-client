@@ -111,6 +111,7 @@ class Product(Base):
     sync_stock  = Column(Boolean)
     is_assign  = Column(Boolean)
     
+    buyer_prompt = Column(String(40))
     status     = Column(String(16))
     def __repr__(self):
         return "<Product('%s','%s','%s')>" % (str(self.outer_id), str(self.name), str(self.collect_num))   
@@ -137,6 +138,7 @@ class ProductSku(Base):
     sync_stock  = Column(Boolean)
     is_assign  = Column(Boolean)
     
+    buyer_prompt = Column(String(40))
     status     = Column(String(10))
     def __repr__(self):
         return "<Product('%s','%s')>" % (str(self.outer_id), str(self.properties_name)) 
@@ -283,8 +285,8 @@ class MergeTrade(Base):
         for order in self.merge_orders:
             total_nums += order.num
         return total_nums
-     
-
+    
+            
 class TradeExtraInfo(Base):
     """
     seller_memo:

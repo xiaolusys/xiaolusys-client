@@ -138,7 +138,37 @@ class DeliveryPrinter(wx.Frame):
         with open(file_name,'w') as f:
             print >> f,html_text
     
-    
+    def get_buyer_prompt_(self):
+        """ 获取商品客户提示 """
+        prompt_msg = ''
+        ts = set()
+        for o in self.merge_orders:
+            
+            outer_sku_id = o.outer_sku_id
+            outer_id     = o.outer_id
+            prod_sku = None
+            prod     = None
+            try:
+                if outer_sku_id:
+                    prod_sku = ProductSku.objects.get(outer_id=outer_sku_id,product__outer_id=outer_id)
+                prod = Product.objects.get(outer_id=outer_id)
+            except:
+                pass
+            #同一规格提示只能出现一次
+            if prod_sku and prod_sku.buyer_prompt:
+                entry = (outer_id,outer_sku_id)
+                if entry in ts:
+                    continue
+                prompt_msg += prod_sku.buyer_prompt
+                ts.add(entry)
+            #同一商品提示只能出现一次    
+            elif prod and prod.buyer_prompt:
+                entry = (outer_id,'')
+                if entry in ts:
+                    continue
+                prompt_msg += prod.buyer_prompt
+                ts.add(entry)
+        
     #----------------------------------------------------------------------
     def getTradePickingData(self ,trade_ids=[]):
         
@@ -161,7 +191,7 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['total_fee']    = 0
                 trade_data['discount_fee'] = 0
                 trade_data['payment']      = 0
-                
+                trade_data['buyer_prompt']  = ''
                 
                 trade_data['receiver_name']     = trade.receiver_name
                 trade_data['receiver_phone']    = trade.receiver_phone
@@ -174,7 +204,9 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['buyer_message']   = trade.buyer_message
                 trade_data['seller_memo']   = trade.seller_memo
                 trade_data['sys_memo']   = trade.sys_memo
+                trade_data['buyer_prompt']   = ''
                 
+                prompt_set = set()
                 order_items = {}
                 orders = get_used_orders(session,trade.id)  
                 for order in orders:
@@ -182,32 +214,34 @@ class DeliveryPrinter(wx.Frame):
                     trade_data['order_nums']     += order.num
                     trade_data['discount_fee']   += float(order.discount_fee or 0)
                     trade_data['total_fee']      += float(order.total_fee or 0) 
-                    trade_data['payment']      += float(order.payment or 0)
+                    trade_data['payment']        += float(order.payment or 0)
                     
                     outer_id = order.outer_id or str(order.num_iid)
                     outer_sku_id = order.outer_sku_id or str(order.sku_id)
+                    
+                    product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
+                    prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
+                    
+                    promptmsg = (prod_sku and prod_sku.buyer_prompt) or (product and product.buyer_prompt) or ''
+                    if promptmsg:
+                        prompt_set.add(promptmsg)
                     
                     if order_items.has_key(outer_id):
                         order_items[outer_id]['num'] += order.num
                         skus = order_items[outer_id]['skus']
                         if skus.has_key(outer_sku_id):
                             skus[outer_sku_id]['num'] += order.num
-                        else:
-                            product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
-                            prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
+                        else:   
                             prod_sku_name = (prod_sku.properties_alias or prod_sku.properties_name ) if prod_sku else order.sku_properties_name
                             skus[outer_sku_id] = {'sku_name':prod_sku_name,'num':order.num}
                     else:
-                        product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
-                        prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
                         prod_sku_name =prod_sku.properties_name if prod_sku else order.sku_properties_name
-                        
                         order_items[outer_id]={
                                                'num':order.num,
                                                'title': product.name if product else order.title,
                                                'skus':{outer_sku_id:{'sku_name':prod_sku_name,'num':order.num}}
                                                }
-                    
+                trade_data['buyer_prompt'] = prompt_set and ','.join(list(prompt_set)) or ''   
                 order_list = sorted(order_items.items(),key=lambda d:d[1]['num'],reverse=True)
                 for trade in order_list:
                     skus = trade[1]['skus']
