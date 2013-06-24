@@ -91,7 +91,7 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         datasource = datasource.filter_by(is_locked=True,operator=operator)  
        
     else:
-        datasource     = datasource.order_by('priority desc','shop_trades_mergetrade.pay_time asc')
+        datasource     = datasource.order_by(sqlalchemy.func.date(MergeTrade.pay_time),'priority desc','shop_trades_mergetrade.pay_time asc')
     
     return datasource
             
