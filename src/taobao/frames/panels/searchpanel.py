@@ -58,7 +58,7 @@ class SearchPanel(wx.Panel):
         self.weight_end_select =  wx.DatePickerCtrl(self,
                                 style = wx.DP_DROPDOWN| wx.DP_SHOWCENTURY| wx.DP_ALLOWNONE)
         self.urggent_doc_label = wx.StaticText(self,-1,u'紧急件')
-        self.urggent_doc_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
+        self.urggent_doc_check  = wx.CheckBox(self,-1,style=wx.CHK_2STATE)
         self.is_locked_label = wx.StaticText(self,-1,u'已锁定')
         self.is_locked_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
         self.clear_btn  = wx.Button(self,-1,label=u'清空',size=(40,16))
@@ -116,10 +116,10 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.weight_start_select, pos=(1,11), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.weight_end_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.weight_end_select, pos=(1,13), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.urggent_doc_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.urggent_doc_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.is_locked_label, pos=(1,16), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.is_locked_check, pos=(1,17), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.is_locked_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.is_locked_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.urggent_doc_label, pos=(1,16), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.urggent_doc_check, pos=(1,17), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.clear_btn, pos=(1,19), span=(1,1), flag=wx.EXPAND)
 
         gridbagsizer.Layout()
@@ -202,9 +202,9 @@ class SearchPanel(wx.Panel):
         express_print_state = self.logistics_pick_check.Get3StateValue()
         outer_id      = self.outer_id_text.GetValue()
         sku_outer_id  = self.sku_outer_id_text.GetValue()
-        urgent_doc_state = self.urggent_doc_check.Get3StateValue()
+        urgent_doc_state = self.urggent_doc_check.GetValue()
         locke_state     = self.is_locked_check.Get3StateValue() 
-        single_prod     = self.single_prod_check.Get3StateValue()
+        single_prod     = self.single_prod_check.GetValue()
         
         weight_start_time = self.weight_start_select.GetValue()
         weight_end_time   = self.weight_end_select.GetValue()
@@ -241,10 +241,7 @@ class SearchPanel(wx.Panel):
                     log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
                 datasource = datasource.filter_by(logistics_company_id=log_company.id)
             if urgent_doc_state:
-                if urgent_doc_state == 1:
-                    datasource = datasource.filter_by(priority=1)
-                else:
-                    datasource = datasource.filter(MergeTrade.priority!=1)
+                datasource = datasource.filter_by(priority=1)
             if single_prod:
                 datasource = datasource.filter(MergeTrade.prod_num==1)
             if pick_print_state:

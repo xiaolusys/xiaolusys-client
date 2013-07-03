@@ -138,37 +138,7 @@ class DeliveryPrinter(wx.Frame):
         with open(file_name,'w') as f:
             print >> f,html_text
     
-    def get_buyer_prompt_(self):
-        """ 获取商品客户提示 """
-        prompt_msg = ''
-        ts = set()
-        for o in self.merge_orders:
-            
-            outer_sku_id = o.outer_sku_id
-            outer_id     = o.outer_id
-            prod_sku = None
-            prod     = None
-            try:
-                if outer_sku_id:
-                    prod_sku = ProductSku.objects.get(outer_id=outer_sku_id,product__outer_id=outer_id)
-                prod = Product.objects.get(outer_id=outer_id)
-            except:
-                pass
-            #同一规格提示只能出现一次
-            if prod_sku and prod_sku.buyer_prompt:
-                entry = (outer_id,outer_sku_id)
-                if entry in ts:
-                    continue
-                prompt_msg += prod_sku.buyer_prompt
-                ts.add(entry)
-            #同一商品提示只能出现一次    
-            elif prod and prod.buyer_prompt:
-                entry = (outer_id,'')
-                if entry in ts:
-                    continue
-                prompt_msg += prod.buyer_prompt
-                ts.add(entry)
-        
+
     #----------------------------------------------------------------------
     def getTradePickingData(self ,trade_ids=[]):
         
