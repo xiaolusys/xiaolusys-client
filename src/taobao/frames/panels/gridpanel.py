@@ -24,6 +24,7 @@ from taobao.frames.prints.pickleprinter import PicklePrinter
 from taobao.frames.prints.revieworder import OrderReview
 from taobao.common.logger import log_exception
 
+ZERO_REGEX = '^[0]+'
 
 TRADE_ID_CELL_COL = 1
 LOCKED_CELL_COL  = 8
@@ -447,21 +448,28 @@ class GridPanel(wx.Panel):
         with create_session(self.Parent) as session:
             if start_out_sid.isdigit() and is_auto_fill:
                 self.start_sid = start_out_sid
-                start_out_sid = int(start_out_sid)
-                incr_value    = 1
+                zero_head = ''
+                zhregex   = re.compile(ZERO_REGEX)
+                zero_match = zhregex.match(start_out_sid)
+                if zero_match:
+                    zero_head = zero_match.group()
+                start_out_sid  = int(start_out_sid)
+                incr_value     = 1
                 
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     company_regex = trade.logistics_company.reg_mail_no
                     company_code  = trade.logistics_company.code
-                    id_compile = re.compile(company_regex)
-                    is_out_sid_match = id_compile.match(str(start_out_sid))
+
+                    out_sid = zero_head+str(start_out_sid)
+                    id_compile    = re.compile(company_regex)
+                    is_out_sid_match = id_compile.match(out_sid)
  
                     if is_out_sid_match and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
                         is_locked = locking_trade(trade.id,operator,session=session)
                         if is_locked: 
-                            self.grid.SetCellValue(row,OUT_SID_CELL_COL,str(start_out_sid))
+                            self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
                             if company_code.upper() == "ZJS":
                                 if (start_out_sid%10)/6==1:
                                     incr_value = 4
@@ -525,8 +533,8 @@ class GridPanel(wx.Panel):
                 for row in self._selectedRows:
                     try:
                         trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                        out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
-                        trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                        out_sid  = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
+                        trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
                         company_regex = trade.logistics_company.reg_mail_no if trade else None
                         company_name  = trade.logistics_company.name
                         is_match_pass = True
