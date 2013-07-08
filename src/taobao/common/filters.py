@@ -54,3 +54,15 @@ def cut_string(string,length=100):
     lt  = length if ls > length else ls   
     return string[0:lt]
 
+def blur(string,start=3,end=-2):
+    slen = len(string)
+
+    if slen<start or slen<end:
+        return string
+    
+    hs = string[0:start]
+    es = string[end:-1]
+    plen = slen - len(es)
+    return hs.ljust(plen,'*')+es
+
+    

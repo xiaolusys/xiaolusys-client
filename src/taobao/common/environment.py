@@ -4,7 +4,7 @@ Created on 2012-6-5
 @author: user1
 '''
 from jinja2 import Template,Environment,PackageLoader
-from taobao.common.filters import datetimeformat,trans_string,slice_string,print_wraps,parse_val,cut_string
+from taobao.common.filters import datetimeformat,trans_string,slice_string,print_wraps,parse_val,cut_string,blur
 
 def get_template(template_name,package_name='taobao.templates',package_path='../templates',encoding='utf8'):
     env = Environment(loader=PackageLoader(package_name,package_path=package_path,encoding=encoding))
@@ -14,4 +14,5 @@ def get_template(template_name,package_name='taobao.templates',package_path='../
     env.filters['trans_string'] = trans_string
     env.filters['slice_string'] = slice_string
     env.filters['cut_string']   = cut_string
+    env.filters['blur']         = blur
     return env.get_template(template_name)
