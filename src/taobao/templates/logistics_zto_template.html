@@ -29,8 +29,13 @@ div {
 
 .left-panel {
 	float: left;
-	width: 440px;
+	width: 218px;
 	display: inline;
+}
+
+.start-dest {
+	text-align:right;
+	margin-top:10px;
 }
 
 .right-panel {
@@ -123,7 +128,7 @@ div {
 	<div class='express'>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
 		<div class='head-panel'>
-			<div class='left-panel'></div>
+			<div class='left-panel'><div class="start-dest">青浦一部</div></div>
 			<div class='right-panel'>
 				<div class='receiver-name'>{{ trade.receiver_name }}</div>
 				<div class='receiver-addr'>
