@@ -115,7 +115,8 @@ class Product(Base):
     status     = Column(String(16))
     def __repr__(self):
         return "<Product('%s','%s','%s')>" % (str(self.outer_id), str(self.name), str(self.collect_num))   
-
+    
+    
 
 class ProductSku(Base):
     __tablename__ = 'shop_items_productsku'
@@ -350,11 +351,46 @@ class Item(Base):
         return "<Item('%s','%s','%s')>" % (self.num_iid, self.outer_id, self.title)
      
     
+class DepositeDistrict(Base):
+    
+    __tablename__ = 'shop_archives_depositedistrict'
+    
+    id = Column(Integer, primary_key=True)
+    
+    product_location = relationship("ProductLocation", backref="district")
+    
+    district_no = Column(String(32), nullable=True)
+    parent_no   = Column(String(32), nullable=True)
+    
+    location    = Column(String(64), nullable=True)
+    in_use     = Column(Boolean)
+    
+    extra_info  = Column(String(1000))
+    
+    def __repr__(self):
+        return "<DepositeDistrict('%d','%s','%s')>" % (self.id, self.parent_no, self.district_no)
+    
+    @property
+    def pos_code(self):
+        return '%s-%s'%(self.parent_no,self.district_no)
 
-       
 
-
-
+class ProductLocation(Base):
+    
+    __tablename__ = 'shop_items_productlocation'
+    
+    id        = Column(Integer, primary_key=True)
+    
+    outer_id  = Column(String(32))
+    name      = Column(String(64))
+    
+    outer_sku_id     = Column(String(32))
+    properties_name  = Column(String(64))
+        
+    district_id = Column(Integer, ForeignKey('shop_archives_depositedistrict.id'))
+    
+    def __repr__(self):
+        return "<ProductLocation('%s','%s','%s')>" % (self.outer_id, self.outer_sku_id, self.district.pos_code)
 
 
     

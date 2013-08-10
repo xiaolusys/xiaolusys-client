@@ -116,6 +116,7 @@ td{
 					<td>商品编码</td>
 					<td>货品名称</td>
 					<td>规格</td>
+					<td>库位</td>
 					<td>数量</td>
 					<!-- <td>单价</td>
 					<td>折扣</td>
@@ -135,6 +136,7 @@ td{
 					    	<td rowspan="{{ sku_len }}">{{ order.title }}</td>
 							{% endif %}
 							<td >({{ sku_id }}){{ sku.sku_name }}</td>
+							<td >{{ sku.location }}</td>
 							<td >{{ sku.num }}</td>
 					    </tr>
 					    {% endfor %}
@@ -143,8 +145,9 @@ td{
 				    		<td >{{ loop.index }}</td>
 					    	<td >{{ outer_id }}</td>
 					    	<td >{{ order.title }}</td>
+					    	<td>-</td>
+					    	<td >-</td>
 					    	<td >{{ order.num }}</td>
-							<td colspan="2">--</td>
 						</tr>
 				    {% endif %}
 				</tr>

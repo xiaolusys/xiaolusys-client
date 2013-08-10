@@ -17,7 +17,7 @@ from wx.html import HtmlEasyPrinting,HtmlWindow
 from taobao.common.environment import get_template
 from taobao.common.utils import create_session,format_datetime
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
-from taobao.dao.tradedao import get_used_orders
+from taobao.dao.tradedao import get_used_orders,get_product_locations
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,\
     IN_EFFECT,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
 
@@ -203,13 +203,17 @@ class DeliveryPrinter(wx.Frame):
                             skus[outer_sku_id]['num'] += order.num
                         else:   
                             prod_sku_name = (prod_sku.properties_alias or prod_sku.properties_name ) if prod_sku else order.sku_properties_name
-                            skus[outer_sku_id] = {'sku_name':prod_sku_name,'num':order.num}
+                            skus[outer_sku_id] = {'sku_name':prod_sku_name,
+                                                  'num':order.num,
+                                                  'location':get_product_locations(outer_id,outer_sku_id,session=session)}
                     else:
                         prod_sku_name =prod_sku.properties_name if prod_sku else order.sku_properties_name
                         order_items[outer_id]={
                                                'num':order.num,
                                                'title': product.name if product else order.title,
-                                               'skus':{outer_sku_id:{'sku_name':prod_sku_name,'num':order.num}}
+                                               'skus':{outer_sku_id:{'sku_name':prod_sku_name,
+                                                                     'num':order.num,
+                                                                     'location':get_product_locations(outer_id,outer_sku_id,session=session)}}
                                                }
                 trade_data['buyer_prompt'] = prompt_set and ','.join(list(prompt_set)) or ''   
                 order_list = sorted(order_items.items(),key=lambda d:d[1]['num'],reverse=True)

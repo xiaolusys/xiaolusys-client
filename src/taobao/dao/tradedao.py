@@ -6,8 +6,7 @@ Created on 2012-6-4
 '''
 import sqlalchemy 
 from taobao.dao.dbsession import get_session
-from taobao.dao.models import SystemConfig
-from taobao.dao.models import MergeOrder,MergeTrade
+from taobao.dao.models import SystemConfig,MergeOrder,MergeTrade,ProductLocation
 from taobao.dao import configparams as pcfg
 from taobao.common.utils import getconfig
 
@@ -113,3 +112,31 @@ def locking_trade(trade_id,operator,session=None):
     
     return is_locked
 
+
+def get_product_locations(outer_id,outer_sku_id=None,session=None):
+    
+    if not session:
+        session = get_session()
+        
+    params = {'outer_id':outer_id}    
+    if outer_sku_id:
+        params['outer_sku_id'] = outer_sku_id
+    
+    locations = session.query(ProductLocation).filter_by(**params)
+    
+    sdict = {}
+    for d in locations:
+        
+        dno = d.district.district_no
+        pno = d.district.parent_no
+        if sdict.has_key(pno):
+            sdict[pno].append(dno)
+        else:
+            sdict[pno] = [dno]
+    
+    ds = []
+    for k,v in sdict.iteritems():
+        ds.append('%s-(%s)'%(k,','.join(v)))
+    
+    return ','.join(ds)
+    
