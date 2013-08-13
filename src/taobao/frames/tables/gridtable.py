@@ -353,10 +353,13 @@ class CheckGridTable(grd.PyGridTableBase):
                 j+=1
             i+=1
             
-        self.cell=grd.GridCellAttr()
+        self.cell = grd.GridCellAttr()
         self.cell.SetOverflow(False)
-    
-    
+        
+        self.imagecell = grd.GridCellAttr()
+        self.imagecell.SetEditor(grd.GridCellTextEditor())
+        self.imagecell.SetRenderer(BitmapRenderer())
+        
         
     # these five are the required methods
     def GetNumberRows(self):
@@ -390,7 +393,21 @@ class CheckGridTable(grd.PyGridTableBase):
         
     # the table can also provide the attribute for each cell
     def GetAttr(self, row, col, kind):
-        attr = self.cell
+        check_num = int(self.data[(row,11)])
+        origin_num = int(self.data[(row,4)])
+        if col==0:
+            attr = self.imagecell
+            attr.IncRef()
+        else:
+            attr = self.cell
+            attr.IncRef() #引用加1
+        if check_num>0 and check_num<origin_num:
+            attr.SetBackgroundColour('RED')
+        elif check_num >= origin_num:
+            attr.SetBackgroundColour('GREEN')
+        else :
+            attr.SetBackgroundColour('WHITE')
         return attr
+       
     
     

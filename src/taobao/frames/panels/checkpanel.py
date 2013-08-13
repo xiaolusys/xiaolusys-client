@@ -12,8 +12,9 @@ from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,Pro
 from taobao.frames.panels.gridpanel import CheckGridPanel
 from taobao.dao.tradedao import get_used_orders
 from taobao.dao import configparams as cfg 
+from taobao.common.logger import get_sentry_logger
 
-
+logger = get_sentry_logger()
 
 class ScanCheckPanel(wx.Panel):
     
@@ -108,39 +109,43 @@ class ScanCheckPanel(wx.Panel):
           
                 
     def onOutsidTextChange(self,evt):
-        company_name = self.company_select.GetValue().strip()
-        out_sid      = self.out_sid_text.GetValue().strip() 
-        trades = None
-        with create_session(self.Parent) as session:
-            if company_name and out_sid:
-                logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                       logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
-            elif out_sid :
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
-                 
-        count = trades.count() if trades else 0 
-        if count>1 :
-            self.error_text.SetLabel(u'该快递单号已重复，请反审核后修改')
-            self.error_text.SetForegroundColour('black')
-            self.error_text.SetBackgroundColour('red')
-            self.barcode_text.Clear()
-            self.barcode_text.SetFocus()
-        elif count == 1:
-            self.trade = trades.one()
-            self.gridpanel.setData(self.trade)
-            self.barcode_text.SetFocus()
-            self.error_text.SetLabel('')
-            self.error_text.SetForegroundColour('white')
-            self.error_text.SetBackgroundColour('black')
-        else:
-            self.error_text.SetLabel(u'未找到该订单')
-            self.error_text.SetForegroundColour('black')
-            self.error_text.SetBackgroundColour('red')
-            self.barcode_text.Clear()
-            self.barcode_text.SetFocus()
-        evt.Skip()
-         
+        try:
+            company_name = self.company_select.GetValue().strip()
+            out_sid      = self.out_sid_text.GetValue().strip() 
+            trades = None
+            with create_session(self.Parent) as session:
+                if company_name and out_sid:
+                    logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
+                    trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
+                           logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
+                elif out_sid :
+                    trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
+            count = trades.count() if trades else 0 
+            if count>1 :
+                self.error_text.SetLabel(u'该快递单号已重复，请反审核后修改')
+                self.error_text.SetForegroundColour('black')
+                self.error_text.SetBackgroundColour('red')
+                self.barcode_text.Clear()
+                self.barcode_text.SetFocus()
+            elif count == 1:
+                self.trade = trades.one()
+                self.gridpanel.setData(self.trade)
+                self.barcode_text.SetFocus()
+                self.error_text.SetLabel('')
+                self.error_text.SetForegroundColour('white')
+                self.error_text.SetBackgroundColour('black')
+            else:
+                self.error_text.SetLabel(u'未找到该订单')
+                self.error_text.SetForegroundColour('black')
+                self.error_text.SetBackgroundColour('red')
+                self.barcode_text.Clear()
+                self.barcode_text.SetFocus()
+            evt.Skip()
+            
+        except Exception,exc:
+            logger.error(exc.message,exc_info=True)
+            
+             
     def setBarCode(self):
         barcode = self.barcode_text.GetValue().strip()
         if self.trade and barcode:

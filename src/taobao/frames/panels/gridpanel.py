@@ -8,7 +8,6 @@ import re
 import datetime
 import weakref
 import wx, wx.grid as grd
-import taobao
 from taobao.dao import configparams as cfg
 from taobao.frames.tables.gridtable import GridTable,SimpleGridTable,WeightGridTable,ChargeGridTable
 from taobao.frames.panels.itempanel import ItemPanel
@@ -37,7 +36,7 @@ OPERATOR_CELL_COL = 14
 OUTER_ID_COL = 5
 OUTER_SKU_ID_COL = 6
 ORIGIN_NUL_COL = 4
-NUM_STATUS_COL = 10
+NUM_STATUS_COL = 11
 
 
 fill_sid_btn_id = wx.NewId()
@@ -861,8 +860,8 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(order.refund_id)
                 object_array.append(cfg.REFUND_STATUS.get(order.refund_status,''))
                 object_array.append(cfg.ORDER_TYPE.get(order.gift_type,u'其他'))
-                object_array.append(cfg.TRADE_STATUS.get(order.status,'其他'))
-                object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status,'其他'))
+                object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
+                object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status,u'其他'))
                 array_object.append(object_array)
         return array_object
       
@@ -991,7 +990,7 @@ class ChargeGridPanel(wx.Panel):
     
         
 class CheckOrdersGridPanel(SimpleGridPanel):
-    #商品检验部分的panel 
+    """商品检验部分的panel """
     def parseObjectToList(self, trade):
         array_object = []
         if not trade :
@@ -999,11 +998,14 @@ class CheckOrdersGridPanel(SimpleGridPanel):
         
         with create_session(self.Parent) as session:
             orders = get_used_orders(session,trade.id)
-            from taobao.dao.models import Product
+            from taobao.dao.models import Product,ProductSku
             array_object = [] 
             for order in orders:
                 object_array = []     
                 product = session.query(Product).filter_by(outer_id=order.outer_id).first()
+                product_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product_id=product.id).first()
+                post_check  = (product_sku and product_sku.post_check or product.post_check) and 'N' or 'Y'
+                
                 object_array.append(order.pic_path or product.pic_path)
                 object_array.append(str(order.id))
                 object_array.append(order.num_iid or order.outer_id)
@@ -1013,8 +1015,9 @@ class CheckOrdersGridPanel(SimpleGridPanel):
                 object_array.append(order.outer_id)
                 object_array.append(order.outer_sku_id)
                 object_array.append(order.sku_properties_name)
-                object_array.append(cfg.TRADE_STATUS.get(order.status,'其他'))
-                object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status,'其他'))
+                object_array.append(post_check)
+                object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
+                object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status,u'其他'))
                 object_array.append(0)
                 
                 array_object.append(object_array)
@@ -1030,7 +1033,7 @@ class CheckGridPanel(wx.Panel):
         self.trade = None
         self.code_num_dict = {}
        
-        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品外部编码',u'规格外部编码',u'规格属性',u'订单状态',u'系统状态',u'扫描次数')
+        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品编码',u'规格编码',u'规格属性',u'需验单',u'订单状态',u'系统状态',u'扫描次数')
         self.ordergridpanel = CheckOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()

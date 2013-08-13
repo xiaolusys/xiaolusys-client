@@ -11,7 +11,6 @@ from sqlalchemy import Table, Column, Integer, BigInteger,Float , String, Boolea
 from sqlalchemy.orm import relationship, backref
 
 Base = declarative_base()
-#unuse 
 #memo_compile = re.compile('^\((?P<key>\w+),(?P<value>[\w\W]+),(?P<memo>[\w\W]+)\)$')
 
 class SystemConfig(Base):
@@ -111,6 +110,8 @@ class Product(Base):
     sync_stock  = Column(Boolean)
     is_assign  = Column(Boolean)
     
+    post_check = Column(Boolean)
+    
     buyer_prompt = Column(String(40))
     status     = Column(String(16))
     def __repr__(self):
@@ -138,6 +139,8 @@ class ProductSku(Base):
     
     sync_stock  = Column(Boolean)
     is_assign  = Column(Boolean)
+    
+    post_check = Column(Boolean)
     
     buyer_prompt = Column(String(40))
     status     = Column(String(10))
