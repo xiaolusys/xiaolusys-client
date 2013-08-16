@@ -33,7 +33,9 @@ class ScanCheckPanel(wx.Panel):
         self.hand_add_button   = wx.Button(self,-1,u'确定') 
         self.cancel_button   = wx.Button(self,-1,u'取消')
         
+        self.status_bar = wx.Button(self,-1,'', size=(20, 20), style=wx.SUNKEN_BORDER)
         self.error_text = wx.StaticText(self,-1)
+        
         self.gridpanel = CheckGridPanel(self,-1)
         self.order_box2 = wx.StaticBox(self,-1,u'待扫描商品列表')
 
@@ -49,8 +51,9 @@ class ScanCheckPanel(wx.Panel):
             logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
         self.company_select.AppendItems([company.name for company in logistics_companies])
         self.out_sid_text.SetFocus()
-
-    
+        self.status_bar.SetBackgroundColour('RED')
+        
+        
     def __do_layout(self):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         
@@ -64,7 +67,8 @@ class ScanCheckPanel(wx.Panel):
         
         flex_sizer1.Add(self.hand_add_button,0,10)
         flex_sizer1.Add(self.cancel_button,0,11)
-        flex_sizer1.Add(self.error_text,0,12)
+        flex_sizer1.Add(self.status_bar,0,12,border=10)
+        flex_sizer1.Add(self.error_text,0,13)
         
         sbsizer2=wx.StaticBoxSizer(self.order_box2,wx.VERTICAL)
         sbsizer2.Add(self.gridpanel,proportion=1,flag=wx.EXPAND,border=10) 
@@ -93,20 +97,21 @@ class ScanCheckPanel(wx.Panel):
                          logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
         count = trades.count() if trades else 0   
         if count>1 :
-            self.error_text.SetLabel(u'该快递单号已重复，请反审核后修改')
-            self.error_text.SetForegroundColour('black')
-            self.error_text.SetBackgroundColour('red')
+            self.error_text.SetLabel(u'该快递单号已重复，请审核后再扫描')
+            self.status_bar.SetBackgroundColour('RED')
         elif count == 1:
             self.trade = trades.one()
             self.gridpanel.setData(self.trade)
             self.barcode_text.SetFocus()
             self.error_text.SetLabel('')
+            self.status_bar.SetBackgroundColour('GREEN')
         else:
             self.error_text.SetLabel(u'未找到该订单')
-            self.error_text.SetForegroundColour('black')
-            self.error_text.SetBackgroundColour('red')
+            self.out_sid_text.Clear()
+            self.out_sid_text.SetFocus()
+            self.status_bar.SetBackgroundColour('RED')
         
-          
+        self.Layout()  
                 
     def onOutsidTextChange(self,evt):
         try:
@@ -122,24 +127,19 @@ class ScanCheckPanel(wx.Panel):
                     trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
             count = trades.count() if trades else 0 
             if count>1 :
-                self.error_text.SetLabel(u'该快递单号已重复，请反审核后修改')
-                self.error_text.SetForegroundColour('black')
-                self.error_text.SetBackgroundColour('red')
-                self.barcode_text.Clear()
-                self.barcode_text.SetFocus()
+                self.error_text.SetLabel(u'该快递单号已重复，请审核后再扫描')
+                self.status_bar.SetBackgroundColour('RED')
             elif count == 1:
                 self.trade = trades.one()
                 self.gridpanel.setData(self.trade)
                 self.barcode_text.SetFocus()
                 self.error_text.SetLabel('')
-                self.error_text.SetForegroundColour('white')
-                self.error_text.SetBackgroundColour('black')
+                self.status_bar.SetBackgroundColour('GREEN')
             else:
                 self.error_text.SetLabel(u'未找到该订单')
-                self.error_text.SetForegroundColour('black')
-                self.error_text.SetBackgroundColour('red')
-                self.barcode_text.Clear()
-                self.barcode_text.SetFocus()
+                self.out_sid_text.Clear()
+                self.out_sid_text.SetFocus()
+                self.status_bar.SetBackgroundColour('RED')
             evt.Skip()
             
         except Exception,exc:
@@ -147,6 +147,7 @@ class ScanCheckPanel(wx.Panel):
             
              
     def setBarCode(self):
+        
         barcode = self.barcode_text.GetValue().strip()
         if self.trade and barcode:
             checked = self.gridpanel.setBarCode(barcode)
@@ -157,6 +158,7 @@ class ScanCheckPanel(wx.Panel):
                         session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)\
                             .update({'sys_status':cfg.SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
                             
+                    self.gridpanel.clearTable()
                     self.out_sid_text.Clear()
                     self.barcode_text.Clear()
                     self.out_sid_text.SetFocus()
@@ -176,6 +178,7 @@ class ScanCheckPanel(wx.Panel):
         self.setBarCode()
             
     def onClickCancelBtn(self,evt):
+        
         self.out_sid_text.Clear()
         self.barcode_text.Clear()
 

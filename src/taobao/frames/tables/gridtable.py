@@ -395,13 +395,17 @@ class CheckGridTable(grd.PyGridTableBase):
     def GetAttr(self, row, col, kind):
         check_num = int(self.data[(row,11)])
         origin_num = int(self.data[(row,4)])
+        need_check = self.data[(row,8)].upper() == 'Y'
         if col==0:
             attr = self.imagecell
             attr.IncRef()
         else:
             attr = self.cell
             attr.IncRef() #引用加1
-        if check_num>0 and check_num<origin_num:
+            
+        if not need_check:
+            attr.SetBackgroundColour('GREY')
+        elif check_num>0 and check_num<origin_num:
             attr.SetBackgroundColour('RED')
         elif check_num >= origin_num:
             attr.SetBackgroundColour('GREEN')

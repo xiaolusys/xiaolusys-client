@@ -90,9 +90,10 @@ class Category(Base):
 class Product(Base):
     __tablename__ = 'shop_items_product'
     
-    id  = Column(Integer,primary_key=True)
+    id       = Column(Integer,primary_key=True)
     outer_id = Column(String(64))
-    name = Column(String(64))
+    name     = Column(String(64))
+    barcode  = Column(String(64))
     category_id =  Column(Integer, ForeignKey('shop_categorys_category.cid'))
     
     skus = relationship("ProductSku",backref='product')
@@ -117,13 +118,16 @@ class Product(Base):
     def __repr__(self):
         return "<Product('%s','%s','%s')>" % (str(self.outer_id), str(self.name), str(self.collect_num))   
     
-    
+    @property
+    def BARCODE(self):
+        return self.barcode.strip() or self.outer_id.strip()
 
 class ProductSku(Base):
     __tablename__ = 'shop_items_productsku'
     
     id  = Column(Integer,primary_key=True)
     outer_id = Column(String(64))
+    barcode  = Column(String(64))
     product_id = Column(Integer, ForeignKey('shop_items_product.id'))
     
     quantity    = Column(Integer)
@@ -146,7 +150,10 @@ class ProductSku(Base):
     status     = Column(String(10))
     def __repr__(self):
         return "<Product('%s','%s')>" % (str(self.outer_id), str(self.properties_name)) 
-
+    
+    @property
+    def BARCODE(self):
+        return self.barcode.strip() or self.product.barcode.strip() or '%s%s'%(self.product.outer_id.strip(),self.outer_id.strip())
 
 class LogisticsCompany(Base):
     __tablename__ = 'shop_logistics_company'

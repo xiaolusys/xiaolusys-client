@@ -15,7 +15,7 @@ from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session
-from taobao.dao.models import MergeOrder,MergeTrade,LogisticsCompany
+from taobao.dao.models import MergeOrder,MergeTrade,LogisticsCompany,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders,get_oparetor,get_datasource_by_type_and_mode,locking_trade
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
@@ -36,6 +36,7 @@ OPERATOR_CELL_COL = 14
 OUTER_ID_COL = 5
 OUTER_SKU_ID_COL = 6
 ORIGIN_NUL_COL = 4
+BAR_CODE_COL   = 10
 NUM_STATUS_COL = 11
 
 
@@ -826,9 +827,10 @@ class SimpleGridPanel(wx.Panel):
         gridtable = weakref.ref(grid_table_type(object_list, self.rowLabels, self.colLabels))
         self.grid.SetTable(gridtable(),True)
         self.grid.AutoSize()
-        self.grid.SetColSize(0,50)
+        self.grid.SetColSize(0,60)
         for i in range(0,len(object_list)):
             self.grid.SetRowSize(i,50)
+        self.grid.DisableCellEditControl()
         self.grid.ForceRefresh()
         self.Layout()
     
@@ -998,13 +1000,14 @@ class CheckOrdersGridPanel(SimpleGridPanel):
         
         with create_session(self.Parent) as session:
             orders = get_used_orders(session,trade.id)
-            from taobao.dao.models import Product,ProductSku
+            
             array_object = [] 
             for order in orders:
                 object_array = []     
                 product = session.query(Product).filter_by(outer_id=order.outer_id).first()
                 product_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product_id=product.id).first()
-                post_check  = (product_sku and product_sku.post_check or product.post_check) and 'N' or 'Y'
+                post_check  = (product_sku and product_sku.post_check or product.post_check) and 'Y' or 'N'
+                barcode    = product_sku and product_sku.BARCODE or product.BARCODE
                 
                 object_array.append(order.pic_path or product.pic_path)
                 object_array.append(str(order.id))
@@ -1017,7 +1020,7 @@ class CheckOrdersGridPanel(SimpleGridPanel):
                 object_array.append(order.sku_properties_name)
                 object_array.append(post_check)
                 object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
-                object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status,u'其他'))
+                object_array.append(barcode)
                 object_array.append(0)
                 
                 array_object.append(object_array)
@@ -1033,7 +1036,7 @@ class CheckGridPanel(wx.Panel):
         self.trade = None
         self.code_num_dict = {}
        
-        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品编码',u'规格编码',u'规格属性',u'需验单',u'订单状态',u'系统状态',u'扫描次数')
+        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品编码',u'规格编码',u'规格属性',u'需验单',u'订单状态',u'商品条码',u'扫描次数')
         self.ordergridpanel = CheckOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()
@@ -1053,15 +1056,28 @@ class CheckGridPanel(wx.Panel):
             orders = get_used_orders(session,trade.id)
             code_num_dict = {}    
             for order in orders:
-                barcode = order.outer_id+order.outer_sku_id
+                outer_id     = order.outer_id
+                outer_sku_id = order.outer_sku_id
+                product = session.query(Product).filter_by(outer_id=outer_id).first()
+                if outer_sku_id:
+                    product_sku = session.query(ProductSku).filter_by(outer_id=outer_sku_id,product_id=product.id).first()
+                    
+                barcode    = product_sku and product_sku.BARCODE or product.BARCODE
+                post_check = product_sku and product_sku.post_check or product.post_check
                 if code_num_dict.has_key(barcode):
                     code_num_dict[barcode]['rnums'] += order.num
                 else:
-                    code_num_dict[barcode] = {'rnums':order.num,'cnums':0}
+                    code_num_dict[barcode] = {'rnums':order.num,
+                                              'cnums':0,
+                                              'post_check':post_check}
+                    
         return  code_num_dict
     
     def isCheckOver(self):
         for key,value in self.code_num_dict.items():
+            if not value['post_check']:
+                continue
+            
             if value['rnums'] != value['cnums']:
                 return False
         return True
@@ -1076,9 +1092,7 @@ class CheckGridPanel(wx.Panel):
             grid = self.ordergridpanel.grid
             self.code_num_dict[barcode]['cnums'] += 1
             for row in xrange(0,grid.NumberRows):
-                outer_id     = grid.GetCellValue(row,OUTER_ID_COL)
-                outer_sku_id = grid.GetCellValue(row,OUTER_SKU_ID_COL)
-                code = outer_id+outer_sku_id
+                code     = grid.GetCellValue(row,BAR_CODE_COL)
                 if barcode == code:
                     grid.SetCellValue(row,NUM_STATUS_COL,str(self.code_num_dict[barcode]['cnums']))
                     return True
@@ -1095,3 +1109,11 @@ class CheckGridPanel(wx.Panel):
         self.ordergridpanel.Layout()
         
                 
+    def clearTable(self):
+        """ 清除表格  """
+        self.trade = None
+        self.ordergridpanel.setData(None)
+        self.code_num_dict = {}
+        self.ordergridpanel.Layout()
+        
+        
