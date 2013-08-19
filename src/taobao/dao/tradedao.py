@@ -5,6 +5,7 @@ Created on 2012-6-4
 @author: user1
 '''
 import sqlalchemy 
+from sqlalchemy import func
 from taobao.dao.dbsession import get_session
 from taobao.dao.models import SystemConfig,MergeOrder,MergeTrade,ProductLocation
 from taobao.dao import configparams as pcfg
@@ -66,10 +67,12 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         session = get_session()
         
     datasource       = session.query(MergeTrade)
+    counter          = session.query(func.count(MergeTrade.id))
     
     if status_type and status_type != pcfg.SYS_STATUS_ALL:
         datasource = datasource.filter_by(sys_status=status_type)
-
+        counter    = counter.filter_by(sys_status=status_type)
+        
     if print_mode == pcfg.DIVIDE_MODE:
         operator         = get_oparetor()
         per_request_num  = get_per_request_num(session)
@@ -88,11 +91,12 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
                 if row >0:
                     locked_num += 1
         datasource = datasource.filter_by(is_locked=True,operator=operator)  
-       
+        counter    = counter.filter_by(sys_status=status_type)
+        
     else:
         datasource     = datasource.order_by(sqlalchemy.func.date(MergeTrade.pay_time),'priority desc','shop_trades_mergetrade.pay_time asc')
     
-    return datasource
+    return datasource,counter
             
 def locking_trade(trade_id,operator,session=None):
     """ 锁定交易   """

@@ -17,9 +17,10 @@ class EmptyPage(InvalidPage):
     pass
 
 class Paginator(object):
-    def __init__(self,object_list,per_page,orphans=0,allow_empty_first_page=True):
+    def __init__(self,object_list,per_page,counter=None,orphans=0,allow_empty_first_page=True):
         self.object_list = object_list
         self.per_page    = per_page
+        self.counter     = counter
         self.orphans     = orphans
         self.allow_empty_first_page = allow_empty_first_page
         self._num_pages  = self._count =None
@@ -44,10 +45,12 @@ class Paginator(object):
         top = bottom + self.per_page
         if top+self.orphans >= self.count:
             top = self.count
-        return Page(self.object_list[bottom:top],number,self)
+        return Page(self.object_list.limit(self.per_page).offset(bottom),number,self)
     
     def _get_count(self):
         if self._count is None:
+            if self.counter:
+                return self.counter.scalar()
             try:
                 self._count = self.object_list.count()
             except (AttributeError,TypeError):

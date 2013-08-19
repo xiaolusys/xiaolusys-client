@@ -183,7 +183,8 @@ class SearchPanel(wx.Panel):
 
     
     def OnSearch(self,evt):
-        datasource = self.Parent.grid.datasource
+        ds = self.Parent.grid.datasource
+        counter    = self.Parent.grid.counter
         
         trade_id   = self.order_text.GetValue()
         receiver_name = self.order_receiver_name.GetValue()
@@ -211,59 +212,64 @@ class SearchPanel(wx.Panel):
         weight_start_time = wxdate2pydate(weight_start_time)
         weight_end_time = wxdate2pydate(weight_end_time)
 
-        if trade_id:
-            datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
-        elif logistics_id:
-            datasource = datasource.filter_by(out_sid=logistics_id)
-        else:
-            if receiver_name:
-                datasource = datasource.filter_by(receiver_name=receiver_name)
-            if trade_status:
-                status_dict = dict([(v,k) for k,v in cfg.TRADE_STATUS.items()])
-                datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(),None))
-            if seller_id:
-                datasource = datasource.filter_by(seller_nick=seller_id.strip())
-            if buyer_nick:
-                datasource = datasource.filter_by(buyer_nick=buyer_nick.strip())
-            if start_time:
-                datasource = datasource.filter("pay_time >=:start").params(start=start_time)
-            if end_time:
-                datasource = datasource.filter("pay_time <=:end").params(end=end_time)
-            if weight_start_time:
-                datasource = datasource.filter("weight_time >=:start").params(start=weight_start_time)
-            if weight_end_time:
-                datasource = datasource.filter("weight_time <=:end").params(end=weight_end_time)
-            if trade_type:
-                trade_type_dict = dict([(v,k) for k,v in cfg.TRADE_TYPE.items()])
-                datasource = datasource.filter_by(type=trade_type_dict.get(trade_type.strip(),None))
-            if logistics_company :
-                with create_session(self.Parent) as session:
-                    log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
-                datasource = datasource.filter_by(logistics_company_id=log_company.id)
-            if urgent_doc_state:
-                datasource = datasource.filter_by(priority=1)
-            if single_prod:
-                datasource = datasource.filter(MergeTrade.prod_num==1)
-            if pick_print_state:
-                datasource = datasource.filter_by(is_picking_print=pick_print_state == 1 and True or False)
-            if express_print_state:
-                datasource = datasource.filter_by(is_express_print=express_print_state == 1 and True or False)
-            if outer_id:
-                trade_ids = [t.id for t in datasource]
-                with create_session(self.Parent) as session:
+        
+        def appendFilter(datasource):
+            if trade_id:
+                datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
+            elif logistics_id:
+                datasource = datasource.filter_by(out_sid=logistics_id)
+            else:
+                if receiver_name:
+                    datasource = datasource.filter_by(receiver_name=receiver_name)
+                if trade_status:
+                    status_dict = dict([(v,k) for k,v in cfg.TRADE_STATUS.items()])
+                    datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(),None))
+                if seller_id:
+                    datasource = datasource.filter_by(seller_nick=seller_id.strip())
+                if buyer_nick:
+                    datasource = datasource.filter_by(buyer_nick=buyer_nick.strip())
+                if start_time:
+                    datasource = datasource.filter("pay_time >=:start").params(start=start_time)
+                if end_time:
+                    datasource = datasource.filter("pay_time <=:end").params(end=end_time)
+                if weight_start_time:
+                    datasource = datasource.filter("weight_time >=:start").params(start=weight_start_time)
+                if weight_end_time:
+                    datasource = datasource.filter("weight_time <=:end").params(end=weight_end_time)
+                if trade_type:
+                    trade_type_dict = dict([(v,k) for k,v in cfg.TRADE_TYPE.items()])
+                    datasource = datasource.filter_by(type=trade_type_dict.get(trade_type.strip(),None))
+                if logistics_company :
+                    with create_session(self.Parent) as session:
+                        log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
+                    datasource = datasource.filter_by(logistics_company_id=log_company.id)
+                if urgent_doc_state:
+                    datasource = datasource.filter_by(priority=1)
+                if single_prod:
+                    datasource = datasource.filter(MergeTrade.prod_num==1)
+                if pick_print_state:
+                    datasource = datasource.filter_by(is_picking_print=pick_print_state == 1 and True or False)
+                if express_print_state:
+                    datasource = datasource.filter_by(is_express_print=express_print_state == 1 and True or False)
+                if outer_id:
+                    trade_ids = [t.id for t in datasource]
+                    with create_session(self.Parent) as session:
+                        
+                        merge_orders = session.query(MergeOrder).filter(MergeOrder.merge_trade_id.in_(trade_ids))
+                        if outer_id and sku_outer_id:
+                            merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
+                        else :
+                            merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id)
+                        
+                        trade_ids = set([o.merge_trade_id for o in merge_orders])
+                        datasource = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))
+                        
+                if locke_state:
+                    datasource = datasource.filter_by(is_locked=locke_state == 1 and True or False)
                     
-                    merge_orders = session.query(MergeOrder).filter(MergeOrder.merge_trade_id.in_(trade_ids))
-                    if outer_id and sku_outer_id:
-                        merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
-                    else :
-                        merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id)
-                    
-                    trade_ids = set([o.merge_trade_id for o in merge_orders])
-                    datasource = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))
-                    
-            if locke_state:
-                datasource = datasource.filter_by(is_locked=locke_state == 1 and True or False)        
-        self.Parent.grid.setSearchData(datasource)
+            return datasource
+                
+        self.Parent.grid.setSearchData(appendFilter(ds),counter=appendFilter(counter))
 
         
 

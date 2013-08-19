@@ -57,6 +57,7 @@ class GridPanel(wx.Panel):
         
         self.Session = parent.Session
         self.datasource = None
+        self.counter    = None
         self.paginator = self.page = None
         self.page_size = 100
         self.rowLabels = rowLabels
@@ -66,6 +67,7 @@ class GridPanel(wx.Panel):
         self.end_sid     = ''
         self.curRow      = None
         self.grid = grd.Grid(self, -1)
+        self._logisticMap = {}
         
         self._selectedRows = set()
         self.pag_panel =pag_panel = wx.Panel(self,-1)
@@ -144,6 +146,8 @@ class GridPanel(wx.Panel):
         
         self.initialFillSidPanel()
         self.review_orders_btn.Enable(False)
+        #初始化物流ID与名称Map
+        self._logisticMap = self.logisticMapping
 
         
         
@@ -240,6 +244,17 @@ class GridPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_check_btn)
         self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
 
+    @property
+    def logisticMapping(self):
+        if self._logisticMap:
+            return self._logisticMap
+        
+        lg_map = {}
+        session = self.Session
+        for lg in session.query(LogisticsCompany).all():
+            lg_map[lg.id] = lg.name
+        
+        return lg_map
         
     def setDataSource(self, status_type): 
         """设置数据源"""
@@ -247,8 +262,8 @@ class GridPanel(wx.Panel):
         print_mode       = self.Parent.getPrintMode()
         session          = self.Parent.Session
         
-        self.datasource = get_datasource_by_type_and_mode(status_type,print_mode=print_mode,session=session)
-        self.paginator = paginator = Paginator(self.datasource, self.page_size)
+        self.datasource,self.counter = get_datasource_by_type_and_mode(status_type,print_mode=print_mode,session=session)
+        self.paginator = paginator = Paginator(self.datasource,self.page_size,counter=self.counter)
         self.page = paginator.page(1)
         
         self.fill_sid_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
@@ -267,8 +282,8 @@ class GridPanel(wx.Panel):
         self.fill_sid_btn2.Enable(False)
         self.fill_sid_btn4.Enable(False)
         
-    def setSearchData(self, datasource):
-        self.paginator = paginator = Paginator(datasource, self.page_size)
+    def setSearchData(self, datasource,counter=None):
+        self.paginator = paginator = Paginator(datasource, self.page_size,counter=counter)
         self.page = paginator.page(1)
         self.updateTableAndPaginator()
    
@@ -372,7 +387,7 @@ class GridPanel(wx.Panel):
         size = self.page_size_select.GetValue()
         if size.isdigit():
             self.page_size = int(size)
-            self.paginator = paginator = Paginator(self.datasource, self.page_size)
+            self.paginator = paginator = Paginator(self.datasource, self.page_size,self.counter)
             self.page = paginator.page(1)
             self.updateTableAndPaginator()
             
@@ -761,18 +776,12 @@ class ListArrayGridPanel(GridPanel):
 class QueryObjectGridPanel(GridPanel):
      
     def parseObjectToList(self, object_list):
-        assert isinstance(object_list,(list,tuple))
-        assert isinstance(object_list,(set,list,tuple))
         
         array_object = []
         session      = self.Session
         for order in object_list:
-            session.refresh(order,['is_locked','is_picking_print','is_express_print'
+            session.refresh(order,['is_locked','is_picking_print','is_express_print','can_review'
                                         ,'operator','out_sid','logistics_company_id','sys_status'])
-            
-            logistic_company = None
-            if order.logistics_company_id:
-                logistic_company = session.query(LogisticsCompany).filter_by(id=order.logistics_company_id).first()
             
             object_array = []
             object_array.append(order.id)
@@ -786,7 +795,7 @@ class QueryObjectGridPanel(GridPanel):
             object_array.append(order.is_picking_print)
             object_array.append(order.is_express_print)
             object_array.append(order.can_review)
-            object_array.append(logistic_company and logistic_company.name or '')
+            object_array.append(self.logisticMapping.get(order.logistics_company_id,u'其他'))
             object_array.append(order.out_sid)
             object_array.append(order.out_sid and order.operator or '')
             object_array.append(str(order.prod_num))
