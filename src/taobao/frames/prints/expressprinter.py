@@ -16,9 +16,9 @@ from wx.html import HtmlEasyPrinting,HtmlWindow
 from taobao.common.environment import get_template
 from taobao.dao.dbsession import get_session
 from taobao.common.utils import create_session,format_datetime
-from taobao.dao.models import MergeTrade,Item,MergeOrder
+from taobao.dao.models import MergeTrade,Item,MergeOrder,ClassifyZone
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
-
+from taobao.dao.tradedao import get_classify_zone
 from taobao.common.utils import TEMP_FILE_ROOT
 FONTSIZE = 10
  
@@ -147,36 +147,40 @@ class ExpressPrinter(wx.Frame):
         with create_session(self.Parent) as session: 
             send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
         
-        express_data_list = []
-        for trade in send_trades:
-            trade_data = {}
-            dt         = datetime.datetime.now() 
-                    
-            trade_data['trade_id']     = trade.id
-            trade_data['seller_nick']  = trade.seller_nick
-            trade_data['seller_contacter']  = trade.user.contacter
-            trade_data['seller_phone']      = trade.user.phone
-            trade_data['seller_mobile']     = trade.user.mobile
-            trade_data['seller_area_code']  = trade.user.area_code
-            trade_data['seller_location']   = trade.user.location
-            
-            trade_data['post_date']    = dt
-            trade_data['buyer_nick']   = trade.buyer_nick
-            trade_data['out_sid']      = trade.out_sid
-            trade_data['company_name'] = trade.logistics_company.name
-            trade_data['company_code'] = trade.logistics_company.code
-            
-            trade_data['receiver_name']     = trade.receiver_name
-            trade_data['receiver_phone']    = trade.receiver_phone
-            trade_data['receiver_mobile']   = trade.receiver_mobile
-            trade_data['receiver_zip']      = trade.receiver_zip
-            
-            trade_data['receiver_state']    = trade.receiver_state
-            trade_data['receiver_city']     = trade.receiver_city
-            trade_data['receiver_district'] = trade.receiver_district
-            trade_data['receiver_address']  = trade.receiver_address
-            
-            express_data_list.append(trade_data)
+            express_data_list = []
+            for trade in send_trades:
+                trade_data = {}
+                dt         = datetime.datetime.now() 
+                        
+                trade_data['trade_id']     = trade.id
+                trade_data['seller_nick']  = trade.seller_nick
+                trade_data['seller_contacter']  = trade.user.contacter
+                trade_data['seller_phone']      = trade.user.phone
+                trade_data['seller_mobile']     = trade.user.mobile
+                trade_data['seller_area_code']  = trade.user.area_code
+                trade_data['seller_location']   = trade.user.location
+                
+                trade_data['post_date']    = dt
+                trade_data['buyer_nick']   = trade.buyer_nick
+                trade_data['out_sid']      = trade.out_sid
+                trade_data['company_name'] = trade.logistics_company.name
+                trade_data['company_code'] = trade.logistics_company.code
+                
+                trade_data['receiver_name']     = trade.receiver_name
+                trade_data['receiver_phone']    = trade.receiver_phone
+                trade_data['receiver_mobile']   = trade.receiver_mobile
+                trade_data['receiver_zip']      = trade.receiver_zip
+                
+                trade_data['receiver_state']    = trade.receiver_state
+                trade_data['receiver_city']     = trade.receiver_city
+                trade_data['receiver_district'] = trade.receiver_district
+                trade_data['receiver_address']  = trade.receiver_address
+                
+                trade_data['zone'] = ''
+                if trade_data['company_code'].upper() == 'YUNDA':
+                    trade_data['zone'] = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
+                
+                express_data_list.append(trade_data)
                                
         return express_data_list    
     

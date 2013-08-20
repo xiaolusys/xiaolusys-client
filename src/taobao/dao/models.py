@@ -403,6 +403,20 @@ class ProductLocation(Base):
         return "<ProductLocation('%s','%s','%s')>" % (self.outer_id, self.outer_sku_id, self.district.pos_code)
 
 
+class ClassifyZone(Base):
+    
+    __tablename__ = 'shop_shipclassify_zone'
+    
+    id        = Column(Integer, primary_key=True)
+    
+    state     = Column(String(32),index=True)
+    city      = Column(String(64),index=True)
+    district  = Column(String(32),index=True)
+    zone      = Column(String(64))
+    code      = Column(String(64))
+    
+    def __repr__(self):
+        return "<ClassifyZone('%s','%s','%s')>" % (self.state, self.city, self.district)
     
     
     

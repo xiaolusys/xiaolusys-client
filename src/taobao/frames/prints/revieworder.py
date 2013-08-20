@@ -14,7 +14,7 @@ from taobao.common.utils import getconfig
 from taobao.common.utils import create_session
 from taobao.common.environment import get_template
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
-from taobao.dao.tradedao import get_used_orders
+from taobao.dao.tradedao import get_used_orders,get_classify_zone,get_product_locations
 
 FONTSIZE = 10
   
@@ -90,8 +90,9 @@ class OrderReview(wx.Frame):
         Creates an html file in the home directory of the application
         that contains the information to display the snapshot
         '''
+        trades = self.getLogisticsData(trade_ids)
         try:
-            trades = self.getLogisticsData(trade_ids)
+            
             template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
             template = get_template(template_name) 
             html = template.render(trades=trades)
@@ -148,6 +149,7 @@ class OrderReview(wx.Frame):
                 trade_data['seller_memo']   = trade.seller_memo
                 trade_data['sys_memo']   = trade.sys_memo
                 
+                prompt_set = set()
                 order_items = {}
                 orders = get_used_orders(session,trade.id)  
                 for order in orders:
@@ -155,32 +157,38 @@ class OrderReview(wx.Frame):
                     trade_data['order_nums']     += order.num
                     trade_data['discount_fee']   += float(order.discount_fee or 0)
                     trade_data['total_fee']      += float(order.total_fee or 0) 
-                    trade_data['payment']      += float(order.payment or 0)
+                    trade_data['payment']        += float(order.payment or 0)
                     
                     outer_id = order.outer_id or str(order.num_iid)
                     outer_sku_id = order.outer_sku_id or str(order.sku_id)
+                    
+                    product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
+                    prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
+                    
+                    promptmsg = (prod_sku and prod_sku.buyer_prompt) or (product and product.buyer_prompt) or ''
+                    if promptmsg:
+                        prompt_set.add(promptmsg)
                     
                     if order_items.has_key(outer_id):
                         order_items[outer_id]['num'] += order.num
                         skus = order_items[outer_id]['skus']
                         if skus.has_key(outer_sku_id):
                             skus[outer_sku_id]['num'] += order.num
-                        else:
-                            product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
-                            prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
+                        else:   
                             prod_sku_name = (prod_sku.properties_alias or prod_sku.properties_name ) if prod_sku else order.sku_properties_name
-                            skus[outer_sku_id] = {'sku_name':prod_sku_name,'num':order.num}
+                            skus[outer_sku_id] = {'sku_name':prod_sku_name,
+                                                  'num':order.num,
+                                                  'location':get_product_locations(outer_id,outer_sku_id,session=session)}
                     else:
-                        product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
-                        prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
                         prod_sku_name =prod_sku.properties_name if prod_sku else order.sku_properties_name
-                        
                         order_items[outer_id]={
                                                'num':order.num,
                                                'title': product.name if product else order.title,
-                                               'skus':{outer_sku_id:{'sku_name':prod_sku_name,'num':order.num}}
+                                               'skus':{outer_sku_id:{'sku_name':prod_sku_name,
+                                                                     'num':order.num,
+                                                                     'location':get_product_locations(outer_id,outer_sku_id,session=session)}}
                                                }
-                    
+                trade_data['buyer_prompt'] = prompt_set and ','.join(list(prompt_set)) or ''   
                 order_list = sorted(order_items.items(),key=lambda d:d[1]['num'],reverse=True)
                 for trade in order_list:
                     skus = trade[1]['skus']
@@ -197,6 +205,8 @@ class OrderReview(wx.Frame):
         
         with create_session(self.Parent) as session: 
             send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
+            
+            dt         = datetime.datetime.now() 
         
             express_data_list = []
             for trade in send_trades:
@@ -205,7 +215,6 @@ class OrderReview(wx.Frame):
                                         ,'operator','out_sid','logistics_company_id','sys_status'])
                 logistic_company = session.query(LogisticsCompany).filter_by(id=trade.logistics_company_id).first()
                 trade_data = {}
-                dt         = datetime.datetime.now() 
                         
                 trade_data['trade_id']     = trade.id
                 trade_data['seller_nick']  = trade.seller_nick
@@ -230,6 +239,10 @@ class OrderReview(wx.Frame):
                 trade_data['receiver_city']     = trade.receiver_city
                 trade_data['receiver_district'] = trade.receiver_district
                 trade_data['receiver_address']  = trade.receiver_address
+                
+                trade_data['zone'] = ''
+                if trade_data['company_code'].upper() == 'YUNDA':
+                    trade_data['zone'] = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
                 
                 express_data_list.append(trade_data)
                                

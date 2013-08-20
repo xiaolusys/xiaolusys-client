@@ -7,7 +7,7 @@ Created on 2012-6-4
 import sqlalchemy 
 from sqlalchemy import func
 from taobao.dao.dbsession import get_session
-from taobao.dao.models import SystemConfig,MergeOrder,MergeTrade,ProductLocation
+from taobao.dao.models import SystemConfig,MergeOrder,MergeTrade,ProductLocation,ClassifyZone
 from taobao.dao import configparams as pcfg
 from taobao.common.utils import getconfig
 
@@ -140,7 +140,32 @@ def get_product_locations(outer_id,outer_sku_id=None,session=None):
     
     ds = []
     for k,v in sdict.iteritems():
-        ds.append('%s-(%s)'%(k,','.join(v)))
+        ds.append(len(v) > 1 and '%s-[%s]'%(k,','.join(v)) or '%s-%s'%(k,v[0]))
     
     return ','.join(ds)
+    
+    
+def get_classify_zone(state,city,district,session=None):
+    """ 根据地址获取分拨中心  """
+    if not session:
+        session = get_session()
+        
+    state = state and state[0:2] or ''
+    city  = city  and city[0:2]  or ''
+    district  = district  and district[0:2]  or ''
+    print state,city,district
+    if district:
+        czone = session.query(ClassifyZone).filter(ClassifyZone.state.like(state+'%'),
+                                              ClassifyZone.city.like(city+'%'),
+                                              ClassifyZone.district.like(district+'%')).first()
+    
+        if czone:
+            return czone.zone   
+    else:
+        czone = session.query(ClassifyZone).filter(ClassifyZone.state.like(state+'%'),
+                                                  ClassifyZone.city.like(city+'%')).first()
+        if czone:
+            return czone.zone
+    
+    return ''        
     
