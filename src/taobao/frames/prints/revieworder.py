@@ -175,12 +175,12 @@ class OrderReview(wx.Frame):
                         if skus.has_key(outer_sku_id):
                             skus[outer_sku_id]['num'] += order.num
                         else:   
-                            prod_sku_name = (prod_sku.properties_alias or prod_sku.properties_name ) if prod_sku else order.sku_properties_name
+                            prod_sku_name = prod_sku and prod_sku.name or order.sku_properties_name
                             skus[outer_sku_id] = {'sku_name':prod_sku_name,
                                                   'num':order.num,
                                                   'location':get_product_locations(outer_id,outer_sku_id,session=session)}
                     else:
-                        prod_sku_name =prod_sku.properties_name if prod_sku else order.sku_properties_name
+                        prod_sku_name = prod_sku and prod_sku.name or order.sku_properties_name
                         order_items[outer_id]={
                                                'num':order.num,
                                                'title': product.name if product else order.title,

@@ -150,6 +150,10 @@ class ProductSku(Base):
     status     = Column(String(10))
     def __repr__(self):
         return "<Product('%s','%s')>" % (str(self.outer_id), str(self.properties_name)) 
+
+    @property
+    def name(self):
+        return self.properties_alias or self.properties_name
     
     @property
     def BARCODE(self):
@@ -315,7 +319,7 @@ class TradeExtraInfo(Base):
     is_update_amount = Column(Boolean, default=False)
     is_update_logistic = Column(Boolean, default=False)
 
-    modified = Column(DateTime, onupdate=datetime.datetime.now(), default=datetime.datetime.now)
+    modified = Column(DateTime,nullable=True)
     
     def __repr__(self):
         return "<TradeExtraInfo('%s')>" % str(self.id)
