@@ -150,19 +150,23 @@ def get_classify_zone(state,city,district,session=None):
     if not session:
         session = get_session()
         
-    state = len(state)>1 and state[0:2] or ''
-    city  = len(city)>1  and city[0:2]  or ''
-    district  = len(district)>1  and district[0:2]  or ''
+    lstate = len(state)>1 and state[0:2] or ''
+    lcity  = len(city)>1  and city[0:2]  or ''
+    ldistrict  = len(district)>1  and district[0:2]  or ''
     if district:
-        czone = session.query(ClassifyZone).filter(ClassifyZone.state.like(state+'%'),
-                    (ClassifyZone.city.like(district+'%'))|(ClassifyZone.district.like(district+'%'))).first()
+        czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
+                    (ClassifyZone.city.like(ldistrict+'%'))|(ClassifyZone.district.like(ldistrict+'%')))
         
-        if czone:
-            return czone.zone
-       
+        if czones.count() == 1:
+            return czones.first().zone
+        
+        for czone in czones:
+            if czone.city == district or czone.district == district:
+                return czone.zone
+        
     if city:
-        czone = session.query(ClassifyZone).filter(ClassifyZone.state.like(state+'%'),
-                                                  ClassifyZone.city.like(city+'%'),ClassifyZone.district=='').first()
+        czone = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
+                                                  ClassifyZone.city.like(lcity+'%'),ClassifyZone.district=='').first()
         if czone:
             return czone.zone
     
