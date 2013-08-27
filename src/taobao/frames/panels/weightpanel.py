@@ -350,8 +350,10 @@ class ScanWeightPanel(wx.Panel):
             if trade.logistics_company_id == 102:     
                 try:
                     insert_yunda_fjbak(trade.out_sid,weight)
-                except:
-                    pass
+                except Exception,exc:
+                    dial = wx.MessageDialog(None, u'韵达称重数据同步失败：%s'%exc.message,
+                             u'错误提示', wx.OK | wx.ICON_EXCLAMATION)
+                    dial.ShowModal()
         self.gridpanel.InsertTradeRows(trade)
         self.trade = None
         for control in self.control_array:
