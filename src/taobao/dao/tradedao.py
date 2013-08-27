@@ -165,10 +165,14 @@ def get_classify_zone(state,city,district,session=None):
                 return czone.zone
         
     if city:
-        czone = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
-                                                  ClassifyZone.city.like(lcity+'%'),ClassifyZone.district=='').first()
-        if czone:
-            return czone.zone
+        czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
+                                                  ClassifyZone.city.like(lcity+'%'),ClassifyZone.district=='')
+        if czones.count() == 1:
+            return czones.first().zone
+        
+        for czone in czones:
+            if czone.city == city:
+                return czone.zone
     
     return ''        
     
