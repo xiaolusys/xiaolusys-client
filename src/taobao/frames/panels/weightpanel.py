@@ -13,6 +13,7 @@ from taobao.common.utils import create_session,MEDIA_ROOT
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.tradedao import get_used_orders,get_return_orders
+from taobao.dao.yundao import insert_yunda_fjbak
 from taobao.common.utils import getconfig
 from taobao.dao import configparams as cfg
 
@@ -345,6 +346,12 @@ class ScanWeightPanel(wx.Panel):
             session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
                     .update({'weight':weight,'sys_status':cfg.SYS_STATUS_FINISHED,'weight_time':datetime.datetime.now()}
                     ,synchronize_session='fetch')
+                    
+            if trade.logistics_company_id == 102:     
+                try:
+                    insert_yunda_fjbak(trade.out_sid,weight)
+                except:
+                    pass
         self.gridpanel.InsertTradeRows(trade)
         self.trade = None
         for control in self.control_array:
