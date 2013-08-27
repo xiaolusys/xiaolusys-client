@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <style type='text/css'>
@@ -23,14 +23,16 @@ div {
 
 .head-panel {
 	width: 100%;
-	height: 250px;
-	margin-top: 0px;
+	height: 300px;
+	margin-top: 10px;
 }
 
 .left-panel {
 	float: left;
-	width: 450px;
+	width: 200px;
+	height:100%;
 	display: inline;
+	text-align:center;
 }
 
 .right-panel {
@@ -94,9 +96,8 @@ div {
 }
 
 .zone{
-	margin-left:10px;
 	display:inline;
-	font-size:30px;
+	font-size:22px;
 	
 }
 </style>
@@ -106,7 +107,9 @@ div {
 	<div class='express'>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
 		<div class='head-panel'>
-			<div class='left-panel'></div>
+			<div class='left-panel'>
+				<div style="margin-top:30px;"><span class="zone">{{ trade.zone }}</span></div>
+			</div>
 			<div class='right-panel'>
 				<div class='receiver-mobile'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
 				<div class='receiver-addr'>
@@ -123,7 +126,7 @@ div {
 			</div>
 		</div>
 		<div class='bottom-panel'>
-			<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}<span class="zone">{{ trade.zone }}</span></div>
+			<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
 			<!-- 此处打印目的地 -->
 		</div>
 	</div>
