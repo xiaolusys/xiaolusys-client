@@ -268,8 +268,13 @@ class SearchPanel(wx.Panel):
                     datasource = datasource.filter_by(is_locked=locke_state == 1 and True or False)
                     
             return datasource
+        
+        if outer_id:
+            counter = None
+        else:
+            counter = appendFilter(counter)
                 
-        self.Parent.grid.setSearchData(appendFilter(ds),counter=appendFilter(counter))
+        self.Parent.grid.setSearchData(appendFilter(ds),counter=counter)
 
         
 
