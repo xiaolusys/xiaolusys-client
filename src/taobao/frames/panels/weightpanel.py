@@ -9,6 +9,7 @@ import winsound
 import weakref
 import datetime
 import wx,wx.grid
+from MySQLdb import IntegrityError
 from taobao.common.utils import create_session,MEDIA_ROOT
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import WeightGridPanel
@@ -268,7 +269,8 @@ class ScanWeightPanel(wx.Panel):
     def clearTradeInfoPanel(self):
         for i in xrange(1,19):
             content = eval('self.order_content%s'%str(i))
-            content.Clear()    
+            content.Clear()  
+              
         
     def setTradeInfoPanel(self,trade):
  
@@ -350,10 +352,13 @@ class ScanWeightPanel(wx.Panel):
             if trade.logistics_company_id == 102:     
                 try:
                     insert_yunda_fjbak(trade.out_sid,weight)
+                except IntegrityError:
+                    pass
                 except Exception,exc:
                     dial = wx.MessageDialog(None, u'韵达称重数据同步失败：%s'%exc.message,
                              u'错误提示', wx.OK | wx.ICON_EXCLAMATION)
                     dial.ShowModal()
+                    
         self.gridpanel.InsertTradeRows(trade)
         self.trade = None
         for control in self.control_array:
@@ -364,8 +369,8 @@ class ScanWeightPanel(wx.Panel):
         conf = getconfig()
         is_need_check = conf.get('custom', 'check_barcode')
         if is_need_check.lower() == 'true':
-            return (cfg.SYS_STATUS_WAITSCANWEIGHT,)
-        return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_WAITSCANCHECK)
+            return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_FINISHED)
+        return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_WAITSCANCHECK,cfg.SYS_STATUS_FINISHED)
         
     def onClickCheckBox(self,evt):
         self.is_auto_save = evt.IsChecked()
