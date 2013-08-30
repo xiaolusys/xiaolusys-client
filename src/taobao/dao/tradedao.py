@@ -158,21 +158,21 @@ def get_classify_zone(state,city,district,session=None):
                     (ClassifyZone.city.like(ldistrict+'%'))|(ClassifyZone.district.like(ldistrict+'%')))
         
         if czones.count() == 1:
-            return czones.first().zone
+            return czones.first().branch.COMBO_CODE
         
         for czone in czones:
             if czone.city == district or czone.district == district:
-                return czone.zone
+                return czone.branch.COMBO_CODE
         
     if city:
         czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
                                                   ClassifyZone.city.like(lcity+'%'),ClassifyZone.district=='')
         if czones.count() == 1:
-            return czones.first().zone
+            return czones.first().branch.COMBO_CODE
         
         for czone in czones:
             if czone.city == city:
-                return czone.zone
+                return czone.branch.COMBO_CODE
     
     return ''        
     

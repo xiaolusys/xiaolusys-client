@@ -419,7 +419,10 @@ class BranchZone(Base):
    
     def __repr__(self):
         return "<BranchZone('%s','%s','%s')>" % (self.code, self.name, self.barcode)
-
+    
+    @property
+    def COMBO_CODE(self):
+        return '%s %s'%(self.name,self.code)
 
 class ClassifyZone(Base):
     
