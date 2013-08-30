@@ -407,6 +407,20 @@ class ProductLocation(Base):
         return "<ProductLocation('%s','%s','%s')>" % (self.outer_id, self.outer_sku_id, self.district.pos_code)
 
 
+class BranchZone(Base):
+    
+    __tablename__ = 'shop_shipclassify_branch'
+    
+    id        = Column(Integer, primary_key=True)
+    classify_zone = relationship("ClassifyZone", backref="branch")
+    code      = Column(String(32),index=True)
+    name      = Column(String(64),index=True)
+    barcode   = Column(String(32),index=True)
+   
+    def __repr__(self):
+        return "<BranchZone('%s','%s','%s')>" % (self.code, self.name, self.barcode)
+
+
 class ClassifyZone(Base):
     
     __tablename__ = 'shop_shipclassify_zone'
@@ -416,8 +430,9 @@ class ClassifyZone(Base):
     state     = Column(String(32),index=True)
     city      = Column(String(64),index=True)
     district  = Column(String(32),index=True)
+    
+    branch_id = Column(Integer, ForeignKey('shop_shipclassify_branch.id'))
     zone      = Column(String(64))
-    code      = Column(String(64))
     
     def __repr__(self):
         return "<ClassifyZone('%s','%s','%s')>" % (self.state, self.city, self.district)
