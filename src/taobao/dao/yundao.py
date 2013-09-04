@@ -15,7 +15,7 @@ def insert_yunda_fjbak(txm,weight):
     
     conn = get_yunda_conn()
     weight = ('.' in weight) and float(weight) or float(weight)/1000.0
-    #韵达包裹重量减去6%
+    
     weight = weight>0 and weight-weight*0.06 or 0
     
     cfg = getconfig()
