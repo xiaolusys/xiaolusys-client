@@ -134,13 +134,13 @@ def get_product_locations(outer_id,outer_sku_id=None,session=None):
         dno = d.district.district_no
         pno = d.district.parent_no
         if sdict.has_key(pno):
-            sdict[pno].append(dno)
+            sdict[pno].add(dno)
         else:
-            sdict[pno] = [dno]
+            sdict[pno] = set([dno])
     
     ds = []
     for k,v in sdict.iteritems():
-        ds.append(len(v) > 1 and '%s-[%s]'%(k,','.join(v)) or '%s-%s'%(k,v[0]))
+        ds.append(len(v) > 1 and '%s-[%s]'%(k,','.join(list(v))) or '%s-%s'%(k,v.pop()))
     
     return ','.join(ds)
     
