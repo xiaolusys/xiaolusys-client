@@ -7,7 +7,7 @@ Created on 2012-6-4
 import sqlalchemy 
 from sqlalchemy import func
 from taobao.dao.dbsession import get_session
-from taobao.dao.models import SystemConfig,MergeOrder,MergeTrade,ProductLocation,ClassifyZone
+from taobao.dao.models import SystemConfig,MergeOrder,MergeTrade,ProductLocation
 from taobao.dao import configparams as pcfg
 from taobao.common.utils import getconfig
 
@@ -144,35 +144,4 @@ def get_product_locations(outer_id,outer_sku_id=None,session=None):
     
     return ','.join(ds)
     
-    
-def get_classify_zone(state,city,district,session=None):
-    """ 根据地址获取分拨中心  """
-    if not session:
-        session = get_session()
-        
-    lstate = len(state)>1 and state[0:2] or ''
-    lcity  = len(city)>1  and city[0:2]  or ''
-    ldistrict  = len(district)>1  and district[0:2]  or ''
-    if district:
-        czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
-                    (ClassifyZone.city.like(ldistrict+'%'))|(ClassifyZone.district.like(ldistrict+'%')))
-        
-        if czones.count() == 1:
-            return czones.first().branch.COMBO_CODE
-        
-        for czone in czones:
-            if czone.city == district or czone.district == district:
-                return czone.branch.COMBO_CODE
-        
-    if city:
-        czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
-                                                  ClassifyZone.city.like(lcity+'%'),ClassifyZone.district=='')
-        if czones.count() == 1:
-            return czones.first().branch.COMBO_CODE
-        
-        for czone in czones:
-            if czone.city == city:
-                return czone.branch.COMBO_CODE
-    
-    return ''        
     
