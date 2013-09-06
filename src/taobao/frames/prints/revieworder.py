@@ -14,10 +14,10 @@ from taobao.common.utils import getconfig
 from taobao.common.utils import create_session
 from taobao.common.environment import get_template
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
-from taobao.dao.tradedao import get_used_orders,get_classify_zone,get_product_locations
+from taobao.dao.tradedao import get_used_orders,get_product_locations
+from taobao.dao.yundao import get_classify_zone
 
-FONTSIZE = 10
-  
+FONTSIZE = 10  
  
 class OrderReview(wx.Frame):
  

@@ -18,7 +18,7 @@ from taobao.dao.dbsession import get_session
 from taobao.common.utils import create_session,format_datetime
 from taobao.dao.models import MergeTrade,Item,MergeOrder,ClassifyZone
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
-from taobao.dao.tradedao import get_classify_zone
+from taobao.dao.yundao import get_classify_zone
 from taobao.common.utils import TEMP_FILE_ROOT
 FONTSIZE = 10
  
