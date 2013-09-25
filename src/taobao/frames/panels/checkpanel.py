@@ -15,6 +15,8 @@ from taobao.dao import configparams as cfg
 from taobao.common.logger import get_sentry_logger
 
 logger = get_sentry_logger()
+RESET_CODE    = '11110000'   #验货框重置条码
+NOTSCAN_CODE  = '00001111'   #不需扫描条码
 
 class ScanCheckPanel(wx.Panel):
     
@@ -149,9 +151,18 @@ class ScanCheckPanel(wx.Panel):
     def setBarCode(self):
         
         barcode = self.barcode_text.GetValue().strip()
+        
+        if barcode == RESET_CODE:
+            self.out_sid_text.Clear()
+            self.barcode_text.Clear()
+            self.out_sid_text.SetFocus()
+            self.gridpanel.clearTable()
+            self.status_bar.SetBackgroundColour('RED')
+            return
+            
         if self.trade and barcode:
             checked = self.gridpanel.setBarCode(barcode)
-            if checked:
+            if barcode == NOTSCAN_CODE or checked:
                 if self.gridpanel.isCheckOver():
                     with create_session(self.Parent) as session: 
                         #库存减掉后，修改发货状态
@@ -181,6 +192,7 @@ class ScanCheckPanel(wx.Panel):
         
         self.out_sid_text.Clear()
         self.barcode_text.Clear()
+        self.out_sid_text.SetFocus()
 
            
      
