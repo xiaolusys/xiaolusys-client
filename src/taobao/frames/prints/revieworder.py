@@ -242,7 +242,8 @@ class OrderReview(wx.Frame):
                 
                 trade_data['zone'] = ''
                 if trade_data['company_code'].upper() == 'YUNDA':
-                    trade_data['zone'] = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
+                    zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
+                    trade_data['zone'] = zone and zone.COMBO_CODE or ''
                 
                 express_data_list.append(trade_data)
                                

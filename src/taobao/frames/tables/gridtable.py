@@ -103,7 +103,7 @@ class GridTable(grd.PyGridTableBase):
         elif col == 14:
             attr = self.sid_attr
             attr.IncRef()
-        elif col == 13:
+        elif col in (1,12,13):
             attr = self.sid_cell
             attr.IncRef()
         else:

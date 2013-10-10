@@ -120,7 +120,6 @@ def pinghost(hostid):
     return ret
   
 
-
 #if __name__ == "__main__":
 #    app = wx.PySimpleApp(0)
 #    wx.InitAllImageHandlers()

@@ -281,6 +281,7 @@ class MergeTrade(Base):
     is_picking_print = Column(Boolean)
     is_express_print = Column(Boolean)
     is_send_sms      = Column(Boolean)
+    is_qrcode        = Column(Boolean)
     has_refund       = Column(Boolean)
     has_memo         = Column(Boolean)
     remind_time      = Column(DateTime)
@@ -409,7 +410,7 @@ class ProductLocation(Base):
 
 class BranchZone(Base):
     
-    __tablename__ = 'shop_shipclassify_branch'
+    __tablename__ = 'shop_yunda_branch'
     
     id        = Column(Integer, primary_key=True)
     classify_zone = relationship("ClassifyZone", backref="branch")
@@ -426,7 +427,7 @@ class BranchZone(Base):
 
 class ClassifyZone(Base):
     
-    __tablename__ = 'shop_shipclassify_zone'
+    __tablename__ = 'shop_yunda_zone'
     
     id        = Column(Integer, primary_key=True)
     
@@ -434,7 +435,7 @@ class ClassifyZone(Base):
     city      = Column(String(64),index=True)
     district  = Column(String(32),index=True)
     
-    branch_id = Column(Integer, ForeignKey('shop_shipclassify_branch.id'))
+    branch_id = Column(Integer, ForeignKey('shop_yunda_branch.id'))
     zone      = Column(String(64))
     
     def __repr__(self):
