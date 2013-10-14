@@ -300,7 +300,7 @@ def create_order(ids,session=None):
     
     order_xml = gen_orders_xml(objs)
     
-    tree = handle_demon(RECEIVE_MAILNO,order_xml,PARTNER_ID,SECRET)
+    tree = handle_demon(RECEIVE,order_xml,PARTNER_ID,SECRET)
             
     return tree
     
@@ -333,7 +333,7 @@ def cancel_order(ids):
     
     return tree
     
-def search_order(ids,session=None):
+def search_order(ids,force_update=False,session=None):
     
     assert isinstance(ids,(list,tuple))
     
@@ -344,6 +344,9 @@ def search_order(ids,session=None):
     order_xml += "</orders>"
     
     tree = handle_demon(ORDERINFO,order_xml,PARTNER_ID,SECRET)
+    
+    if not force_update:
+        return parseTreeID2MailnoMap(tree)
     
     im_map = {}
     #更新订单二维码标识
@@ -407,7 +410,7 @@ def printYUNDAPDF(trade_ids,session=None):
     session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
         .update({'is_express_print':True},synchronize_session='fetch')
     
-    file_name = '%s/%d.pdf'%(TEMP_FILE_ROOT,int(time.time()))
+    file_name = '%s%d.pdf'%(TEMP_FILE_ROOT,int(time.time()))
     with open(file_name,'wb') as f:
         f.write(pdfdoc)
 
