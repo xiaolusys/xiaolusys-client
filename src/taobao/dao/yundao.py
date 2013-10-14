@@ -1,4 +1,5 @@
 #-*- coding:utf8 -*-
+import time
 import datetime
 import MySQLdb
 import sys
@@ -9,10 +10,12 @@ import urllib2
 from xml.dom import minidom
 from taobao.dao import configparams as cfg
 from taobao.dao.dbsession import get_session
-from taobao.dao.models import ClassifyZone,MergeTrade
+from taobao.common.utils import TEMP_FILE_ROOT
+from taobao.dao.models import ClassifyZone,MergeTrade,BranchZone
 from taobao.common.utils import getconfig,format_datetime
+import webbrowser
 
-
+SELECT    = 'select'
 RECEIVE   = 'receive'
 RECEIVE_MAILNO = 'receive_mailno'
 MODIFY    = 'modify'
@@ -30,6 +33,7 @@ VALID_ACTION = 'valid_order'
 ACCEPT_ACTION = 'accept_order'
 TRANSITE_ACTION = 'transite_info'
 
+SELECT_API    = 'interface_select_reach_package.php'
 RECEIVE_API   = 'interface_receive_order.php' 
 MODIFY_API    = 'interface_modify_order.php'
 CANCEL_API    = 'interface_cancel_order.php'
@@ -71,6 +75,15 @@ SECRET     = "123456"
 
 
 ########################################## 分拨中心分配  ################################################
+
+def get_zone_by_code(code,session=None):
+    """ 根据编码获取网点及分拨中心   """
+    if not session:
+        session = get_session()
+        
+    czones = session.query(BranchZone).filter_by(barcode=code)
+    
+    return czones.first()
 
 def get_classify_zone(state,city,district,session=None):
     """ 根据地址获取分拨中心   """
@@ -208,7 +221,12 @@ def get_objs_from_trade(trades,session=None):
     objs = []
     for trade in trades:
         
-        zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
+        zone = None
+        if trade.reserveo:
+            zone = get_zone_by_code(trade.reserveo,session=session)
+        
+        if not zone:
+            zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
         
         objs.append({"id":trade.id,
                      "sender_name":u"优尼世界",
@@ -261,15 +279,16 @@ def handle_demon(action,xml_data,partner_id,secret):
           'validation':validate
           }
     
-    req = urllib2.urlopen(demon_url+API_DICT[action], urllib.urlencode(params), timeout=60)
+    req = urllib2.urlopen(demon_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-    print 'rep',rep
-    if action == TRANSITE_ACTION:
+    
+    if action == REPRINT:
         return rep
         
     doc = minidom.parseString(rep)
     
     return doc
+     
      
      
 def create_order(ids,session=None):
@@ -282,29 +301,10 @@ def create_order(ids,session=None):
     order_xml = gen_orders_xml(objs)
     
     tree = handle_demon(RECEIVE_MAILNO,order_xml,PARTNER_ID,SECRET)
+            
+    return tree
     
-    #更新订单二维码标识
-    orders = tree.getElementsByTagName('response')
-    for order in orders:
-        status  = getText(order.getElementsByTagName('status')[0].childNodes)
-        order_serial_no = getText(order.getElementsByTagName('order_serial_no')[0].childNodes)
-        order_mail_no   = order.getElementsByTagName('mail_no')
-        mail_no = order_mail_no and getText(order_mail_no[0].childNodes) or None
-        msg     = getText(order.getElementsByTagName('msg')[0].childNodes)
-        if status == '1' and mail_no:
-            
-            session.query(MergeTrade).filter_by(id=order_serial_no,sys_status=cfg.SYS_STATUS_PREPARESEND)\
-                .update({'is_qrcode':True,'out_sid':mail_no},synchronize_session='fetch')
-            
-        else:
-            
-            session.query(MergeTrade).filter_by(id=order_serial_no,sys_status=cfg.SYS_STATUS_PREPARESEND)\
-                .update({MergeTrade.reason_code:MergeTrade.reason_code+',1,',
-                         MergeTrade.sys_memo:MergeTrade.sys_memo+msg,
-                         MergeTrade.sys_status:cfg.SYS_STATUS_WAITAUDIT},synchronize_session='fetch')
-                
-            
-    return parseTreeID2MailnoMap(tree)
+    
 
 def modify_order(ids,session=None):
     
@@ -333,7 +333,7 @@ def cancel_order(ids):
     
     return tree
     
-def search_order(ids):
+def search_order(ids,session=None):
     
     assert isinstance(ids,(list,tuple))
     
@@ -345,7 +345,29 @@ def search_order(ids):
     
     tree = handle_demon(ORDERINFO,order_xml,PARTNER_ID,SECRET)
     
-    return parseTreeID2MailnoMap(tree)
+    im_map = {}
+    #更新订单二维码标识
+    orders = tree.getElementsByTagName('response')
+    for order in orders:
+        status  = getText(order.getElementsByTagName('status')[0].childNodes)
+        order_serial_no = getText(order.getElementsByTagName('order_serial_no')[0].childNodes)
+        order_mail_no   = order.getElementsByTagName('mailno')
+        mail_no = order_mail_no and getText(order_mail_no[0].childNodes) or None
+        msg     = getText(order.getElementsByTagName('msg')[0].childNodes)
+        if status == '1' and mail_no:
+            
+            session.query(MergeTrade).filter_by(id=order_serial_no,sys_status=cfg.SYS_STATUS_PREPARESEND)\
+                .update({'is_qrcode':True,'out_sid':mail_no,},synchronize_session='fetch')
+            
+            im_map[order_serial_no] = mail_no
+        else:
+            
+            session.query(MergeTrade).filter_by(id=order_serial_no,sys_status=cfg.SYS_STATUS_PREPARESEND)\
+                .update({MergeTrade.reason_code:MergeTrade.reason_code+',1,',
+                         MergeTrade.sys_memo:MergeTrade.sys_memo+msg,
+                         MergeTrade.sys_status:cfg.SYS_STATUS_WAITAUDIT},synchronize_session='fetch')
+        
+    return im_map
 
 
 def valid_order(ids):
@@ -376,3 +398,17 @@ def print_order(ids):
     
     return pdftext
 
+################################ 打印韵达pdf文档方法  ####################################
+
+def printYUNDAPDF(trade_ids,session=None):
+                    
+    pdfdoc  = print_order(trade_ids)
+    #更新订单打印状态
+    session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
+        .update({'is_express_print':True},synchronize_session='fetch')
+    
+    file_name = '%s/%d.pdf'%(TEMP_FILE_ROOT,int(time.time()))
+    with open(file_name,'wb') as f:
+        f.write(pdfdoc)
+
+    webbrowser.open(file_name)

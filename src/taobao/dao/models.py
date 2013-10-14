@@ -292,6 +292,11 @@ class MergeTrade(Base):
     is_locked        = Column(Boolean)
     is_charged       = Column(Boolean)
     sys_status       = Column(String(32),index=True)  
+    
+    reserveo       =  Column(String(32))       
+    reservet       =  Column(String(32)) 
+    reserveh       =  Column(String(32))
+    
     def __repr__(self):
         return "<Trade('%s','%s','%s','%s')>" % (str(self.id),str(self.tid), self.seller_nick, self.buyer_nick)
     

@@ -15,7 +15,8 @@ from taobao.common.utils import create_session
 from taobao.common.environment import get_template
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
 from taobao.dao.tradedao import get_used_orders,get_product_locations
-from taobao.dao.yundao import get_classify_zone
+from taobao.dao.yundao import get_classify_zone,printYUNDAPDF
+
 
 FONTSIZE = 10  
  
@@ -63,11 +64,18 @@ class OrderReview(wx.Frame):
     #----------------------------------------------------------------------
     def onExpressPreview(self,event):
         """"""
-        html_text = self.createExpressHtml([self.trade_id])
-        self.html.LoadString(html_text)
-        self.html.PrintPreview()
         with create_session(self.Parent) as session:
-            session.query(MergeTrade).filter_by(id=self.trade_id).update({MergeTrade.is_express_print:True})
+            trade = session.query(MergeTrade).filter_by(id=self.trade_id).first()
+            if trade.is_qrcode:
+                #调用韵达打印接口并打印
+                printYUNDAPDF([self.trade_id],session=session)
+            
+            if not trade.is_qrcode:    
+                html_text = self.createExpressHtml([self.trade_id])
+                self.html.LoadString(html_text)
+                self.html.PrintPreview()
+                
+                session.query(MergeTrade).filter_by(id=self.trade_id).update({MergeTrade.is_express_print:True})
         event.Skip()
         
     #----------------------------------------------------------------------
@@ -242,8 +250,11 @@ class OrderReview(wx.Frame):
                 
                 trade_data['zone'] = ''
                 if trade_data['company_code'].upper() == 'YUNDA':
-                    zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
-                    trade_data['zone'] = zone and zone.COMBO_CODE or ''
+                    zone = None
+                    if not trade.reservet:
+                        zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
+
+                    trade_data['zone'] = zone and zone.COMBO_CODE or trade.reservet
                 
                 express_data_list.append(trade_data)
                                

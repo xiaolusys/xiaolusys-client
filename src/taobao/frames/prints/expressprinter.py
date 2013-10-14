@@ -20,6 +20,8 @@ from taobao.dao.models import MergeTrade,Item,MergeOrder,ClassifyZone
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
 from taobao.dao.yundao import get_classify_zone
 from taobao.common.utils import TEMP_FILE_ROOT
+
+
 FONTSIZE = 10
  
 class HtmlPrinter(HtmlEasyPrinting):
@@ -55,8 +57,8 @@ class ExpressPrinter(wx.Frame):
  
         self.html = iewin.IEHtmlWindow(self.panel,-1)
         #trade_ids = [200165044022938,165155430754126]
-        html_text = self.createHtml(trade_ids)
         
+        html_text = self.createHtml(trade_ids)
         #self.saveHtml2File(html_text,len(trade_ids))
         #self.printer.PreviewText(html_text, u'物流单')
         self.html.LoadString(html_text)
@@ -178,9 +180,11 @@ class ExpressPrinter(wx.Frame):
                 
                 trade_data['zone'] = ''
                 if trade_data['company_code'].upper() == 'YUNDA':
-                    zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
-                    trade_data['zone'] = zone and zone.COMBO_CODE or ''
+                    zone = None
+                    if not trade.reservet:
+                        zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
                     
+                    trade_data['zone'] = zone and zone.COMBO_CODE or trade.reservet
                 
                 express_data_list.append(trade_data)
                                

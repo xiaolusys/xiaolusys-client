@@ -14,7 +14,7 @@ from taobao.frames.panels.itempanel import ItemPanel
 from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
-from taobao.common.utils import create_session
+from taobao.common.utils import create_session,TEMP_FILE_ROOT
 from taobao.dao.models import MergeOrder,MergeTrade,LogisticsCompany,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders,get_oparetor,get_datasource_by_type_and_mode,locking_trade
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
@@ -503,6 +503,9 @@ class GridPanel(wx.Panel):
                         self.refreshTable()
                         return
                 self.end_sid = str(start_out_sid - incr_value) 
+                
+                self.preview_btn.Enable(False)
+                
             #如果单号非数字，则只填写一个单号，不递增
             elif not is_yunda_qrcode and start_out_sid:
                 min_row_num = min(self._selectedRows)
@@ -529,6 +532,9 @@ class GridPanel(wx.Panel):
                     self.refreshTable()
                     evt.Skip()
                     return 
+                
+                self.preview_btn.Enable(False)
+                
             #如果选择使用韵达二维码，则系统自动从韵达获取单号
             elif is_yunda_qrcode:
                 #对选中订单进行过滤
@@ -537,7 +543,7 @@ class GridPanel(wx.Panel):
                     
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     logistic = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
-                    print repr(logistic),repr(YUNDA_NAME)
+
                     if logistic != YUNDA_NAME:
                         dial = wx.MessageDialog(None, u'请先选择韵达快递', u'快递单号预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
@@ -548,33 +554,38 @@ class GridPanel(wx.Panel):
                 if not yunda_ids:
                     return
                     
-#                try:
-                #创建物流订单
-                im_map = yundao.create_order(yunda_ids,session=session)
-                
-                #将运单号填入系统订单，并标记订单为二维码订单
-                final_rows = set()
-                for row in self._selectedRows:
-                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                    trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
-                    out_sid  = im_map.get(trade_id,None)
+                try:
+                    #将之前取消得订单重新生效
+                    yundao.valid_order(yunda_ids)
                     
-                    if not out_sid:
-                        continue
+                    #创建物流订单
+                    yundao.create_order(yunda_ids,session=session)
                     
-                    self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
+                    #查询运单号
+                    im_map = yundao.search_order(yunda_ids,session=session)
                     
-                    final_rows.add(row)
-                    
-                self._selectedRows = final_rows
-#                except Exception,exc :
-#                    dial = wx.MessageDialog(None, '预览错误：'+exc.message, u'快递单号预览提示', 
-#                                                wx.OK | wx.ICON_EXCLAMATION)
-#                    dial.ShowModal()
-#                    raise exc
-                
-        self.preview_btn.Enable(False)
-        self.fill_sid_btn2.Enable(True)
+                    #将运单号填入系统订单，并标记订单为二维码订单
+                    final_rows = set()
+                    for row in self._selectedRows:
+                        trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                        trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
+                        out_sid  = im_map.get(trade_id,None)
+                        
+                        if out_sid and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
+                            is_locked = locking_trade(trade.id,operator,session=session)
+                            if is_locked:
+                                self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
+                        
+                                final_rows.add(row)
+                        
+                    self._selectedRows = final_rows
+                except Exception,exc :
+                    dial = wx.MessageDialog(None, '预览错误：'+exc.message, u'快递单号预览提示', 
+                                                wx.OK | wx.ICON_EXCLAMATION)
+                    dial.ShowModal()
+                    raise exc
+
+        self.fill_sid_btn2.Enable(True)  
         self.fill_sid_text.Clear()
         self.grid.ForceRefresh()
         evt.Skip()
@@ -658,6 +669,7 @@ class GridPanel(wx.Panel):
             elif eventid == express_print_btn_id:
                 trade_ids = []
                 pre_company_id = ''
+                is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked() 
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
@@ -671,9 +683,13 @@ class GridPanel(wx.Panel):
                     operator = trade.operator
                     if out_sid and operator:
                         trade_ids.append(trade_id)
-                if trade_ids:
+                if trade_ids and not is_yunda_qrcode:
                     ExpressPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
                     
+                elif trade_ids and is_yunda_qrcode:
+                    #调用韵达打印接口并打印
+                    yundao.printYUNDAPDF(trade_ids,session=session)
+                                        
             elif eventid == pickle_print_btn_id:
                 PicklePrinter(parent=self).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()
             

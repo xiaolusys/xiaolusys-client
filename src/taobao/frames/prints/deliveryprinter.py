@@ -20,7 +20,6 @@ from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders,get_product_locations
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,\
     IN_EFFECT,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
-
 from taobao.common.utils import IMAGE_ROOT,TEMP_FILE_ROOT
 
 FONTSIZE = 10
@@ -53,16 +52,17 @@ class DeliveryPrinter(wx.Frame):
         wx.Frame.__init__(self, parent, wx.ID_ANY, title, size=(850,500))
         
         self.trade_ids = trade_ids
+        
         self.panel = wx.Panel(self, wx.ID_ANY)
         self.printer = HtmlPrinter(name=u'打印', parentWindow=None)
  
         self.html = iewin.IEHtmlWindow(self.panel,-1)
         #trade_ids = [200165044022938,165155430754126]
+       
         html_text = self.createHtml(trade_ids)
-        
         #self.saveHtml2File(html_text,len(trade_ids))
         self.html.LoadString(html_text)
- 
+        
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
         #printBtn = wx.Button(self.panel,wx.ID_ANY,u'打印')
         cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'关闭窗口')
