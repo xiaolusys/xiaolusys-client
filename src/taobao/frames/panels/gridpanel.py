@@ -460,7 +460,9 @@ class GridPanel(wx.Panel):
     def get_yunda_ids(self):
         
         yunda_ids = []
-        for row in list(self._selectedRows).sort():
+        print self._selectedRows
+        selectedRows = sorted(list(self._selectedRows))
+        for row in selectedRows:
             
             trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
             logistic = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
