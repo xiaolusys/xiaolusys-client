@@ -675,9 +675,12 @@ class GridPanel(wx.Panel):
                         dial.ShowModal()
                         break
                 if effect_row>1:
-                    self.disablePicklePrintBtn() 
+                    if not is_yunda_qrcode :
+                        self.disablePicklePrintBtn() 
+                        self.fill_sid_btn4.Enable(True)
+                        
                     self.fill_sid_btn2.Enable(False)
-                    self.fill_sid_btn4.Enable(True) 
+                     
                 else:      
                     self.fill_sid_btn2.Enable(False)
                     self.preview_btn.Enable(True)
