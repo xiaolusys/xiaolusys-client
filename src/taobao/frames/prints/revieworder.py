@@ -63,14 +63,14 @@ class OrderReview(wx.Frame):
  
     #----------------------------------------------------------------------
     def onExpressPreview(self,event):
-        """"""
+        """ """
         with create_session(self.Parent) as session:
             trade = session.query(MergeTrade).filter_by(id=self.trade_id).first()
-            if trade.is_qrcode:
+            yunda_lg = session.query(LogisticsCompany).filter_by(code='YUNDA').first()
+            if trade.is_qrcode and trade.logistics_company_id == yunda_lg.id:
                 #调用韵达打印接口并打印
                 printYUNDAPDF([self.trade_id],session=session)
-            
-            if not trade.is_qrcode:    
+            else:   
                 html_text = self.createExpressHtml([self.trade_id])
                 self.html.LoadString(html_text)
                 self.html.PrintPreview()

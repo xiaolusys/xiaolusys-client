@@ -460,7 +460,7 @@ class GridPanel(wx.Panel):
     def get_yunda_ids(self):
         
         yunda_ids = []
-        print self._selectedRows
+        
         selectedRows = sorted(list(self._selectedRows))
         for row in selectedRows:
             
