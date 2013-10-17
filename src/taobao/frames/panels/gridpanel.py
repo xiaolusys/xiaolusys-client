@@ -586,7 +586,7 @@ class GridPanel(wx.Panel):
                             is_locked = locking_trade(trade.id,operator,session=session)
                             if is_locked:
                                 self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
-                        
+                    
                 except Exception,exc :
                     dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
@@ -643,7 +643,7 @@ class GridPanel(wx.Panel):
                         
                         self._selectedRows = final_rows
                     except Exception,exc:
-                        dial = wx.MessageDialog(None, '确认错误：'+exc.message, u'快递单号确认提示', 
+                        dial = wx.MessageDialog(None, u'确认错误：'+exc.message, u'快递单号确认提示', 
                                                     wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         raise exc
@@ -673,7 +673,7 @@ class GridPanel(wx.Panel):
                             dial.ShowModal()
                             break
                     except Exception,exc:
-                        dial = wx.MessageDialog(None, '单号填充错误:'+exc.message, u'快递单打印提示', 
+                        dial = wx.MessageDialog(None, u'单号填充错误:'+exc.message, u'快递单打印提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         break
