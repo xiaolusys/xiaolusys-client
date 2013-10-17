@@ -588,7 +588,7 @@ class GridPanel(wx.Panel):
                                 self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
                         
                 except Exception,exc :
-                    dial = wx.MessageDialog(None, '预览错误：'+exc.message, u'快递单号预览提示', 
+                    dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
                     dial.ShowModal()
                     raise exc

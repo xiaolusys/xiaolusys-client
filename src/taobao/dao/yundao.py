@@ -208,8 +208,8 @@ def gen_orders_xml(objs):
         _xml_list.append('<weight></weight><size></size><value></value>')
         _xml_list.append('<collection_value></collection_value><special></special>')
         _xml_list.append('<item></item><remark></remark>')
-        _xml_list.append(u'<cus_area1>分拨编号:%s</cus_area1>'%obj['zone'])
-        _xml_list.append('<cus_area2>宝贝亲，给5星+20字以上好评，并将评论内容截图发给我们的客服，就会有惊喜哦!</cus_area2>')
+        _xml_list.append(u'<cus_area1>分拣号:%s</cus_area1>'%obj['zone'])
+        _xml_list.append('<cus_area2>宝贝亲，给5星+20字以上好评，就会有惊喜哦.</cus_area2>')
         _xml_list.append('<callback_id></callback_id>')
         _xml_list.append('<wave_no></wave_no></order>')
         
