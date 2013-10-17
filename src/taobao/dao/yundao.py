@@ -7,6 +7,7 @@ import hashlib
 import base64
 import urllib
 import urllib2
+import subprocess
 from xml.dom import minidom
 from taobao.dao import configparams as cfg
 from taobao.dao.dbsession import get_session
@@ -207,10 +208,10 @@ def gen_orders_xml(objs):
         _xml_list.append('<weight></weight><size></size><value></value>')
         _xml_list.append('<collection_value></collection_value><special></special>')
         _xml_list.append('<item></item><remark></remark>')
-        _xml_list.append(u'<cus_area1>订单号:%s</cus_area1>'%obj['id'])
-        _xml_list.append('<cus_area2>%s</cus_area2>'%obj['zone'])
-        _xml_list.append('<callback_id>abcdefg</callback_id>')
-        _xml_list.append('<wave_no>abcdefg</wave_no></order>')
+        _xml_list.append(u'<cus_area1>分拨编号:%s</cus_area1>'%obj['zone'])
+        _xml_list.append('<cus_area2>宝贝亲，给5星+20字以上好评，并将评论内容截图发给我们的客服，就会有惊喜哦!</cus_area2>')
+        _xml_list.append('<callback_id></callback_id>')
+        _xml_list.append('<wave_no></wave_no></order>')
         
     _xml_list.append('</orders>')
     
@@ -290,7 +291,6 @@ def handle_demon(action,xml_data,partner_id,secret):
     return doc
      
      
-     
 def create_order(ids,session=None):
     
     assert isinstance(ids,(list,tuple))
@@ -303,7 +303,6 @@ def create_order(ids,session=None):
     tree = handle_demon(RECEIVE,order_xml,PARTNER_ID,SECRET)
             
     return tree
-    
     
 
 def modify_order(ids,session=None):
@@ -403,7 +402,7 @@ def print_order(ids):
 
 ################################ 打印韵达pdf文档方法  ####################################
 
-def printYUNDAPDF(trade_ids,session=None):
+def printYUNDAPDF(trade_ids,direct=False,session=None):
                     
     pdfdoc  = print_order(trade_ids)
     #更新订单打印状态
@@ -413,5 +412,11 @@ def printYUNDAPDF(trade_ids,session=None):
     file_name = '%s%d.pdf'%(TEMP_FILE_ROOT,int(time.time()))
     with open(file_name,'wb') as f:
         f.write(pdfdoc)
+    
+    if direct:
+        p = subprocess.Popen([r"C:\\Program Files (x86)\\Ghostgum\\gsview\\gsprint.exe", file_name], 
+                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.communicate()
 
-    webbrowser.open(file_name)
+    else:
+        webbrowser.open(file_name)

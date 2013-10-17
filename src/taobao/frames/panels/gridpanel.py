@@ -459,22 +459,23 @@ class GridPanel(wx.Panel):
     
     def get_yunda_ids(self):
         
-        yunda_ids = []
+        trade_ids = []
         
         selectedRows = sorted(list(self._selectedRows))
         for row in selectedRows:
             
             trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
             logistic = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
-
+            
             if logistic != YUNDA_NAME:
                 dial = wx.MessageDialog(None, u'请先选择韵达快递', u'快递单号预览提示', 
                                         wx.OK | wx.ICON_EXCLAMATION)
                 dial.ShowModal()
                 return
-            yunda_ids.append(trade_id)
-        
-        return yunda_ids 
+            
+            trade_ids.append(trade_id)
+            
+        return trade_ids
 
     @log_exception        
     def fillOutSidToCell(self,evt):
@@ -714,7 +715,8 @@ class GridPanel(wx.Panel):
                     DeliveryPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
             
             elif eventid == express_print_btn_id:
-                trade_ids = []
+                
+                id_sid_map = {}
                 pre_company_id = ''
                 is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked() 
                 for row in self._selectedRows:
@@ -729,13 +731,17 @@ class GridPanel(wx.Panel):
                     out_sid = trade.out_sid
                     operator = trade.operator
                     if out_sid and operator:
-                        trade_ids.append(trade_id)
-                if trade_ids and not is_yunda_qrcode:
-                    ExpressPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
+                        id_sid_map[trade_id] = out_sid 
+                        
+                if id_sid_map and not is_yunda_qrcode:
+                    ExpressPrinter(parent=self,trade_ids=id_sid_map.keys()).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
                     
-                elif trade_ids and is_yunda_qrcode:
+                elif id_sid_map and is_yunda_qrcode:
+                    sort_list = sorted(id_sid_map.items(),key=lambda d:d[1],reverse=False)
+                    sort_ids  =  [d[0] for d in sort_list]
+                    
                     #调用韵达打印接口并打印
-                    yundao.printYUNDAPDF(trade_ids,session=session)
+                    yundao.printYUNDAPDF(sort_ids,session=session)
                                         
             elif eventid == pickle_print_btn_id:
                 PicklePrinter(parent=self).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()

@@ -12,7 +12,8 @@ from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,Pro
 from taobao.frames.panels.gridpanel import CheckGridPanel
 from taobao.dao.tradedao import get_used_orders
 from taobao.dao import configparams as cfg 
-from taobao.common.logger import get_sentry_logger
+from taobao.dao.yundao import printYUNDAPDF
+from taobao.common.logger import get_sentry_logger,log_exception
 
 logger = get_sentry_logger()
 RESET_CODE    = '11110000'   #验货框重置条码
@@ -32,6 +33,8 @@ class ScanCheckPanel(wx.Panel):
         self.out_sid_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.barcode_label = wx.StaticText(self,-1,u'商品条码')
         self.barcode_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.print_qrcode_label    = wx.StaticText(self,-1,u'打印二维码')
+        self.print_qrcode_checkbox = wx.CheckBox(self,-1)
         self.hand_add_button   = wx.Button(self,-1,u'确定') 
         self.cancel_button   = wx.Button(self,-1,u'取消')
         
@@ -66,7 +69,10 @@ class ScanCheckPanel(wx.Panel):
         flex_sizer1.Add(self.out_sid_text,0,3)
         flex_sizer1.Add(self.barcode_label,0,4)
         flex_sizer1.Add(self.barcode_text,0,5)
+        flex_sizer1.Add(self.print_qrcode_label,0,6)
+        flex_sizer1.Add(self.print_qrcode_checkbox,0,7)
         
+        flex_sizer1.Add((10,10),0,8)
         flex_sizer1.Add(self.hand_add_button,0,10)
         flex_sizer1.Add(self.cancel_button,0,11)
         flex_sizer1.Add(self.status_bar,0,12,border=10)
@@ -151,6 +157,7 @@ class ScanCheckPanel(wx.Panel):
     def setBarCode(self):
         
         barcode = self.barcode_text.GetValue().strip()
+        out_sid = self.out_sid_text.GetValue().strip()
         
         if barcode == RESET_CODE:
             self.out_sid_text.Clear()
@@ -168,6 +175,14 @@ class ScanCheckPanel(wx.Panel):
                         #库存减掉后，修改发货状态
                         session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)\
                             .update({'sys_status':cfg.SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
+                    
+                    if self.is_print_qrcode:
+                        try:
+                            self.directPrintYundaOrder(out_sid)
+                        except Exception,exc:
+                            dial = wx.MessageDialog(None, u'韵达二维码快递单打印出错:%s'%exc.message,u'快递单打印提示', 
+                                                    wx.OK | wx.ICON_EXCLAMATION)
+                            dial.ShowModal()
                             
                     self.gridpanel.clearTable()
                     self.out_sid_text.Clear()
@@ -179,6 +194,7 @@ class ScanCheckPanel(wx.Panel):
             else:
                 self.barcode_text.Clear()
                 self.barcode_text.SetFocus()
+         
          
     def onCheckCodeTextChange(self,evt):
 
@@ -193,6 +209,22 @@ class ScanCheckPanel(wx.Panel):
         self.out_sid_text.Clear()
         self.barcode_text.Clear()
         self.out_sid_text.SetFocus()
-
-           
-     
+    
+    
+    @property
+    def is_print_qrcode(self):
+        
+        return self.print_qrcode_checkbox.IsChecked()
+    
+    @log_exception
+    def directPrintYundaOrder(self,out_sid):
+        """ 直接打印韵达二维码面单 """
+        
+        with create_session(self.Parent) as session:
+            trade = session.query(MergeTrade).filter_by(out_sid=out_sid).first()
+            yunda_lg = session.query(LogisticsCompany).filter_by(code='YUNDA').first()
+            
+            if trade.is_qrcode and trade.logistics_company_id == yunda_lg.id:
+                #调用韵达打印接口并打印
+                printYUNDAPDF([trade.id],direct=True,session=session)
+        
