@@ -11,7 +11,7 @@ import subprocess
 from xml.dom import minidom
 from taobao.dao import configparams as cfg
 from taobao.dao.dbsession import get_session
-from taobao.common.utils import TEMP_FILE_ROOT
+from taobao.common.utils import TEMP_FILE_ROOT,getconfig
 from taobao.dao.models import ClassifyZone,MergeTrade,BranchZone
 from taobao.common.utils import getconfig,format_datetime
 import webbrowser
@@ -209,7 +209,7 @@ def gen_orders_xml(objs):
         _xml_list.append('<collection_value></collection_value><special></special>')
         _xml_list.append('<item></item><remark></remark>')
         _xml_list.append(u'<cus_area1>分拣号:%s</cus_area1>'%obj['zone'])
-        _xml_list.append('<cus_area2>宝贝亲，给5星+20字以上好评，就会有惊喜哦.</cus_area2>')
+        _xml_list.append(u'<cus_area2>宝贝亲，给5星+20字以上好评，就会有惊喜哦.</cus_area2>')
         _xml_list.append('<callback_id></callback_id>')
         _xml_list.append('<wave_no></wave_no></order>')
         
@@ -414,9 +414,10 @@ def printYUNDAPDF(trade_ids,direct=False,session=None):
         f.write(pdfdoc)
     
     if direct:
-        p = subprocess.Popen([r"C:\\Program Files (x86)\\Ghostgum\\gsview\\gsprint.exe", file_name], 
+        conf  =  getconfig()
+        gsprint_exe = conf.get('custom','gsprint_exe')
+        p = subprocess.Popen([gsprint_exe, file_name], 
                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.communicate()
-
     else:
         webbrowser.open(file_name)
