@@ -183,7 +183,7 @@ class ExpressPrinter(wx.Frame):
                     zone = None
 
                     if trade.reserveo:
-                        zone = get_zone_by_code(trade.reserveo)
+                        zone = get_zone_by_code(trade.reserveo,session=session)
                     
                     if not zone:    
                         zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
