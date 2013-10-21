@@ -251,8 +251,8 @@ class OrderReview(wx.Frame):
                 trade_data['zone'] = ''
                 if trade_data['company_code'].upper() == 'YUNDA':
                     zone = None
-                    if trade.reserveo:
-                        zone = get_zone_by_code(trade.reserveo,session=session)
+                    #if trade.reserveo:
+                    #    zone = get_zone_by_code(trade.reserveo,session=session)
                         
                     if not zone:
                         zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
