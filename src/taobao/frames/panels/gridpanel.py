@@ -107,6 +107,7 @@ class GridPanel(wx.Panel):
         self.fill_sid_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(200,-1))
         self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,u'韵达二维码')
         self.fill_sid_checkbox1   = wx.CheckBox(self.fill_sid_panel,-1)
+        self.receive_btn      = wx.Button(self.fill_sid_panel,-1,u'接单')
         self.preview_btn      = wx.Button(self.fill_sid_panel,-1,u'预览')
         self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,u'确定')
         
@@ -191,8 +192,9 @@ class GridPanel(wx.Panel):
         self.fill_sid_sizer.Add(self.fill_sid_text,0,1)
         self.fill_sid_sizer.Add(self.fill_sid_label2,0,2)
         self.fill_sid_sizer.Add(self.fill_sid_checkbox1,0,3)
-        self.fill_sid_sizer.Add(self.preview_btn,0,4)
-        self.fill_sid_sizer.Add(self.fill_sid_btn2,0,5)
+        self.fill_sid_sizer.Add(self.receive_btn,0,4)
+        self.fill_sid_sizer.Add(self.preview_btn,0,5)
+        self.fill_sid_sizer.Add(self.fill_sid_btn2,0,6)
         self.fill_sid_sizer.Add(self.out_sid_start_label,0,7)
         self.fill_sid_sizer.Add(self.out_sid_start_text,0,8)
         self.fill_sid_sizer.Add(self.out_sid_end_label,0,9)
@@ -223,8 +225,10 @@ class GridPanel(wx.Panel):
         self.Bind(grd.EVT_GRID_EDITOR_CREATED, self.onEditorCreated, self.grid)
         self.Bind(grd.EVT_GRID_CELL_RIGHT_CLICK,self.showPopupMenu,self.grid)
         
+        self.Bind(wx.EVT_CHECKBOX, self.onClickSelectYunda,self.fill_sid_checkbox1 )
         self.Bind(wx.EVT_CHECKBOX,self.onSelectAllCheckbox,self.select_all_check)
         self.Bind(wx.EVT_COMBOBOX,self.onComboBox,self.page_size_select)
+        
         self.Bind(wx.EVT_BUTTON, self.onBtnFirstClick, self.btnFirst)
         self.Bind(wx.EVT_BUTTON, self.onBtnLastClick, self.btnLast)
         self.Bind(wx.EVT_BUTTON, self.onBtnPrevClick, self.btnPrev)
@@ -234,6 +238,7 @@ class GridPanel(wx.Panel):
         
         self.Bind(wx.EVT_BUTTON, self.onClickRollBackBtn,self.fill_sid_btn3 )
         self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_down)
+        self.Bind(wx.EVT_BUTTON, self.receiveYundaOrder,self.receive_btn)
         self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell,self.preview_btn)
         
         #分页栏，订单操作事件
@@ -282,6 +287,7 @@ class GridPanel(wx.Panel):
     
     def initialFillSidPanel(self):
         self.preview_btn.Enable()
+        self.receive_btn.Enable(False)
         self.fill_sid_btn2.Enable(False)
         self.fill_sid_btn4.Enable(False)
         
@@ -567,12 +573,6 @@ class GridPanel(wx.Panel):
                     return
                     
                 try:
-                    #将之前取消得订单重新生效
-                    yundao.valid_order(yunda_ids)
-                    
-                    #创建物流订单
-                    yundao.create_order(yunda_ids,session=session)
-                    
                     #查询运单号
                     im_map = yundao.search_order(yunda_ids,session=session)
                     
@@ -599,6 +599,55 @@ class GridPanel(wx.Panel):
         self.grid.ForceRefresh()
         evt.Skip()
     
+    
+    @log_exception
+    def receiveYundaOrder(self,evt):
+        
+        is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked()
+        
+        if not is_yunda_qrcode:
+            return
+        
+        with create_session(self.Parent) as session:
+            #对选中订单进行过滤
+            yunda_ids = self.get_yunda_ids()
+            
+            if not yunda_ids:
+                return
+            
+            try:
+                #将之前取消得订单重新生效
+                yundao.valid_order(yunda_ids)
+                
+                #创建物流订单
+                yundao.create_order(yunda_ids,session=session)
+                
+            except Exception,exc :
+                dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
+                                            wx.OK | wx.ICON_EXCLAMATION)
+                dial.ShowModal()
+                raise exc
+        
+        self.receive_btn.Enable(False)
+        self.preview_btn.Enable()
+        self._can_fresh = True
+        
+        evt.Skip()
+    
+    def onClickSelectYunda(self,evt):
+        
+        if evt.IsChecked():
+            self.receive_btn.Enable()
+            self.preview_btn.Enable(False)
+            self.fill_sid_text.Clear()
+            self.fill_sid_text.Enable(False)
+        else:
+            self.receive_btn.Enable(False)
+            self.preview_btn.Enable(True)
+            self.fill_sid_text.Enable()
+            
+        evt.Skip()
+        
     def disablePicklePrintBtn(self):
         """ 将打印配货单按钮设无效 """
         self.post_print_btn.Enable(False)
@@ -681,6 +730,9 @@ class GridPanel(wx.Panel):
                     if not is_yunda_qrcode :
                         self.disablePicklePrintBtn() 
                         self.fill_sid_btn4.Enable(True)
+                     
+                    if is_yunda_qrcode:
+                        self.receive_btn.Enable(True)   
                         
                     self.fill_sid_btn2.Enable(False)
                      
