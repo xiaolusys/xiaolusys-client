@@ -182,7 +182,7 @@ class ExpressPrinter(wx.Frame):
                 if trade_data['company_code'].upper() == 'YUNDA':
                     zone = None
 
-                    if trade.reserveo:
+                    if trade.is_qrcode and trade.reserveo:
                         zone = get_zone_by_code(trade.reserveo,session=session)
                     
                     if not zone:    
