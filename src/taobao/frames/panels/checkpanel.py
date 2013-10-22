@@ -173,7 +173,7 @@ class ScanCheckPanel(wx.Panel):
                 if self.gridpanel.isCheckOver():
                     with create_session(self.Parent) as session: 
                         #库存减掉后，修改发货状态
-                        session.query(MergeTrade).filter_by(id=self.trade.id,sys_status_=cfg.SYS_STATUS_WAITSCANCHECK)\
+                        session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)\
                             .update({'sys_status':cfg.SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
                     
                     if self.is_print_qrcode:
