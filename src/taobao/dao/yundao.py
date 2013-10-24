@@ -223,8 +223,8 @@ def get_objs_from_trade(trades,session=None):
     for trade in trades:
         
         zone = None
-        if trade.reserveo:
-            zone = get_zone_by_code(trade.reserveo,session=session)
+#        if trade.reserveo:
+#            zone = get_zone_by_code(trade.reserveo,session=session)
         
         if not zone:
             zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
