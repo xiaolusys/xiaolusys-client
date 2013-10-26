@@ -237,12 +237,13 @@ class ScanWeightPanel(wx.Panel):
             if company_name and out_sid:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id,reason_code='')
+                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id,reason_code='',is_express_print=True)
             elif out_sid :
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                        .filter_by(out_sid=out_sid,reason_code='')
+                        .filter_by(out_sid=out_sid,reason_code='',is_express_print=True)
                  
-        count = trades.count() if trades else 0 
+        count = trades.count() if trades else 0
+        
         if count>1 :
             self.error_text.SetLabel(u'该快递单号已重复,请选择快递')
             self.error_text.SetForegroundColour('black')
