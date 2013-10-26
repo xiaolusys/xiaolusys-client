@@ -370,8 +370,8 @@ class ScanWeightPanel(wx.Panel):
         conf = getconfig()
         is_need_check = conf.get('custom', 'check_barcode')
         if is_need_check.lower() == 'true':
-            return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_FINISHED)
-        return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_WAITSCANCHECK,cfg.SYS_STATUS_FINISHED)
+            return (cfg.SYS_STATUS_WAITSCANWEIGHT,)#,cfg.SYS_STATUS_FINISHED
+        return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_WAITSCANCHECK)#,cfg.SYS_STATUS_FINISHED
         
     def onClickCheckBox(self,evt):
         self.is_auto_save = evt.IsChecked()
