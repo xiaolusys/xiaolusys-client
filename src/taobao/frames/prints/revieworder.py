@@ -100,12 +100,12 @@ class OrderReview(wx.Frame):
         '''
         trades = self.getLogisticsData(trade_ids)
         try:
-            
             template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
             template = get_template(template_name) 
             html = template.render(trades=trades)
         except:
             html = u'<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'%trades[0]['company_name']
+            
         return html
  
     #----------------------------------------------------------------------
@@ -255,7 +255,8 @@ class OrderReview(wx.Frame):
                     #    zone = get_zone_by_code(trade.reserveo,session=session)
                         
                     if not zone:
-                        zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
+                        zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,
+                                                 address=trade.receiver_address,session=session)
 
                     trade_data['zone'] = zone and zone.COMBO_CODE or trade.reservet
                 

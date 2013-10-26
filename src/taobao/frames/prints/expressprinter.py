@@ -186,7 +186,8 @@ class ExpressPrinter(wx.Frame):
                     #    zone = get_zone_by_code(trade.reserveo,session=session)
                     
                     if not zone:    
-                        zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
+                        zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district
+                                                 ,address=trade.receiver_address,session=session)
                     
                     trade_data['zone'] = zone and zone.COMBO_CODE or trade.reservet
                 

@@ -3,6 +3,7 @@ import time
 import datetime
 import MySQLdb
 import sys
+import re
 import hashlib
 import base64
 import urllib
@@ -86,7 +87,7 @@ def get_zone_by_code(code,session=None):
     
     return czones.first()
 
-def get_classify_zone(state,city,district,session=None):
+def get_classify_zone(state,city,district,address='',session=None):
     """ 根据地址获取分拨中心   """
     if not session:
         session = get_session()
@@ -94,7 +95,23 @@ def get_classify_zone(state,city,district,session=None):
     lstate = len(state)>1 and state[0:2] or ''
     lcity  = len(city)>1  and city[0:2]  or ''
     ldistrict  = len(district)>1  and district[0:2]  or ''
+    
     if district:
+        
+        if address and ldistrict == u'吴江' and lstate == u'江苏':
+            
+            szds = None
+            sz = session.query(BranchZone).filter_by(barcode='215201').first()
+            if sz:
+                szds = [ z.city for z in sz.classify_zone]
+                
+            if szds:
+                
+                rp   = re.compile('|'.join(szds))
+                if rp.search(address):
+                    return sz
+             
+            
         czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
                     (ClassifyZone.city.like(ldistrict+'%'))|(ClassifyZone.district.like(ldistrict+'%')))
         
@@ -227,7 +244,7 @@ def get_objs_from_trade(trades,session=None):
 #            zone = get_zone_by_code(trade.reserveo,session=session)
         
         if not zone:
-            zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,session=session)
+            zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,address=trade.receiver_address,session=session)
         
         objs.append({"id":trade.id,
                      "sender_name":u"优尼世界",

@@ -784,7 +784,7 @@ class GridPanel(wx.Panel):
                     operator = trade.operator
                     if out_sid and operator:
                         id_sid_map[trade_id] = out_sid 
-                        
+                
                 if id_sid_map and not is_yunda_qrcode:
                     ExpressPrinter(parent=self,trade_ids=id_sid_map.keys()).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
                     
