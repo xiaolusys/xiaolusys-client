@@ -66,7 +66,7 @@ div {
 }
 
 .up-inner-panel {
-	height: 155px;
+	height: 140px;
 	width: 95%;
 	margin-left: 0px;
 }
@@ -77,7 +77,12 @@ div {
 	display: inline;
 }
 
-.phone {
+.connect{
+	display:block;	
+	height:25px;
+}
+
+.phone ,.mobile {
 	width: 45%;
 	margin-top: 0px;
 	margin-left: 0px;
@@ -112,17 +117,17 @@ div {
 			<div class='left-panel'>
 				<div class='up-inner-panel'>
 					<div class='name'>{{ trade.seller_nick }}</div>
-					<div class='base-info'><div class='partment'></div><div class='nick'>{{ trade.seller_contacter }}</div></div>
+					<div class='base-info'><div class='partment'>{{ trade.seller_phone }}</div><div class='nick'>{{ trade.seller_contacter }}</div></div>
 					<div class='address'>
 						<span><!--{{ trade.seller_location }}--></span>
 					</div>
 					<div class='bottom-inner-panel' >
-						<div class='area_no'><!--{{ trade.seller_area_code }}--></div><div class='phone'>{{ trade.seller_phone }}</div>
+						<div class='area_no'><!--{{ trade.seller_area_code }}--></div><div class='phone'></div>
 					</div>
 				</div>
 				<div class='down-inner-panel'>
-					<div class='name'>{{ trade.receiver_name }}</div>
 					<div class='base-info'><div class='partment'></div><div class='nick'>{{ trade.receiver_name }}</div></div>
+					<div class='connect'><div class="phone">{{ trade.receiver_phone }}</div><div class="mobile">{{ trade.receiver_mobile }}</div></div>
 					<div class='address'>
 						<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{ trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }} 
 						<br> {{ trade.receiver_address }} 
@@ -130,7 +135,7 @@ div {
 					</div>
 					<div class='bottom-inner-panel'>
 						<div class='area_no'></div>
-						<div class='phone'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
+						
 					</div>
 				</div>
 			</div>
