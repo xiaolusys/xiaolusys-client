@@ -121,3 +121,6 @@ ORDER_TYPE = {
     RETURN_GOODS_GIT_TYPE:u'退货',
     CHANGE_GOODS_GIT_TYPE:u'换货',
 }
+#聚划算系统内部编码
+JUHUASUAN_CODE = 16
+

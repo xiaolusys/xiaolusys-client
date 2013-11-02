@@ -117,7 +117,7 @@ def locking_trade(trade_id,operator,session=None):
     return is_locked
 
 
-def get_product_locations(outer_id,outer_sku_id=None,session=None):
+def get_product_locations(outer_id,outer_sku_id=None,opn=False,session=None):
     
     if not session:
         session = get_session()
@@ -138,6 +138,11 @@ def get_product_locations(outer_id,outer_sku_id=None,session=None):
         else:
             sdict[pno] = set([dno])
     
+    if opn :
+        pnos = sdict.keys()
+        pnos.sort()
+        return ''.join(pnos)
+        
     ds = []
     for k,v in sdict.iteritems():
         ds.append(len(v) > 1 and '%s-[%s]'%(k,','.join(list(v))) or '%s-%s'%(k,v.pop()))

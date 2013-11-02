@@ -19,7 +19,7 @@ from taobao.common.utils import create_session,format_datetime
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders,get_product_locations
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,\
-    IN_EFFECT,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL
+    IN_EFFECT,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL,JUHUASUAN_CODE
 from taobao.common.utils import IMAGE_ROOT,TEMP_FILE_ROOT
 
 FONTSIZE = 10
@@ -161,6 +161,7 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['discount_fee'] = 0
                 trade_data['payment']      = 0
                 trade_data['buyer_prompt']  = ''
+                trade_data['juhuasuan']  = trade.trade_from&JUHUASUAN_CODE == JUHUASUAN_CODE
                 
                 trade_data['receiver_name']     = trade.receiver_name
                 trade_data['receiver_phone']    = trade.receiver_phone
@@ -209,16 +210,17 @@ class DeliveryPrinter(wx.Frame):
                         prod_sku_name = prod_sku and prod_sku.name or order.sku_properties_name
                         order_items[outer_id]={
                                                'num':order.num,
+                                               'location':get_product_locations(outer_id,opn=True,session=session),
                                                'title': product.name if product else order.title,
                                                'skus':{outer_sku_id:{'sku_name':prod_sku_name,
                                                                      'num':order.num,
                                                                      'location':get_product_locations(outer_id,outer_sku_id,session=session)}}
                                                }
                 trade_data['buyer_prompt'] = prompt_set and ','.join(list(prompt_set)) or ''   
-                order_list = sorted(order_items.items(),key=lambda d:d[1]['num'],reverse=True)
+                order_list = sorted(order_items.items(),key=lambda d:d[1]['location'])
                 for trade in order_list:
                     skus = trade[1]['skus']
-                    trade[1]['skus'] = sorted(skus.items(),key=lambda d:d[1]['num'],reverse=True)    
+                    trade[1]['skus'] = sorted(skus.items(),key=lambda d:d[1]['location'])    
                 
                 trade_data['orders'] = order_list    
                 picking_data_list.append(trade_data)

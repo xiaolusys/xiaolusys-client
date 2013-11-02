@@ -61,7 +61,8 @@ class SearchPanel(wx.Panel):
         self.urggent_doc_check  = wx.CheckBox(self,-1,style=wx.CHK_2STATE)
         self.is_locked_label = wx.StaticText(self,-1,u'已锁定')
         self.is_locked_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
-        self.clear_btn  = wx.Button(self,-1,label=u'清空',size=(40,16))
+        self.juhuasuan_label = wx.StaticText(self,-1,u'聚划算')
+        self.juhuasuan_check  = wx.CheckBox(self,-1,style=wx.CHK_3STATE|wx.CHK_ALLOW_3RD_STATE_FOR_USER)
         
         self.__set_properties()
         self.__do_layout()
@@ -120,7 +121,8 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.is_locked_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.urggent_doc_label, pos=(1,16), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.urggent_doc_check, pos=(1,17), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.clear_btn, pos=(1,19), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.juhuasuan_label, pos=(1,18), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.juhuasuan_check, pos=(1,19), span=(1,1), flag=wx.EXPAND)
 
         gridbagsizer.Layout()
         
@@ -152,7 +154,7 @@ class SearchPanel(wx.Panel):
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.urggent_doc_check)
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.single_prod_check)
         self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.is_locked_check)
-        self.Bind(wx.EVT_BUTTON  , self.clearSearchPanel, self.clear_btn)
+        self.Bind(wx.EVT_CHECKBOX, self.OnSearch, self.juhuasuan_check)
         
     def clearSearchPanel(self,evt):
         
@@ -175,6 +177,7 @@ class SearchPanel(wx.Panel):
         self.urggent_doc_check.SetValue(False)
         self.is_locked_check.SetValue(False)
         self.single_prod_check.SetValue(False)
+        self.juhuasuan_check.SetValue(False)
         
         self.weight_start_select.SetValue(wx.DefaultDateTime)
         self.weight_end_select.SetValue(wx.DefaultDateTime)
@@ -206,6 +209,7 @@ class SearchPanel(wx.Panel):
         urgent_doc_state = self.urggent_doc_check.GetValue()
         locke_state     = self.is_locked_check.Get3StateValue() 
         single_prod     = self.single_prod_check.GetValue()
+        juhuasuan    = self.juhuasuan_check.Get3StateValue() 
         
         weight_start_time = self.weight_start_select.GetValue()
         weight_end_time   = self.weight_end_select.GetValue()
@@ -251,6 +255,11 @@ class SearchPanel(wx.Panel):
                     datasource = datasource.filter_by(is_picking_print=pick_print_state == 1 and True or False)
                 if express_print_state:
                     datasource = datasource.filter_by(is_express_print=express_print_state == 1 and True or False)
+                if juhuasuan:
+                    if juhuasuan == 1:
+                        datasource = datasource.filter(MergeTrade.trade_from.op('&')(cfg.JUHUASUAN_CODE) == cfg.JUHUASUAN_CODE)
+                    else:
+                        datasource = datasource.filter(MergeTrade.trade_from.op('&')(cfg.JUHUASUAN_CODE) != cfg.JUHUASUAN_CODE)
                 if outer_id:
                     trade_ids = [t.id for t in datasource]
                     with create_session(self.Parent) as session:

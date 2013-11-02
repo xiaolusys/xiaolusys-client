@@ -235,6 +235,7 @@ class MergeTrade(Base):
     buyer_nick = Column(String(64), nullable=True)
     type = Column(String(32), nullable=True)
     shipping_type = Column(String(12), default='')
+    trade_from    = Column(Integer)
     
     prod_num  = Column(Integer)
     refund_num = Column(Integer)

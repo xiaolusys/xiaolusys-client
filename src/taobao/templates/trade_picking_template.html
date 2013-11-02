@@ -388,8 +388,8 @@ td{
 		<!-- <div class='seller-nick'><h3>{{ trade.seller_nick }} 发货单</h3></div> -->
 		<div class="header" ><div class="barcode39" >{{ trade.out_sid }}</div></div>
 		<div class='base-info'>
-			<div class='left-label'><label>订单编号:</label><span>{{ trade.trade_id }}</span></div>
-			<div class='middle-label'><label>物流编号:</label><span>{{ trade.out_sid }}（{{trade.company_name}}）</span></div>
+			<div class='left-label'><label>订单编号:</label><span>{{ trade.trade_id }}</span>&nbsp;&nbsp;{% if trade.juhuasuan %}<span style="font-family:STXingkai;">聚</span>{% endif %}</div>
+			<div class='middle-label'><label>{{trade.company_name}}:</label><span>{{ trade.out_sid }}</span></div>
 			<div class='right-label'><label>付款打单日期:</label><span>{{ trade.pay_time|datetimeformat(format='%m.%d') }}/{{ trade.post_date|datetimeformat(format='%m.%d') }}</span></div>
 		</div>
 		<div class='seller-info'>

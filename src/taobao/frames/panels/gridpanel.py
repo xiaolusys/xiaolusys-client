@@ -1238,6 +1238,7 @@ class CheckGridPanel(wx.Panel):
                 outer_id     = order.outer_id
                 outer_sku_id = order.outer_sku_id
                 product = session.query(Product).filter_by(outer_id=outer_id).first()
+                product_sku = None
                 if outer_sku_id:
                     product_sku = session.query(ProductSku).filter_by(outer_id=outer_sku_id,product_id=product.id).first()
                     
