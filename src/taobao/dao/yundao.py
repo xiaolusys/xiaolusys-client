@@ -317,7 +317,7 @@ def create_order(ids,session=None):
     
     order_xml = gen_orders_xml(objs)
     
-    tree = handle_demon(RECEIVE,order_xml,PARTNER_ID,SECRET)
+    tree = handle_demon(RECEIVE_MAILNO,order_xml,PARTNER_ID,SECRET)
             
     return tree
     

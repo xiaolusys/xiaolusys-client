@@ -33,13 +33,13 @@ EXPRESS_CELL_COL = 9
 PICKLE_CELL_COL  = 10
 REVIEW_CELL_COL  = 11
 LOG_COMPANY_CELL_COL = 12
-OUT_SID_CELL_COL = 13
-OPERATOR_CELL_COL = 14
-OUTER_ID_COL = 5
-OUTER_SKU_ID_COL = 6
-ORIGIN_NUL_COL = 4
-BAR_CODE_COL   = 10
-NUM_STATUS_COL = 11
+OUT_SID_CELL_COL     = 13
+OPERATOR_CELL_COL    = 14
+OUTER_ID_COL         = 5
+OUTER_SKU_ID_COL     = 6
+ORIGIN_NUL_COL   = 4
+BAR_CODE_COL     = 10
+NUM_STATUS_COL   = 11
 
 
 fill_sid_btn_id = wx.NewId()
@@ -414,16 +414,23 @@ class GridPanel(wx.Panel):
     
     def onClickRollBackBtn(self,evt):
         """ 复原所选数据打印状态  """
-        operator      = get_oparetor()
-        with create_session(self.Parent) as session:
-            for row in self._selectedRows:
-                trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                session.query(MergeTrade).filter_by(id=trade_id,operator=operator).update({
-                          'is_express_print':False,'is_picking_print':False,'out_sid':''})
         
-        self.initialFillSidPanel()
+        dial = wx.MessageDialog(None, u'复原后订单打印信息会清空，顺序会重排，确定要复原吗？', u'复原订单确认', 
+                                        wx.OK|wx.CANCEL|wx.ICON_EXCLAMATION)
+        result = dial.ShowModal()
+        dial.Destroy()
+        
+        if result == wx.ID_OK:
+            operator      = get_oparetor()
+            with create_session(self.Parent) as session:
+                for row in self._selectedRows:
+                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                    session.query(MergeTrade).filter_by(id=trade_id,operator=operator).update({
+                              'is_express_print':False,'is_picking_print':False,'out_sid':''})
             
-        self.refreshTable()
+            self.initialFillSidPanel()
+            self.refreshTable()
+            
         evt.Skip()
      
     
