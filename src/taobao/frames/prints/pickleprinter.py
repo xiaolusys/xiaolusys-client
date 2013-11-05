@@ -27,7 +27,7 @@ class PicklePrinter(wx.Frame):
         #trade_ids = [200165044022938,165155430754126]
          
         cfg  = getconfig()
-        host_name   = cfg.get('db','db_host')
+        host_name   = cfg.get('url','web_host')
         client_name = cfg.get('user','username')
         self.html.LoadUrl(cfg.get('url','post_url')%(host_name,client_name))
         

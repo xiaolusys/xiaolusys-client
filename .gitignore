@@ -5,6 +5,7 @@ celerybeat-schedule
 *.iml
 .idea/
 *~
+*.pdf
 test/
 src/test/
 migrations
