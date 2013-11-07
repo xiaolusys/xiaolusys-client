@@ -16,7 +16,7 @@ from taobao.common.environment import get_template
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
 from taobao.dao.tradedao import get_used_orders,get_product_locations
 from taobao.dao.yundao import get_classify_zone,get_zone_by_code,printYUNDAPDF
-from taobao.dao.configparams import JUHUASUAN_CODE
+from taobao.dao.configparams import JUHUASUAN_CODE,YUNDA_CODE
 
 FONTSIZE = 10  
  
@@ -252,7 +252,7 @@ class OrderReview(wx.Frame):
                 trade_data['receiver_address']  = trade.receiver_address
                 
                 trade_data['zone'] = ''
-                if trade_data['company_code'].upper() == 'YUNDA':
+                if trade_data['company_code'].upper() in YUNDA_CODE:
                     zone = None
                     #if trade.reserveo:
                     #    zone = get_zone_by_code(trade.reserveo,session=session)
