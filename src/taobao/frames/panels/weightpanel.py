@@ -350,7 +350,7 @@ class ScanWeightPanel(wx.Panel):
                     .update({'weight':weight,'sys_status':cfg.SYS_STATUS_FINISHED,'weight_time':datetime.datetime.now()}
                     ,synchronize_session='fetch')
                     
-            if trade.logistics_company_id == 102:     
+            if trade.logistics_company.code.upper() in cfg.YUNDA_CODE:     
                 try:
                     insert_yunda_fjbak(trade.out_sid,weight)
                 except IntegrityError:
@@ -370,8 +370,8 @@ class ScanWeightPanel(wx.Panel):
         conf = getconfig()
         is_need_check = conf.get('custom', 'check_barcode')
         if is_need_check.lower() == 'true':
-            return (cfg.SYS_STATUS_WAITSCANWEIGHT,)#,cfg.SYS_STATUS_FINISHED
-        return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_WAITSCANCHECK)#,cfg.SYS_STATUS_FINISHED
+            return (cfg.SYS_STATUS_WAITSCANWEIGHT,)
+        return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_WAITSCANCHECK)
         
     def onClickCheckBox(self,evt):
         self.is_auto_save = evt.IsChecked()

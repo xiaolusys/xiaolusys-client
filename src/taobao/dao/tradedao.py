@@ -149,4 +149,4 @@ def get_product_locations(outer_id,outer_sku_id=None,opn=False,session=None):
     
     return ','.join(ds)
     
-    
+  

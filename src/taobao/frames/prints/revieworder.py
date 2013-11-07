@@ -68,8 +68,8 @@ class OrderReview(wx.Frame):
             trade = session.query(MergeTrade).filter_by(id=self.trade_id).first()
             session.refresh(trade,['is_locked','is_picking_print','is_express_print'
                                         ,'operator','out_sid','logistics_company_id','sys_status'])
-            yunda_lg = session.query(LogisticsCompany).filter_by(code='YUNDA').first()
-            if trade.is_qrcode and trade.logistics_company_id == yunda_lg.id:
+            
+            if trade.is_qrcode and trade.logistics_company.code == 'YUNDA':
                 #调用韵达打印接口并打印
                 printYUNDAPDF([self.trade_id],session=session)
             else:   

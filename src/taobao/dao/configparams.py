@@ -47,6 +47,7 @@ TRADE_TYPE = {
     'fenxiao':u'分销',
     'direct':u'内售',
     'exchange':u'退换货',
+    'reissue':u'补发'
 }
 
 SYS_STATUS_ALL     = 'ALL'
@@ -121,6 +122,7 @@ ORDER_TYPE = {
     RETURN_GOODS_GIT_TYPE:u'退货',
     CHANGE_GOODS_GIT_TYPE:u'换货',
 }
+
 #聚划算系统内部编码
 JUHUASUAN_CODE = 16
-
+YUNDA_CODE     = ('YUNDA','YUNDA_QR')

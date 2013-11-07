@@ -481,10 +481,10 @@ class GridPanel(wx.Panel):
             logistic = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
             
             if logistic != YUNDA_NAME:
-                dial = wx.MessageDialog(None, u'请先选择韵达快递', u'快递单号预览提示', 
+                dial = wx.MessageDialog(None, u'请选择韵达快递', u'快递单号预览提示', 
                                         wx.OK | wx.ICON_EXCLAMATION)
                 dial.ShowModal()
-                return
+                return 
             
             trade_ids.append(trade_id)
             

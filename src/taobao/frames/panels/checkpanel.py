@@ -222,9 +222,8 @@ class ScanCheckPanel(wx.Panel):
         
         with create_session(self.Parent) as session:
             trade = session.query(MergeTrade).filter_by(out_sid=out_sid).first()
-            yunda_lg = session.query(LogisticsCompany).filter_by(code='YUNDA').first()
             
-            if trade.is_qrcode and trade.logistics_company_id == yunda_lg.id:
+            if trade.is_qrcode and trade.logistics_company.code == 'YUNDA':
                 #调用韵达打印接口并打印
                 printYUNDAPDF([trade.id],direct=True,session=session)
         
