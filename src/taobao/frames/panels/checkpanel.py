@@ -134,7 +134,7 @@ class ScanCheckPanel(wx.Panel):
                 elif out_sid :
                     trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
             count = trades.count() if trades else 0 
-            if count>1 :
+            if count > 1 :
                 self.error_text.SetLabel(u'该快递单号已重复，请审核后再扫描')
                 self.status_bar.SetBackgroundColour('RED')
             elif count == 1:

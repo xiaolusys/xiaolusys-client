@@ -1203,7 +1203,7 @@ class CheckOrdersGridPanel(SimpleGridPanel):
                 object_array.append(order.num)
                 object_array.append(order.outer_id)
                 object_array.append(order.outer_sku_id)
-                object_array.append(order.sku_properties_name)
+                object_array.append(product_sku and product_sku.name or order.sku_properties_name)
                 object_array.append(post_check)
                 object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
                 object_array.append(barcode)
