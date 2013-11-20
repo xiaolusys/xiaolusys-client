@@ -62,7 +62,9 @@ class PicklePrinter(wx.Frame):
  
     #----------------------------------------------------------------------
     def onCancel(self, event):
+        """"""
         self.Parent.refreshTable()
+        
         self.Close()
         
     

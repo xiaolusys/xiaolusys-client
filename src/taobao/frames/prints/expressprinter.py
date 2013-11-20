@@ -114,6 +114,18 @@ class ExpressPrinter(wx.Frame):
     def onPreview(self,event):
         """"""
         with create_session(self.Parent) as session: 
+            trades = session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids)).filter_by(is_express_print=True)
+            rept_num = trades.count()
+            if rept_num > 0:
+                dial = wx.MessageDialog(None, u'该批订单有（%d）单已打印快递单，还要继续吗？'%rept_num, u'快递单重打提示', 
+                                        wx.OK|wx.CANCEL|wx.ICON_EXCLAMATION)
+                result = dial.ShowModal()
+                dial.Destroy()
+                
+                #如果不继续，则退出
+                if result != wx.ID_OK:
+                    return 
+        
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_express_print':True},synchronize_session='fetch')
         self.html.PrintPreview()
