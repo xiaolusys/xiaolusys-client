@@ -38,8 +38,8 @@ OPERATOR_CELL_COL    = 14
 OUTER_ID_COL         = 5
 OUTER_SKU_ID_COL     = 6
 ORIGIN_NUL_COL   = 4
-BAR_CODE_COL     = 10
-NUM_STATUS_COL   = 11
+BAR_CODE_COL     = 11
+NUM_STATUS_COL   = 12
 
 
 fill_sid_btn_id = wx.NewId()
@@ -958,7 +958,7 @@ class QueryObjectGridPanel(GridPanel):
         session      = self.Session
         for order in object_list:
             session.refresh(order,['is_locked','is_picking_print','is_express_print','can_review'
-                                        ,'operator','out_sid','logistics_company_id','sys_status'])
+                                        ,'operator','out_sid','logistics_company','sys_status'])
             
             object_array = []
             object_array.append(order.id)
@@ -1203,7 +1203,8 @@ class CheckOrdersGridPanel(SimpleGridPanel):
                 object_array.append(order.num)
                 object_array.append(order.outer_id)
                 object_array.append(order.outer_sku_id)
-                object_array.append(product_sku and product_sku.name or order.sku_properties_name)
+                object_array.append(order.sku_properties_name)
+                object_array.append(product_sku and product_sku.name or '')
                 object_array.append(post_check)
                 object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
                 object_array.append(barcode)
@@ -1222,7 +1223,7 @@ class CheckGridPanel(wx.Panel):
         self.trade = None
         self.code_num_dict = {}
        
-        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品编码',u'规格编码',u'规格属性',u'需验单',u'订单状态',u'商品条码',u'扫描次数')
+        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品编码',u'规格编码',u'订单属性',u'商品属性',u'需验单',u'订单状态',u'商品条码',u'扫描次数')
         self.ordergridpanel = CheckOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()
@@ -1262,8 +1263,6 @@ class CheckGridPanel(wx.Panel):
     
     def isCheckOver(self):
         for key,value in self.code_num_dict.items():
-            if not value['post_check']:
-                continue
             
             if value['rnums'] != value['cnums']:
                 return False

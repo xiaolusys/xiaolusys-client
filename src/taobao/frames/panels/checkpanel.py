@@ -176,13 +176,13 @@ class ScanCheckPanel(wx.Panel):
                         session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)\
                             .update({'sys_status':cfg.SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
                     
-                    if self.is_print_qrcode:
-                        try:
-                            self.directPrintYundaOrder(out_sid)
-                        except Exception,exc:
-                            dial = wx.MessageDialog(None, u'韵达二维码快递单打印出错:%s'%exc.message,u'快递单打印提示', 
-                                                    wx.OK | wx.ICON_EXCLAMATION)
-                            dial.ShowModal()
+#                    if self.is_print_qrcode:
+#                        try:
+#                            self.directPrintYundaOrder(out_sid)
+#                        except Exception,exc:
+#                            dial = wx.MessageDialog(None, u'韵达二维码快递单打印出错:%s'%exc.message,u'快递单打印提示', 
+#                                                    wx.OK | wx.ICON_EXCLAMATION)
+#                            dial.ShowModal()
                             
                     self.gridpanel.clearTable()
                     self.out_sid_text.Clear()

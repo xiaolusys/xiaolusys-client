@@ -393,7 +393,7 @@ class CheckGridTable(grd.PyGridTableBase):
         
     # the table can also provide the attribute for each cell
     def GetAttr(self, row, col, kind):
-        check_num = int(self.data[(row,11)])
+        check_num = int(self.data[(row,12)])
         origin_num = int(self.data[(row,4)])
         need_check = self.data[(row,8)].upper() == 'Y'
         if col==0:
@@ -403,7 +403,7 @@ class CheckGridTable(grd.PyGridTableBase):
             attr = self.cell
             attr.IncRef() #引用加1
             
-        if not need_check:
+        if not need_check and check_num == 0:
             attr.SetBackgroundColour('GREY')
         elif check_num>0 and check_num<origin_num:
             attr.SetBackgroundColour('RED')

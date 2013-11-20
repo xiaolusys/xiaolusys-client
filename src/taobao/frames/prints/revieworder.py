@@ -67,7 +67,7 @@ class OrderReview(wx.Frame):
         with create_session(self.Parent) as session:
             trade = session.query(MergeTrade).filter_by(id=self.trade_id).first()
             session.refresh(trade,['is_locked','is_picking_print','is_express_print'
-                                        ,'operator','out_sid','logistics_company_id','sys_status'])
+                                      ,'is_qrcode','operator','out_sid','logistics_company','sys_status'])
             
             if trade.is_qrcode and trade.logistics_company.code == 'YUNDA':
                 #调用韵达打印接口并打印
