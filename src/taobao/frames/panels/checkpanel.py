@@ -30,9 +30,9 @@ class ScanCheckPanel(wx.Panel):
         self.company_label = wx.StaticText(self,-1,u'快递公司')
         self.company_select = wx.ComboBox(self,-1)
         self.out_sid_label = wx.StaticText(self,-1,u'快递单号')
-        self.out_sid_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.out_sid_text  = wx.TextCtrl(self,-1,size=(200,-1),style=wx.TE_PROCESS_ENTER)
         self.barcode_label = wx.StaticText(self,-1,u'商品条码')
-        self.barcode_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.barcode_text  = wx.TextCtrl(self,-1,size=(200,-1),style=wx.TE_PROCESS_ENTER)
         self.print_qrcode_label    = wx.StaticText(self,-1,u'打印二维码')
         self.print_qrcode_checkbox = wx.CheckBox(self,-1)
         self.hand_add_button   = wx.Button(self,-1,u'确定') 
@@ -130,9 +130,9 @@ class ScanCheckPanel(wx.Panel):
                 if company_name and out_sid:
                     logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                     trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                           logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
+                           logistics_company=logistics_company,sys_status=cfg.SYS_STATUS_WAITSCANCHECK,reason_code='')
                 elif out_sid :
-                    trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)
+                    trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=cfg.SYS_STATUS_WAITSCANCHECK,reason_code='')
             count = trades.count() if trades else 0 
             if count > 1 :
                 self.error_text.SetLabel(u'该快递单号已重复，请审核后再扫描')

@@ -27,20 +27,6 @@ from taobao.common.logger import log_exception
 ZERO_REGEX = '^[0]+'
 YUNDA_NAME = u'韵达快运'
 
-TRADE_ID_CELL_COL = 1
-LOCKED_CELL_COL  = 8
-EXPRESS_CELL_COL = 9
-PICKLE_CELL_COL  = 10
-REVIEW_CELL_COL  = 11
-LOG_COMPANY_CELL_COL = 12
-OUT_SID_CELL_COL     = 13
-OPERATOR_CELL_COL    = 14
-OUTER_ID_COL         = 5
-OUTER_SKU_ID_COL     = 6
-ORIGIN_NUL_COL   = 4
-BAR_CODE_COL     = 11
-NUM_STATUS_COL   = 12
-
 
 fill_sid_btn_id = wx.NewId()
 picking_print_btn_id = wx.NewId()
@@ -424,7 +410,7 @@ class GridPanel(wx.Panel):
             operator      = get_oparetor()
             with create_session(self.Parent) as session:
                 for row in self._selectedRows:
-                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                    trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                     session.query(MergeTrade).filter_by(id=trade_id,operator=operator).update({
                               'is_express_print':False,'is_picking_print':False,'out_sid':''})
             
@@ -477,8 +463,8 @@ class GridPanel(wx.Panel):
         selectedRows = sorted(list(self._selectedRows))
         for row in selectedRows:
             
-            trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
-            logistic = self.grid.GetCellValue(row,LOG_COMPANY_CELL_COL)
+            trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
+            logistic = self.grid.GetCellValue(row,cfg.LOG_COMPANY_CELL_COL)
             
             if logistic != YUNDA_NAME:
                 dial = wx.MessageDialog(None, u'请选择韵达快递', u'快递单号预览提示', 
@@ -512,7 +498,7 @@ class GridPanel(wx.Panel):
                 incr_value     = 1
                 
                 for row in self._selectedRows:
-                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                    trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     company_regex = trade.logistics_company.reg_mail_no
                     company_code  = trade.logistics_company.code
@@ -524,7 +510,7 @@ class GridPanel(wx.Panel):
                     if is_out_sid_match and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
                         is_locked = locking_trade(trade.id,operator,session=session)
                         if is_locked: 
-                            self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
+                            self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
                             if company_code.upper() == "ZJS":
                                 if (start_out_sid%10)/6==1:
                                     incr_value = 4
@@ -541,11 +527,11 @@ class GridPanel(wx.Panel):
                 self.end_sid = str(start_out_sid - incr_value) 
                 
                 self.preview_btn.Enable(False)
-                
+                self.fill_sid_btn2.Enable(True)
             #如果单号非数字，则只填写一个单号，不递增
             elif not is_yunda_qrcode and start_out_sid:
                 min_row_num = min(self._selectedRows)
-                trade_id = self.grid.GetCellValue(min_row_num,TRADE_ID_CELL_COL)
+                trade_id = self.grid.GetCellValue(min_row_num,cfg.TRADE_ID_CELL_COL)
                 trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                 company_regex = trade.logistics_company.reg_mail_no
                 id_compile = re.compile(company_regex)
@@ -559,7 +545,7 @@ class GridPanel(wx.Panel):
                         self.refreshTable()
                         evt.Skip()
                         return 
-                    self.grid.SetCellValue(min_row_num ,OUT_SID_CELL_COL,start_out_sid)
+                    self.grid.SetCellValue(min_row_num ,cfg.OUT_SID_CELL_COL,start_out_sid)
                 else:
                     dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示', 
                         wx.OK | wx.ICON_EXCLAMATION)
@@ -570,7 +556,7 @@ class GridPanel(wx.Panel):
                     return 
                 
                 self.preview_btn.Enable(False)
-                
+                self.fill_sid_btn2.Enable(True)
             #如果选择使用韵达二维码，则系统自动从韵达获取单号
             elif is_yunda_qrcode:
                 #对选中订单进行过滤
@@ -585,15 +571,18 @@ class GridPanel(wx.Panel):
                     
                     #将运单号填入系统订单，并标记订单为二维码订单
                     for row in self._selectedRows:
-                        trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                        trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                         trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
                         out_sid  = im_map.get(trade_id,None)
                         
                         if out_sid and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
                             is_locked = locking_trade(trade.id,operator,session=session)
                             if is_locked:
-                                self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
+                                self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
                     
+                    if len(im_map.keys()) > len(yunda_ids)*0.8:
+                        self.fill_sid_btn2.Enable(True)
+                        
                 except Exception,exc :
                     dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
@@ -601,7 +590,6 @@ class GridPanel(wx.Panel):
                     raise exc
                 
         self._can_fresh = False
-        self.fill_sid_btn2.Enable(True)  
         self.fill_sid_text.Clear()
         self.grid.ForceRefresh()
         evt.Skip()
@@ -686,14 +674,14 @@ class GridPanel(wx.Panel):
                         #将运单号填入系统订单，并标记订单为二维码订单
                         final_rows = set()
                         for row in self._selectedRows:
-                            trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                            trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                             trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
                             out_sid  = im_map.get(trade_id,None)
                             
                             if out_sid and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
                                 is_locked = locking_trade(trade.id,operator,session=session)
                                 if is_locked:
-                                    self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
+                                    self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
                             
                                     final_rows.add(row)
                         
@@ -706,8 +694,8 @@ class GridPanel(wx.Panel):
                 
                 for row in self._selectedRows:
                     try:
-                        trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                        out_sid  = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
+                        trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
+                        out_sid  = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL)
                         trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
                         company_regex = trade.logistics_company.reg_mail_no if trade else None
                         company_name  = trade.logistics_company.name
@@ -718,8 +706,8 @@ class GridPanel(wx.Panel):
                         if is_match_pass:
                             session.query(MergeTrade).filter_by(id=trade_id)\
                                 .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
-                            self.grid.SetCellValue(row,OUT_SID_CELL_COL,out_sid)
-                            self.grid.SetCellValue(row,OPERATOR_CELL_COL,operator)
+                            self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
+                            self.grid.SetCellValue(row,cfg.OPERATOR_CELL_COL,operator)
                             effect_row += 1  
                         elif not out_sid:
                             pass
@@ -766,10 +754,10 @@ class GridPanel(wx.Panel):
             elif eventid == picking_print_btn_id:
                 trade_ids = []
                 for row in self._selectedRows:
-                    out_sid = self.grid.GetCellValue(row,OUT_SID_CELL_COL)
-                    operator = self.grid.GetCellValue(row,OPERATOR_CELL_COL)
+                    out_sid = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL)
+                    operator = self.grid.GetCellValue(row,cfg.OPERATOR_CELL_COL)
                     if out_sid and operator:
-                        trade_ids.append(self.grid.GetCellValue(row,TRADE_ID_CELL_COL))
+                        trade_ids.append(self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL))
                 if trade_ids:
                     DeliveryPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
             
@@ -779,7 +767,7 @@ class GridPanel(wx.Panel):
                 pre_company_id = ''
                 is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked() 
                 for row in self._selectedRows:
-                    trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+                    trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                     trade = session.query(MergeTrade).filter_by(id=trade_id).first()
                     if pre_company_id and pre_company_id != trade.logistics_company_id:
                         dial = wx.MessageDialog(None, u'请确保批打订单快递相同', u'快递单打印提示', 
@@ -799,6 +787,18 @@ class GridPanel(wx.Panel):
                     sort_list = sorted(id_sid_map.items(),key=lambda d:d[1],reverse=False)
                     sort_ids  =  [d[0] for d in sort_list]
                     
+                    trades = session.query(MergeTrade).filter(MergeTrade.id.in_(sort_ids)).filter_by(is_express_print=True)
+                    rept_num = trades.count()
+                    if rept_num > 0:
+                        dial = wx.MessageDialog(None, u'该批订单有（%d）单已打印快递单，还要继续吗？'%rept_num, u'快递单重打提示', 
+                                                wx.OK|wx.CANCEL|wx.ICON_EXCLAMATION)
+                        result = dial.ShowModal()
+                        dial.Destroy()
+                        
+                        #如果不继续，则退出
+                        if result != wx.ID_OK:
+                            return 
+                    
                     #调用韵达打印接口并打印
                     yundao.printYUNDAPDF(sort_ids,session=session)
                                         
@@ -807,7 +807,7 @@ class GridPanel(wx.Panel):
             
             elif eventid == review_orders_btn_id:
                 if len(self._selectedRows)==1:
-                    trade_id = self.grid.GetCellValue(list(self._selectedRows)[0],TRADE_ID_CELL_COL)
+                    trade_id = self.grid.GetCellValue(list(self._selectedRows)[0],cfg.TRADE_ID_CELL_COL)
                     OrderReview(parent=self,trade_id=trade_id).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()
 
             elif eventid == scan_check_btn_id:
@@ -846,11 +846,11 @@ class GridPanel(wx.Panel):
         gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels, self.Parent.selectedRowColour))
         self.grid.SetTable(gridtable())
         self.grid.SetColSize(0, 20)
-        self.grid.SetColSize(LOCKED_CELL_COL,35)
-        self.grid.SetColSize(EXPRESS_CELL_COL,50)
-        self.grid.SetColSize(PICKLE_CELL_COL,50)
-        self.grid.SetColSize(REVIEW_CELL_COL,35)
-        self.grid.SetColSize(OUT_SID_CELL_COL,120)
+        self.grid.SetColSize(cfg.LOCKED_CELL_COL,35)
+        self.grid.SetColSize(cfg.EXPRESS_CELL_COL,50)
+        self.grid.SetColSize(cfg.PICKLE_CELL_COL,50)
+        self.grid.SetColSize(cfg.REVIEW_CELL_COL,35)
+        self.grid.SetColSize(cfg.OUT_SID_CELL_COL,120)
         self.grid.SetRowLabelSize(40)  
         self.updateCellBySelectedTradeIds(trade_ids)
         self.updateSelectAllCheck()
@@ -860,7 +860,7 @@ class GridPanel(wx.Panel):
         self._selectedRows.clear()
         rows  = self.grid.GetNumberRows()
         for row in xrange(0,rows):
-            trade_id = self.grid.GetCellValue(row,TRADE_ID_CELL_COL)
+            trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
             if trade_id in trade_ids:
                 self._selectedRows.add(row)
                 self.grid.SetCellValue(row,0,'1')
@@ -868,7 +868,7 @@ class GridPanel(wx.Panel):
     def getSelectTradeIds(self,selectRows):
         trade_ids = []
         for row in selectRows:
-            trade_id = self.grid.GetCellValue(int(row),TRADE_ID_CELL_COL)
+            trade_id = self.grid.GetCellValue(int(row),cfg.TRADE_ID_CELL_COL)
             trade_ids.append(trade_id)
         return trade_ids
     
@@ -894,11 +894,11 @@ class GridPanel(wx.Panel):
         gridtable = weakref.ref(GridTable(object_list, self.rowLabels, self.colLabels,self.Parent.selectedRowColour))
         self.grid.SetTable(gridtable())
         self.grid.SetColSize(0, 20)
-        self.grid.SetColSize(LOCKED_CELL_COL,35)
-        self.grid.SetColSize(EXPRESS_CELL_COL,50)
-        self.grid.SetColSize(PICKLE_CELL_COL,50)
-        self.grid.SetColSize(REVIEW_CELL_COL,35)
-        self.grid.SetColSize(OUT_SID_CELL_COL,120)
+        self.grid.SetColSize(cfg.LOCKED_CELL_COL,35)
+        self.grid.SetColSize(cfg.EXPRESS_CELL_COL,50)
+        self.grid.SetColSize(cfg.PICKLE_CELL_COL,50)
+        self.grid.SetColSize(cfg.REVIEW_CELL_COL,35)
+        self.grid.SetColSize(cfg.OUT_SID_CELL_COL,120)
         self.grid.SetRowLabelSize(40)
         for btn in self.button_array:
             btn.Enable(False)
@@ -995,6 +995,7 @@ class SimpleGridPanel(wx.Panel):
         self.colLabels = colLabels
         self.grid =  grd.Grid(self, -1)
         self.setData(None)
+        self.grid.SetMinSize((1100,600))
         self.__set_properties()
         self.__do_layout()
     
@@ -1013,9 +1014,9 @@ class SimpleGridPanel(wx.Panel):
         gridtable = weakref.ref(grid_table_type(object_list, self.rowLabels, self.colLabels))
         self.grid.SetTable(gridtable(),True)
         self.grid.AutoSize()
-        self.grid.SetColSize(0,60)
+        self.grid.SetColSize(0,80)
         for i in range(0,len(object_list)):
-            self.grid.SetRowSize(i,50)
+            self.grid.SetRowSize(i,60)
         self.grid.DisableCellEditControl()
         self.grid.ForceRefresh()
         self.Layout()
@@ -1059,16 +1060,17 @@ class WeightGridPanel(wx.Panel):
         wx.Panel.__init__(self, parent, id) 
         
         self.grid = grd.Grid(self,-1)
-        colLabels = (u'内部单号',u'店铺简称',u'订单类型',u'会员名称',u'订单状态',u'系统状态',u'物流类型',u'称重重量',u'物流成本',u'实付邮费',
-                     u'收货人',u'收货人固定电话',u'收货人手机',u'收货邮编',u'所在省',u'所在市',u'所在地区',u'收货地址')
+        colLabels = (u'内部单号',u'店铺简称',u'会员名称',u'系统状态','快递公司','运单号',u'称重重量',
+                     u'收货人',u'所在省',u'所在市',u'所在地区',u'收货地址',u'收货人手机')
         gridtable = weakref.ref(WeightGridTable(colLabels=colLabels))
         self.grid.SetTable(gridtable(),True)  
-        self.grid.SetRowLabelSize(40)
+        self.grid.SetColLabelSize(40)
         
         box_sizer = wx.BoxSizer(wx.HORIZONTAL)
         box_sizer.Add(self.grid,flag=wx.EXPAND)
-        
-        self.grid.SetMinSize((1300,500))
+       
+        self.grid.SetMinSize((1200,600))
+        self.grid.SetColSize(5,120)
         self.SetSizer(box_sizer)
         self.Layout()
         
@@ -1079,6 +1081,7 @@ class WeightGridPanel(wx.Panel):
             self.grid.SetCellValue(0,index,item)
             
         self.grid.InsertRows(0,1,True)
+        self.grid.SetRowSize(0,40)
         self.grid.ProcessTableMessage(grd.GridTableMessage(
                                     self.grid.Table,grd.GRIDTABLE_NOTIFY_ROWS_INSERTED,0,1))
             
@@ -1088,23 +1091,17 @@ class WeightGridPanel(wx.Panel):
         items = []
         items.append(str(trade.id))
         items.append(trade.seller_nick)
-        items.append(cfg.TRADE_TYPE.get(trade.type,u'其它'))
         items.append(trade.buyer_nick)
-        items.append(cfg.TRADE_STATUS.get(trade.status,u'其它'))
         items.append(cfg.SYS_STATUS.get(trade.sys_status,u'其它'))
-        items.append(cfg.SHIPPING_TYPE.get(trade.shipping_type,u'其它'))
+        items.append(trade.logistics_company.name)
+        items.append(trade.out_sid)
         items.append(trade.weight)
-        items.append(trade.post_cost)
-        
-        items.append(trade.post_fee)
         items.append(trade.receiver_name)
-        items.append(trade.receiver_phone)
-        items.append(trade.receiver_mobile)
-        items.append(trade.receiver_zip)
         items.append(trade.receiver_state)
         items.append(trade.receiver_city)
         items.append(trade.receiver_district)
         items.append(trade.receiver_address)
+        items.append(trade.receiver_mobile)
         
         return items
       
@@ -1274,15 +1271,33 @@ class CheckGridPanel(wx.Panel):
             for key,value in self.code_num_dict.items():
                 value['cnums'] = value['rnums']
             return True
+        
         if self.code_num_dict.has_key(barcode):
             grid = self.ordergridpanel.grid
             self.code_num_dict[barcode]['cnums'] += 1
+            cnum     = self.code_num_dict[barcode]['cnums']
             for row in xrange(0,grid.NumberRows):
-                code     = grid.GetCellValue(row,BAR_CODE_COL)
-                if barcode == code:
-                    grid.SetCellValue(row,NUM_STATUS_COL,str(self.code_num_dict[barcode]['cnums']))
-                    return True
-            grid.ForceRefresh()
+                code     = grid.GetCellValue(row,cfg.BAR_CODE_COL)
+                
+                if barcode != code :
+                    continue
+                
+                gcnum    = int(grid.GetCellValue(row,cfg.ORIGIN_NUM_COL))
+                fcnum    = int(grid.GetCellValue(row,cfg.NUM_STATUS_COL))
+                
+                if fcnum >= gcnum:
+                    cnum = cnum - fcnum
+                    continue
+                
+                if  cnum <= gcnum :
+                    grid.SetCellValue(row,cfg.NUM_STATUS_COL,str(cnum))
+                    cnum = 0
+                    break
+            
+            grid.ForceRefresh()        
+            
+            if cnum == 0:
+                return True
         return False
         
         

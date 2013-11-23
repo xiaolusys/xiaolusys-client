@@ -292,6 +292,7 @@ class MergeTrade(Base):
     operator         = Column(String(32))
     is_locked        = Column(Boolean)
     is_charged       = Column(Boolean)
+    has_merge        = Column(Boolean)
     sys_status       = Column(String(32),index=True)  
     
     reserveo       =  Column(String(32))       

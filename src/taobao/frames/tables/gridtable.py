@@ -148,7 +148,6 @@ class SimpleGridTable(grd.PyGridTableBase):
         self.imagecell = grd.GridCellAttr()
         self.imagecell.SetEditor(grd.GridCellTextEditor())
         self.imagecell.SetRenderer(BitmapRenderer())
-    
         
     # these five are the required methods
     def GetNumberRows(self):
@@ -355,11 +354,12 @@ class CheckGridTable(grd.PyGridTableBase):
             
         self.cell = grd.GridCellAttr()
         self.cell.SetOverflow(False)
+        self.cell.SetReadOnly()
         
         self.imagecell = grd.GridCellAttr()
         self.imagecell.SetEditor(grd.GridCellTextEditor())
         self.imagecell.SetRenderer(BitmapRenderer())
-        
+        self.imagecell.SetReadOnly()
         
     # these five are the required methods
     def GetNumberRows(self):
@@ -406,7 +406,7 @@ class CheckGridTable(grd.PyGridTableBase):
         if not need_check and check_num == 0:
             attr.SetBackgroundColour('GREY')
         elif check_num>0 and check_num<origin_num:
-            attr.SetBackgroundColour('RED')
+            attr.SetBackgroundColour('PINK')
         elif check_num >= origin_num:
             attr.SetBackgroundColour('GREEN')
         else :

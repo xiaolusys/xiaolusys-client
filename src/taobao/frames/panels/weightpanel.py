@@ -26,16 +26,14 @@ class ScanWeightPanel(wx.Panel):
         wx.Panel.__init__(self,parent,id)
         
         self.Session = parent.Session
-        self.is_auto_save = True
         self.trade = None
         self.company_label = wx.StaticText(self,-1,u'快递公司')
         self.company_select = wx.ComboBox(self,-1)
         self.out_sid_label = wx.StaticText(self,-1,u'快递单号')
-        self.out_sid_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+        self.out_sid_text  = wx.TextCtrl(self,-1,size=(200,-1),style=wx.TE_PROCESS_ENTER)
         self.weight_label  = wx.StaticText(self,-1,u'称重重量(g)')
-        self.weight_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
-        self.auto_add_label  = wx.StaticText(self,-1,u'自动保存') 
-        self.auto_add_checkbox = wx.CheckBox(self,-1)
+        self.weight_text  = wx.TextCtrl(self,-1,size=(200,-1),style=wx.TE_PROCESS_ENTER)
+
         self.hand_add_button   = wx.Button(self,-1,u'保存') 
         self.cancel_button   = wx.Button(self,-1,u'取消')
         
@@ -43,43 +41,16 @@ class ScanWeightPanel(wx.Panel):
         
         self.order_label1  = wx.StaticText(self,-1,u'店铺简称')
         self.order_content1  = wx.TextCtrl(self,-1)
-        self.order_label2  = wx.StaticText(self,-1,u'来源单号')
-        self.order_content2  = wx.TextCtrl(self,-1)
         self.order_label3  = wx.StaticText(self,-1,u'订单类型')
         self.order_content3  = wx.TextCtrl(self,-1)
         self.order_label4  = wx.StaticText(self,-1,u'会员名称')
         self.order_content4  = wx.TextCtrl(self,-1)
         self.order_label5  = wx.StaticText(self,-1,u'快递公司')
         self.order_content5  = wx.TextCtrl(self,-1)     
-        self.order_label6  = wx.StaticText(self,-1,u'快递单号')
-        self.order_content6  = wx.TextCtrl(self,-1) 
-
-        
-        self.order_label7  = wx.StaticText(self,-1,u'订单状态')
-        self.order_content7  = wx.TextCtrl(self,-1)
-        self.order_label8  = wx.StaticText(self,-1,u'系统状态')
-        self.order_content8  = wx.TextCtrl(self,-1)
-        self.order_label9  = wx.StaticText(self,-1,u'收货人')
-        self.order_content9  = wx.TextCtrl(self,-1)
-        self.order_label10  = wx.StaticText(self,-1,u'物流类型')
-        self.order_content10  = wx.TextCtrl(self,-1)
-        self.order_label11  = wx.StaticText(self,-1,u'实付邮费')
-        self.order_content11  = wx.TextCtrl(self,-1)
-        self.order_label12  = wx.StaticText(self,-1,u'收货人固定电话')
-        self.order_content12  = wx.TextCtrl(self,-1,u'') 
-        
-        self.order_label13  = wx.StaticText(self,-1,u'收货人手机')
-        self.order_content13  = wx.TextCtrl(self,-1) 
-        self.order_label14  = wx.StaticText(self,-1,u'收货邮编')
-        self.order_content14  = wx.TextCtrl(self,-1)
-        self.order_label15  = wx.StaticText(self,-1,u'所在省')
-        self.order_content15  = wx.TextCtrl(self,-1)
-        self.order_label16  = wx.StaticText(self,-1,u'所在市')
-        self.order_content16  = wx.TextCtrl(self,-1)
-        self.order_label17  = wx.StaticText(self,-1,u'所在地区')
-        self.order_content17  = wx.TextCtrl(self,-1)
-        self.order_label18  = wx.StaticText(self,-1,u'收货地址')
-        self.order_content18  = wx.TextCtrl(self,-1,size=(150,-1))
+        self.order_label6  = wx.StaticText(self,-1,u'收货人')
+        self.order_content6  = wx.TextCtrl(self,-1,size=(130,-1))
+        self.order_label7  = wx.StaticText(self,-1,u'收货地址')
+        self.order_content7  = wx.TextCtrl(self,-1,size=(300,-1))
         
         self.order_box1 = wx.StaticBox(self,-1,u'扫描订单详细信息')
         
@@ -98,29 +69,15 @@ class ScanWeightPanel(wx.Panel):
         with create_session(self.Parent) as session: 
             logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
         self.company_select.AppendItems([company.name for company in logistics_companies])
-        self.auto_add_checkbox.SetValue(True)
         
         self.control_array = []
         self.control_array.append(self.order_content1)
-        self.control_array.append(self.order_content2)
         self.control_array.append(self.order_content3)
         self.control_array.append(self.order_content4)
         self.control_array.append(self.order_content5)
         self.control_array.append(self.order_content6)
-        
         self.control_array.append(self.order_content7)
-        self.control_array.append(self.order_content8)
-        self.control_array.append(self.order_content9)
-        self.control_array.append(self.order_content10)
-        self.control_array.append(self.order_content11)
-        self.control_array.append(self.order_content12)
-        
-        self.control_array.append(self.order_content13)
-        self.control_array.append(self.order_content14)
-        self.control_array.append(self.order_content15)
-        self.control_array.append(self.order_content16)
-        self.control_array.append(self.order_content17)
-        self.control_array.append(self.order_content18)
+
             
         self.out_sid_text.SetFocus()
     
@@ -135,8 +92,7 @@ class ScanWeightPanel(wx.Panel):
         flex_sizer1.Add(self.weight_label,0,4)
         flex_sizer1.Add(self.weight_text,0,5)
 
-        flex_sizer1.Add(self.auto_add_label,0,8)
-        flex_sizer1.Add(self.auto_add_checkbox,0,9)
+
         flex_sizer1.Add(self.hand_add_button,0,10)
         flex_sizer1.Add(self.cancel_button,0,11)
         flex_sizer1.Add(self.error_text,0,12)
@@ -145,42 +101,16 @@ class ScanWeightPanel(wx.Panel):
         bag_sizer1 = wx.GridBagSizer(hgap=5,vgap=5)
         bag_sizer1.Add(self.order_label1,pos=(0,0),span=(1,1),flag=wx.EXPAND)
         bag_sizer1.Add(self.order_content1,pos=(0,1),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label2,pos=(0,2),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content2,pos=(0,3),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label3,pos=(0,4),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content3,pos=(0,5),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label4,pos=(0,6),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content4,pos=(0,7),span=(1,1),flag=wx.EXPAND)   
-        bag_sizer1.Add(self.order_label5,pos=(0,8),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content5,pos=(0,9),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label6,pos=(0,10),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content6,pos=(0,11),span=(1,1),flag=wx.EXPAND)
-        
-        bag_sizer1.Add(self.order_label7,pos=(1,0),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content7,pos=(1,1),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label8,pos=(1,2),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content8,pos=(1,3),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label9,pos=(1,4),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content9,pos=(1,5),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label10,pos=(1,6),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content10,pos=(1,7),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label11,pos=(1,8),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content11,pos=(1,9),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label12,pos=(1,10),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content12,pos=(1,11),span=(1,1),flag=wx.EXPAND)
-        
-        bag_sizer1.Add(self.order_label13,pos=(2,0),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content13,pos=(2,1),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label14,pos=(2,2),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content14,pos=(2,3),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label15,pos=(2,4),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content15,pos=(2,5),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label16,pos=(2,6),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content16,pos=(2,7),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label17,pos=(2,8),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content17,pos=(2,9),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_label18,pos=(2,10),span=(1,1),flag=wx.EXPAND)
-        bag_sizer1.Add(self.order_content18,pos=(2,11),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_label3,pos=(0,2),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_content3,pos=(0,3),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_label4,pos=(0,4),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_content4,pos=(0,5),span=(1,1),flag=wx.EXPAND)   
+        bag_sizer1.Add(self.order_label5,pos=(0,6),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_content5,pos=(0,7),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_label6,pos=(0,8),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_content6,pos=(0,9),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_label7,pos=(0,10),span=(1,1),flag=wx.EXPAND)
+        bag_sizer1.Add(self.order_content7,pos=(0,11),span=(1,1),flag=wx.EXPAND)
         
         sbsizer1.Add(bag_sizer1,proportion=0,flag=wx.EXPAND,border=10)
         
@@ -198,7 +128,6 @@ class ScanWeightPanel(wx.Panel):
         self.Bind(wx.EVT_COMBOBOX, self.onComboboxSelect, self.company_select)
         self.Bind(wx.EVT_TEXT_ENTER, self.onOutsidTextChange,self.out_sid_text)
         self.Bind(wx.EVT_TEXT_ENTER, self.onWeightTextChange,self.weight_text)
-        self.Bind(wx.EVT_CHECKBOX, self.onClickCheckBox, self.auto_add_checkbox)
         self.Bind(wx.EVT_BUTTON,self.onClickSaveBtn,self.hand_add_button)
         self.Bind(wx.EVT_BUTTON,self.onClickCancelBtn,self.cancel_button)   
     
@@ -268,7 +197,7 @@ class ScanWeightPanel(wx.Panel):
         evt.Skip()
         
     def clearTradeInfoPanel(self):
-        for i in xrange(1,19):
+        for i in xrange(1,7):
             content = eval('self.order_content%s'%str(i))
             content.Clear()  
               
@@ -276,31 +205,17 @@ class ScanWeightPanel(wx.Panel):
     def setTradeInfoPanel(self,trade):
  
         self.order_content1.SetValue(trade.seller_nick)
-        self.order_content2.SetValue(str(trade.tid))
         self.order_content3.SetValue(cfg.TRADE_TYPE.get(trade.type,u'其他'))
         self.order_content4.SetValue(trade.buyer_nick)
         self.order_content5.SetValue(trade.logistics_company.name)
-        self.order_content6.SetValue(trade.out_sid)
-        
-        self.order_content7.SetValue(cfg.TRADE_STATUS.get(trade.status,u'其他'))
-        self.order_content8.SetValue(cfg.SYS_STATUS.get(trade.sys_status,u'其他'))
-        self.order_content9.SetValue(trade.receiver_name)
-        self.order_content10.SetValue(cfg.SHIPPING_TYPE.get(trade.shipping_type,u'其他'))
-        self.order_content11.SetValue(trade.post_fee)
-        self.order_content12.SetValue(trade.receiver_phone)
-        
-        self.order_content13.SetValue(trade.receiver_mobile)
-        self.order_content14.SetValue(trade.receiver_zip)
-        self.order_content15.SetValue(trade.receiver_state)
-        self.order_content16.SetValue(trade.receiver_city)
-        self.order_content17.SetValue(trade.receiver_district)
-        self.order_content18.SetValue(trade.receiver_address)
+        self.order_content6.SetValue(trade.receiver_name+'/'+trade.receiver_mobile)        
+        self.order_content7.SetValue(' '.join([trade.receiver_state,trade.receiver_city,trade.receiver_district,trade.receiver_address]))
         
         self.Layout()
         
     def onWeightTextChange(self,evt):
         weight = self.weight_text.GetValue().strip()
-        if weight_regex.match(weight) and self.trade and self.is_auto_save:
+        if weight_regex.match(weight) and self.trade :
             self.save_weight_to_trade(self.trade,weight)
             self.weight_text.Clear()
             self.out_sid_text.Clear()
@@ -372,9 +287,6 @@ class ScanWeightPanel(wx.Panel):
         if is_need_check.lower() == 'true':
             return (cfg.SYS_STATUS_WAITSCANWEIGHT,)
         return (cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_WAITSCANCHECK)
-        
-    def onClickCheckBox(self,evt):
-        self.is_auto_save = evt.IsChecked()
         
         
     def onClickSaveBtn(self,evt):
