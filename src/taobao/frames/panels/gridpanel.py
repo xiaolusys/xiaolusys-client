@@ -580,8 +580,7 @@ class GridPanel(wx.Panel):
                             if is_locked:
                                 self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
                     
-                    if len(im_map.keys()) > len(yunda_ids)*0.8:
-                        self.fill_sid_btn2.Enable(True)
+                    self.fill_sid_btn2.Enable(len(im_map.keys()) > len(yunda_ids)*0.8)
                         
                 except Exception,exc :
                     dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
@@ -1060,7 +1059,7 @@ class WeightGridPanel(wx.Panel):
         wx.Panel.__init__(self, parent, id) 
         
         self.grid = grd.Grid(self,-1)
-        colLabels = (u'内部单号',u'店铺简称',u'会员名称',u'系统状态','快递公司','运单号',u'称重重量',
+        colLabels = (u'内部单号',u'店铺简称',u'会员名称',u'系统状态',u'快递公司',u'运单号',u'称重重量',
                      u'收货人',u'所在省',u'所在市',u'所在地区',u'收货地址',u'收货人手机')
         gridtable = weakref.ref(WeightGridTable(colLabels=colLabels))
         self.grid.SetTable(gridtable(),True)  

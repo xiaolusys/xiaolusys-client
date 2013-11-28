@@ -3,16 +3,15 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <style type='text/css'>
 body {
-	backgroup-color: #9cc2a9;
-	margin: 0 auto;
-	padding: 0;
+	margin: 0px auto;
+	padding: 0px;
 	text-align: center;
 	font-size:16px;
 }
 
 div {
-	margin: 0;
-	padding: 0;
+	margin: 0px auto;
+	padding: 0px;
 }
 
 .express {
@@ -24,7 +23,12 @@ div {
 .head-panel {
 	width: 100%;
 	height: 290px;
-	margin-top: 10px;
+	margin-top: 0px;
+}
+
+.head-no{
+	text-align:center;
+	height:16px;
 }
 
 .left-panel {
@@ -105,7 +109,7 @@ div {
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
+		<div class="head-no">{{ trade.trade_id }}</div>
 		<div class='head-panel'>
 			<div class='left-panel'>
 				<div style="margin-top:60px;"><span class="zone">{{ trade.zone }}</span></div>
