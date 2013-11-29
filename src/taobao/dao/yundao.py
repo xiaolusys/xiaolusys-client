@@ -256,13 +256,13 @@ def get_objs_from_trade(trades,session=None):
                      "sender_postcode":u"",
                      "sender_phone":u"021-37698479",
                      "sender_mobile":u"",
-                     "receiver_name":trade.receiver_name,
+                     "receiver_name":trade.receiver_name.replace('<','(').replace('>',')'),
                      "receiver_company":u'',
-                     "receiver_city":','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district]),
-                     "receiver_address":','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district+trade.receiver_address]),
-                     "receiver_postcode":trade.receiver_zip,
-                     "receiver_phone":trade.receiver_phone,
-                     "receiver_mobile":trade.receiver_mobile,
+                     "receiver_city":(','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district])).replace('<','(').replace('>',')'),
+                     "receiver_address":(','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district+trade.receiver_address])).replace('<','(').replace('>',')'),
+                     "receiver_postcode":trade.receiver_zip.replace('<','(').replace('>',')'),
+                     "receiver_phone":trade.receiver_phone.replace('<','(').replace('>',')'),
+                     "receiver_mobile":trade.receiver_mobile.replace('<','(').replace('>',')'),
                      "zone":zone and zone.code or ''
                      })
         

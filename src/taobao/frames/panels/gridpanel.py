@@ -580,8 +580,8 @@ class GridPanel(wx.Panel):
                             if is_locked:
                                 self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
                     
-                    self.fill_sid_btn2.Enable(len(im_map.keys()) > len(yunda_ids)*0.8)
-                        
+                    self.fill_sid_btn2.Enable(len(im_map.keys()) > len(yunda_ids)*0.9)
+                    
                 except Exception,exc :
                     dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
