@@ -1,129 +1,123 @@
-﻿<html>
+<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>韵达快递打印模板</title>
 <style type='text/css'>
-body {
-	margin: 0px auto;
-	padding: 0px;
-	text-align: center;
-	font-size:16px;
-}
-
-div {
-	margin: 0px auto;
-	padding: 0px;
-}
-
-.express {
-	width: 660px;
-	height: 1000px;
-	text-align:left;
-
-}
-
-.head-panel {
-	width: 100%;
-	height: 290px;
-	margin-top: 20px;
-}
-
-.head-no{
-	text-align:center;
-	height:16px;
-}
-
-.left-panel {
-	float: left;
-	width: 30%;
-	height:100%;
-	display: inline;
-	text-align:center;
-}
-
-.right-panel {
-	float: right;
-	height: 160px;
-	width: 70%;
-	display: inline;
-	text-align: left;
-}
-
-.receiver-name {
-	float:left;
-	display: inline;
-	margin-top: 10px;
-}
-
-.receiver-addr {
-	height: 60px;
-	width: 260px;
-	margin-top: 20px;
-	margin-left: 120px;
-}
-
-.receiver-info {
-	height: 30px;
-	width: 300px;
-	margin-left: 120px;
-}
-
-.left-panel-bottom {
-	height: 30px;
-	width: 300px;
-	margin-top: 0px;
-	margin-left: 120px;
-}
-
-.receiver-mobile {
-	display: block;
-	width: 100%;
-	text-align:right;
-	margin-right:80px;
-}
-
-.post-code {
-	float: right;
-	display: inline;
-	width: 100px;
-	margin-top: 10px;
-}
-
-.bottom-panel {
-	clear: left;
-	width: 100%;
-}
-
-.post-date{
-	width:50%;
-	margin-left:60px;
-	display:inline;
-	text-align:top;
-}
-
-.zone{
-	display:inline;
-	font-size:22px;
-	
-}
+	body {
+		margin: 0px auto;
+		padding: 0px;
+		text-align: center;
+		font-size:16px;
+	}
+	div {
+		margin: 0px auto;
+		padding: 0px;
+	}
+	.express {
+		width: 830px;
+		height: 446px;
+		text-align:left;
+	}
+	.head-panel {
+		width: 100%;
+		height: 200px;
+		margin-top: 0px;
+	}
+	.head-no{
+		text-align:center;
+		height:70px;
+	}
+	.left-panel {
+		float: left;
+		width: 380px;
+		height:160px;
+		display: inline;
+		text-align:center;
+	}
+	.right-panel {
+		float: right;
+		height: 160px;
+		width: 440px;
+		display: inline;
+		text-align: left;
+	}
+	.receiver-name {
+		float:left;
+		width:150px;
+		margin-top:30px;
+		display: inline;
+	}
+	.receiver-addr {
+		height: 60px;
+		width: 300px;
+		margin-top: 30px;
+		margin-left: 80px;
+	}
+	.receiver-info {
+		height: 30px;
+		width: 300px;
+		margin-left: 80px;
+	}
+	.left-panel-bottom {
+		height: 30px;
+		width: 300px;
+		margin-top: 0px;
+		margin-left: 80px;
+	}
+	.receiver-mobile {
+		display: block;
+		width: 100%;
+		text-align:right;
+	}
+	.receiver-mobile span{
+		margin-right:100px;
+	}
+	.post-code {
+		float: right;
+		display: inline;
+		width: 100px;
+		margin-top: 25px;
+		margin-right:20px;
+	}
+	.bottom-panel {
+		clear: left;
+		width: 100%;
+		height:120px;
+	}
+	.post-fill{
+		width:100%;
+		height:100px;
+	}
+	.post-date{
+		width:50%;
+		margin-left:160px;
+		display:inline;
+	}
+	.zone{
+		display:inline;
+		font-size:22px;
+	}
 </style>
 </head>
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		<div class="head-no">{{ trade.trade_id }}</div>
+		<div class="head-no"><br><br>{{ trade.trade_id }}</div>
 		<div class='head-panel'>
 			<div class='left-panel'>
 				<div style="margin-top:60px;"><span class="zone">{{ trade.zone }}</span></div>
 			</div>
 			<div class='right-panel'>
-				<div class='receiver-mobile'>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
+				<div class='receiver-mobile'>
+				  <span>{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</span>
+				</div>
 				<div class='receiver-addr'>
-					<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{
-						trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }} <br>
-					<br> {{ trade.receiver_address }}
+					<span>
+						{{ trade.receiver_state }}&nbsp;&nbsp;&nbsp;&nbsp;
+						{{ trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }}<br>
+						<br>{{ trade.receiver_address }}
 					</span>
 				</div>
-				<!--<div class='receiver-info'></div>-->
 				<div class='left-panel-bottom'>
 					<div class='receiver-name'>{{ trade.receiver_name }}</div>
 					<div class='post-code'>{{ trade.receiver_zip }}</div>
@@ -131,8 +125,8 @@ div {
 			</div>
 		</div>
 		<div class='bottom-panel'>
+			<div class='post-fill'></div>
 			<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
-			<!-- 此处打印目的地 -->
 		</div>
 	</div>
 	{% endfor %}
