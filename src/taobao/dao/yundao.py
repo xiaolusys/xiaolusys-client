@@ -14,8 +14,9 @@ from taobao.dao import configparams as cfg
 from taobao.dao.dbsession import get_session
 from taobao.common.utils import TEMP_FILE_ROOT,getconfig
 from taobao.dao.models import ClassifyZone,MergeTrade,BranchZone
-from taobao.common.utils import getconfig,format_datetime
+from taobao.common.utils import getconfig,format_datetime,escape_invalid_xml_char
 import webbrowser
+
 
 SELECT    = 'select'
 RECEIVE   = 'receive'
@@ -57,7 +58,7 @@ ACTION_DICT = {
 
 API_DICT = {
                RECEIVE:RECEIVE_API,
-               MODIFY:RECEIVE_API,
+               MODIFY:MODIFY_API,
                CANCEL:CANCEL_API,
                ORDERINFO:ORDERINFO_API,
                TRANSITE:TRANSITE_API,
@@ -193,7 +194,7 @@ def getText(nodelist):
 #生成创建订单XML
 def gen_orders_xml(objs):
     
-    _xml_list = ['<orders>']
+    _xml_list = ['<?xml version="1.0" encoding="utf-8"?>','<orders>']
 
     for obj in objs:
         _xml_list.append('<order>')
@@ -247,7 +248,6 @@ def get_objs_from_trade(trades,session=None):
         
         if not zone:
             zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,address=trade.receiver_address,session=session)
-        
         objs.append({"id":trade.id,
                      "sender_name":u"优尼世界",
                      "sender_company":u"优尼世界旗舰店",
@@ -256,16 +256,16 @@ def get_objs_from_trade(trades,session=None):
                      "sender_postcode":u"",
                      "sender_phone":u"021-37698479",
                      "sender_mobile":u"",
-                     "receiver_name":trade.receiver_name.replace('<','(').replace('>',')'),
+                     "receiver_name":escape_invalid_xml_char(trade.receiver_name),
                      "receiver_company":u'',
-                     "receiver_city":(','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district])).replace('<','(').replace('>',')'),
-                     "receiver_address":(','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district+trade.receiver_address])).replace('<','(').replace('>',')'),
-                     "receiver_postcode":trade.receiver_zip.replace('<','(').replace('>',')'),
-                     "receiver_phone":trade.receiver_phone.replace('<','(').replace('>',')'),
-                     "receiver_mobile":trade.receiver_mobile.replace('<','(').replace('>',')'),
+                     "receiver_city":escape_invalid_xml_char(','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district])),
+                     "receiver_address":escape_invalid_xml_char(','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district+trade.receiver_address])),
+                     "receiver_postcode":escape_invalid_xml_char(trade.receiver_zip),
+                     "receiver_phone":escape_invalid_xml_char(trade.receiver_phone),
+                     "receiver_mobile":escape_invalid_xml_char(trade.receiver_mobile),
                      "zone":zone and zone.code or ''
                      })
-        
+    print 'objs',objs
     return objs
        
 def parseTreeID2MailnoMap(doc):

@@ -1,9 +1,10 @@
-#-*- coding:utf-8 -*-
+#-*- coding:utf8 -*-
 '''
 Created on 2012-7-23
 
 @author: user1
 '''
+import re
 import time
 import datetime
 import os
@@ -15,6 +16,7 @@ import wx
 import taobao
 import ConfigParser
 
+INVALID_XML_CHAR = r'[$><^\|\]\[;\:\&\!\%\"\?]'
 FONT_PATH = 'c:\Windows\Fonts\simsun.ttc'
 IMAGE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\images\\'
 MEDIA_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\media\\'
@@ -68,6 +70,11 @@ def writeconfig(config):
     config_path = os.path.abspath(os.path.dirname(taobao.__file__))+'/system.conf'
     with open(config_path, "w") as f:
         config.write(f)
+
+
+def escape_invalid_xml_char(xml_str):
+    """ 过滤非法XML字符 """
+    return re.sub(INVALID_XML_CHAR,'*',xml_str)
 
 class create_session():
     def __init__(self,parent):

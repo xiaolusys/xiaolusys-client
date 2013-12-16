@@ -615,7 +615,7 @@ class GridPanel(wx.Panel):
                 
                 #创建物流订单
                 yundao.create_order(yunda_ids,session=session)
-                
+                    
             except Exception,exc :
                 dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
                                             wx.OK | wx.ICON_EXCLAMATION)
