@@ -12,4 +12,4 @@ migrations
 .settings/
 .project
 .pydevproject
-.html.bak
+*.html.bak
