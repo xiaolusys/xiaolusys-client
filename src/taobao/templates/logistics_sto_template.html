@@ -16,8 +16,8 @@ div {
 }
 
 .express {
-	width: 830px;
-	height: 446px;
+	width: 792px;
+	height: 384px;
 	text-align:left;
 }
 
@@ -29,56 +29,57 @@ div {
 
 
 .head-no{
-	text-align:center;
-	height:70px;
+	margin-left:250px;
+	height:60px;
 }
 
 
 .left-panel {
 	float: left;
-	width: 400px;
+	width: 390px;
 	display: inline;
 }
 
 .right-panel {
 	float: right;
 	height: 160px;
-	width: 400px;
+	width: 390px;
 	display: inline;
 	text-align: left;
 }
 
 .receiver-name {
 	height: 25px;
-	width: 280px;
+	width: 200px;
 	margin-top: 0px;
-	margin-left: 100px;
+	margin-left: 20px;
 }
 
 .receiver-addr {
 	height: 60px;
 	width: 280px;
 	margin-top: 10px;
-	margin-left: 100px;
+	margin-left: 20px;
 }
 
 .receiver-info {
 	height: 30px;
 	width: 280px;
-	margin-left: 100px;
+	margin-left: 20px;
 }
 
 .left-panel-bottom {
 	height: 20px;
 	width: 280px;
 	margin-top: 25px;
-	margin-left: 100px;
+	margin-left: 20px;
 }
 
 .receiver-mobile {
 	float: left;
 	display: inline;
 	width: 160px;
+	margin-left: 60px;
 }
 
 .bottom-panel {
@@ -89,7 +90,7 @@ div {
 
 .post-fill{
 	width:100%;
-	height:100px;
+	height:80px;
 }
 
 .post-date{
@@ -103,7 +104,7 @@ div {
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		<div class="head-no"><br><br>{{ trade.trade_id }}</div>
+		<div class="head-no">{{ trade.trade_id }}</div>
 		<div class='head-panel'>
 			<div class='left-panel'></div>
 			<div class='right-panel'>

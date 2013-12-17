@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>韵达快递打印模板</title>
@@ -14,8 +14,8 @@
 		padding: 0px;
 	}
 	.express {
-		width: 830px;
-		height: 446px;
+		width: 792px;
+		height: 384px;
 		text-align:left;
 	}
 	.head-panel {
@@ -25,7 +25,7 @@
 	}
 	.head-no{
 		text-align:center;
-		height:70px;
+		height:60px;
 	}
 	.left-panel {
 		float: left;
@@ -37,7 +37,7 @@
 	.right-panel {
 		float: right;
 		height: 160px;
-		width: 440px;
+		width: 400px;
 		display: inline;
 		text-align: left;
 	}
@@ -102,7 +102,7 @@
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		<div class="head-no"><br><br>{{ trade.trade_id }}</div>
+		<div class="head-no">{{ trade.trade_id }}</div>
 		<div class='head-panel'>
 			<div class='left-panel'>
 				<div style="margin-top:60px;"><span class="zone">{{ trade.zone }}</span></div>
