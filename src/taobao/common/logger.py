@@ -41,7 +41,7 @@ def get_sentry_logger():
             'sentry': {
                 'level': 'ERROR',
                 'class': 'raven.handlers.logging.SentryHandler',
-                'dsn': 'http://44a4775b8f36437b818b3df2b850e961:48ebbb0eb3f04334846aeed660723fc9@sentry.huyi.so/4',
+                'dsn': 'http://21def4da770a41bfae75b4af670477b8:88fd172225a64789a0570e9ec5e31112@sentry.huyi.so/4',
                 },
             },
     
