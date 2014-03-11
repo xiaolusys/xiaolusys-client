@@ -27,6 +27,7 @@ class ScanWeightPanel(wx.Panel):
         
         self.Session = parent.Session
         self.trade = None
+        self.valid_code = ''
         self.company_label = wx.StaticText(self,-1,u'快递公司')
         self.company_select = wx.ComboBox(self,-1)
         self.out_sid_label = wx.StaticText(self,-1,u'快递单号')
@@ -157,19 +158,32 @@ class ScanWeightPanel(wx.Panel):
             self.error_text.SetBackgroundColour('red')
             winsound.PlaySound(MEDIA_ROOT+'wrong.wav',winsound.SND_FILENAME)
         
+    def getSid(self,out_sid):
+        
+        if len(out_sid) < 20:
+            return out_sid
+        return out_sid[0:13]
+        
+    def getYDValidCode(self,out_sid):
+        
+        if len(out_sid) < 20:
+            return ''
+        return out_sid[13:17]
     
     def onOutsidTextChange(self,evt):
         company_name = self.company_select.GetValue().strip()
         out_sid      = self.out_sid_text.GetValue().strip() 
-        trades = None
+        trades          = None
+        sid  = self.getSid(out_sid)
+        self.valid_code = self.getYDValidCode(out_sid)
         with create_session(self.Parent) as session:
-            if company_name and out_sid:
+            if company_name and sid:
                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                    .filter_by(out_sid=out_sid,logistics_company_id=logistics_company.id,reason_code='',is_express_print=True)
-            elif out_sid :
+                    .filter_by(out_sid=sid,logistics_company_id=logistics_company.id,reason_code='',is_express_print=True)
+            elif sid :
                 trades = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
-                        .filter_by(out_sid=out_sid,reason_code='',is_express_print=True)
+                        .filter_by(out_sid=sid,reason_code='',is_express_print=True)
                  
         count = trades.count() if trades else 0
         
@@ -262,21 +276,13 @@ class ScanWeightPanel(wx.Panel):
                     
             #称重后，内部状态变为发货已发货
             session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
-                    .update({'weight':weight,'sys_status':cfg.SYS_STATUS_FINISHED,'weight_time':datetime.datetime.now()}
+                    .update({'weight':weight,'sys_status':cfg.SYS_STATUS_FINISHED,
+                             'weight_time':datetime.datetime.now(),'reserveh':self.valid_code}
                     ,synchronize_session='fetch')
-                    
-            if trade.logistics_company.code.upper() in cfg.YUNDA_CODE:     
-                try:
-                    insert_yunda_fjbak(trade.out_sid,weight)
-                except IntegrityError:
-                    pass
-                except Exception,exc:
-                    dial = wx.MessageDialog(None, u'韵达称重数据同步失败：%s'%exc.message,
-                             u'错误提示', wx.OK | wx.ICON_EXCLAMATION)
-                    dial.ShowModal()
                     
         self.gridpanel.InsertTradeRows(trade)
         self.trade = None
+        self.valid_code = ''
         for control in self.control_array:
             control.SetValue('')
         

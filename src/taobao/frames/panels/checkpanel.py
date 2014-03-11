@@ -121,10 +121,16 @@ class ScanCheckPanel(wx.Panel):
         
         self.Layout()  
                 
+    def getSid(self):
+        sid = self.out_sid_text.GetValue().strip()
+        if len(sid) < 20:
+            return sid
+        return sid[0:13]
+    
     def onOutsidTextChange(self,evt):
         try:
             company_name = self.company_select.GetValue().strip()
-            out_sid      = self.out_sid_text.GetValue().strip() 
+            out_sid      = self.getSid()
             trades = None
             with create_session(self.Parent) as session:
                 if company_name and out_sid:
@@ -157,7 +163,7 @@ class ScanCheckPanel(wx.Panel):
     def setBarCode(self):
         
         barcode = self.barcode_text.GetValue().strip()
-        out_sid = self.out_sid_text.GetValue().strip()
+        out_sid = self.getSid()
         
         if barcode == RESET_CODE:
             self.out_sid_text.Clear()
@@ -176,14 +182,6 @@ class ScanCheckPanel(wx.Panel):
                         session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)\
                             .update({'sys_status':cfg.SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
                     
-#                    if self.is_print_qrcode:
-#                        try:
-#                            self.directPrintYundaOrder(out_sid)
-#                        except Exception,exc:
-#                            dial = wx.MessageDialog(None, u'韵达二维码快递单打印出错:%s'%exc.message,u'快递单打印提示', 
-#                                                    wx.OK | wx.ICON_EXCLAMATION)
-#                            dial.ShowModal()
-                            
                     self.gridpanel.clearTable()
                     self.out_sid_text.Clear()
                     self.barcode_text.Clear()
