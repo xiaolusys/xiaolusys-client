@@ -21,7 +21,7 @@ class BitmapRenderer(wx.grid.PyGridCellRenderer):
     
     def parseUrlToBitmap(self,image_url):
         try:
-            fp  = urllib.urlopen(image_url)
+            fp  = urllib.urlopen(image_url+'_50x50q90.jpg')
             data = fp.read()
             img = wx.ImageFromStream(StringIO(data))
         except:
