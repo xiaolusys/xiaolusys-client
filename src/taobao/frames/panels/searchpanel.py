@@ -216,12 +216,17 @@ class SearchPanel(wx.Panel):
         weight_start_time = wxdate2pydate(weight_start_time)
         weight_end_time = wxdate2pydate(weight_end_time)
 
+        def getSid(out_sid):
         
+            if len(out_sid) < 20:
+                return out_sid
+            return out_sid[0:13]
+            
         def appendFilter(datasource):
             if trade_id:
                 datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
             elif logistics_id:
-                datasource = datasource.filter_by(out_sid=logistics_id)
+                datasource = datasource.filter_by(out_sid=getSid(logistics_id))
             else:
                 if receiver_name:
                     datasource = datasource.filter_by(receiver_name=receiver_name)
