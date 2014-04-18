@@ -174,6 +174,9 @@ class OrderReview(wx.Frame):
                     
                     product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
                     prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
+
+                    product_id = product.id
+                    sku_id     = prod_sku and prod_sku.id
                     
                     promptmsg = (prod_sku and prod_sku.buyer_prompt) or (product and product.buyer_prompt) or ''
                     if promptmsg:
@@ -188,16 +191,16 @@ class OrderReview(wx.Frame):
                             prod_sku_name = prod_sku and prod_sku.name or order.sku_properties_name
                             skus[outer_sku_id] = {'sku_name':prod_sku_name,
                                                   'num':order.num,
-                                                  'location':get_product_locations(outer_id,outer_sku_id,session=session)}
+                                                  'location':get_product_locations(product_id,sku_id,session=session)}
                     else:
                         prod_sku_name = prod_sku and prod_sku.name or order.sku_properties_name
                         order_items[outer_id]={
                                                'num':order.num,
-                                               'location':get_product_locations(outer_id,opn=True,session=session),
+                                               'location':get_product_locations(product_id,opn=True,session=session),
                                                'title': product.name if product else order.title,
                                                'skus':{outer_sku_id:{'sku_name':prod_sku_name,
                                                                      'num':order.num,
-                                                                     'location':get_product_locations(outer_id,outer_sku_id,session=session)}}
+                                                                     'location':get_product_locations(product_id,sku_id,session=session)}}
                                                }
                 trade_data['buyer_prompt'] = prompt_set and ','.join(list(prompt_set)) or ''   
                 order_list = sorted(order_items.items(),key=lambda d:d[1]['location'])

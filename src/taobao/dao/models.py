@@ -402,6 +402,9 @@ class ProductLocation(Base):
     __tablename__ = 'shop_items_productlocation'
     
     id        = Column(Integer, primary_key=True)
+
+    product_id  = Column(Integer)
+    sku_id      = Column(Integer)
     
     outer_id  = Column(String(32))
     name      = Column(String(64))

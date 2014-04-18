@@ -117,14 +117,14 @@ def locking_trade(trade_id,operator,session=None):
     return is_locked
 
 
-def get_product_locations(outer_id,outer_sku_id=None,opn=False,session=None):
+def get_product_locations(product_id,sku_id=None,opn=False,session=None):
     
     if not session:
         session = get_session()
         
-    params = {'outer_id':outer_id}    
-    if outer_sku_id:
-        params['outer_sku_id'] = outer_sku_id
+    params = {'product_id':product_id}    
+    if sku_id:
+        params['sku_id'] = sku_id
     
     locations = session.query(ProductLocation).filter_by(**params)
     

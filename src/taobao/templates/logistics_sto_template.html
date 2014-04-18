@@ -98,7 +98,10 @@ div {
 	height:20px;
 	margin-left:80px;
 }
-
+.zone{
+		display:inline;
+		font-size:22px;
+	}
 </style>
 </head>
 <body>
@@ -106,7 +109,9 @@ div {
 	<div class='express'>
 		<div class="head-no">{{ trade.trade_id }}</div>
 		<div class='head-panel'>
-			<div class='left-panel'></div>
+			<div class='left-panel'>
+				<div style="margin-top:160px;margin-left:100px;"><span class="zone">婴儿用品</span></div>	
+			</div>
 			<div class='right-panel'>
 				<div class='receiver-name'>{{ trade.receiver_name }}</div>
 				<!--<div class='receiver-info'></div>-->
