@@ -247,7 +247,10 @@ def get_objs_from_trade(trades,session=None):
 #            zone = get_zone_by_code(trade.reserveo,session=session)
         
         if not zone:
-            zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,address=trade.receiver_address,session=session)
+            print 'debug trade:',trade,trade.receiver_state
+            zone = get_classify_zone(trade.receiver_state,trade.receiver_city,
+                                     trade.receiver_district,address=trade.receiver_address,session=session)
+            
         objs.append({"id":trade.id,
                      "sender_name":u"优尼世界",
                      "sender_company":u"优尼世界旗舰店",
@@ -265,7 +268,7 @@ def get_objs_from_trade(trades,session=None):
                      "receiver_mobile":escape_invalid_xml_char(trade.receiver_mobile),
                      "zone":zone and zone.code or ''
                      })
-    print 'objs',objs
+    
     return objs
        
 def parseTreeID2MailnoMap(doc):
@@ -328,8 +331,8 @@ def modify_order(ids,session=None):
     
     assert isinstance(ids,(list,tuple))
     
-    trades = session.query(MergeTrade).filter(MergeTrade.id.in_(ids),is_qrcode=True)
-    objs  = get_objs_from_trade([trades],session=session)
+    trades = session.query(MergeTrade).filter(MergeTrade.id.in_(ids),MergeTrade.is_qrcode==True)
+    objs  = get_objs_from_trade(trades,session=session)
     
     order_xml = gen_orders_xml(objs)
     

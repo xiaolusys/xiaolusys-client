@@ -609,19 +609,19 @@ class GridPanel(wx.Panel):
             if not yunda_ids:
                 return
             
-            try:
+#            try:
                 
-                yundao.modify_order(yunda_ids, session=session)
-                #将之前取消得订单重新生效
-                yundao.valid_order(yunda_ids)
-                #创建物流订单
-                yundao.create_order(yunda_ids,session=session)
+            yundao.modify_order(yunda_ids, session=session)
+            #将之前取消得订单重新生效
+            yundao.valid_order(yunda_ids)
+            #创建物流订单
+            yundao.create_order(yunda_ids,session=session)
                     
-            except Exception,exc :
-                dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
-                                            wx.OK | wx.ICON_EXCLAMATION)
-                dial.ShowModal()
-                raise exc
+#            except Exception,exc :
+#                dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
+#                                            wx.OK | wx.ICON_EXCLAMATION)
+#                dial.ShowModal()
+#                raise exc
         
         self.receive_btn.Enable(False)
         self.preview_btn.Enable()
