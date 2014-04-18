@@ -94,7 +94,8 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         counter    = counter.filter_by(sys_status=status_type)
         
     else:
-        datasource     = datasource.order_by(sqlalchemy.func.date(MergeTrade.pay_time),'priority desc','shop_trades_mergetrade.pay_time asc')
+        datasource     = datasource.order_by(sqlalchemy.func.date(MergeTrade.pay_time),
+                                             'priority desc','shop_trades_mergetrade.pay_time asc')
     
     return datasource,counter
             

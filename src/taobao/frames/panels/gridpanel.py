@@ -610,9 +610,10 @@ class GridPanel(wx.Panel):
                 return
             
             try:
+                
+                yundao.modify_order(yunda_ids, session=session)
                 #将之前取消得订单重新生效
                 yundao.valid_order(yunda_ids)
-                
                 #创建物流订单
                 yundao.create_order(yunda_ids,session=session)
                     
@@ -830,7 +831,7 @@ class GridPanel(wx.Panel):
     
     def refreshTable(self):
         #修改状态后 ，刷新当前表单  
-         
+
         trade_ids = self.getSelectTradeIds(self._selectedRows)
         if self.page:
             self.page = self.paginator.page(self.page.number)
@@ -956,8 +957,7 @@ class QueryObjectGridPanel(GridPanel):
         array_object = []
         session      = self.Session
         for order in object_list:
-            session.refresh(order,['is_locked','is_picking_print','is_express_print','can_review'
-                                        ,'operator','out_sid','logistics_company','sys_status'])
+            session.expire(order)
             
             object_array = []
             object_array.append(order.id)
