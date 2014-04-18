@@ -16,6 +16,7 @@ import datetime
 from wx.html import HtmlEasyPrinting,HtmlWindow 
 from taobao.common.environment import get_template
 from taobao.common.utils import create_session,format_datetime
+from taobao.common.regedit import updatePageSetupRegedit
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders,get_product_locations
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,\
@@ -97,13 +98,23 @@ class DeliveryPrinter(wx.Frame):
         
         return html
 
-
+    def getPageSetup(self):
+        return {'margin_top':'10',
+                'margin_bottom':'10',
+                'margin_left':'10',
+                'margin_right':'10',
+                'footer':'',
+                'header':''}
+    
     #----------------------------------------------------------------------
     def onPrint(self, event):
         
         with create_session(self.Parent) as session: 
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_picking_print':True},synchronize_session='fetch') 
+                
+        updatePageSetupRegedit(self.getPageSetup())
+        
         self.html.Print(True)
         event.Skip() 
  

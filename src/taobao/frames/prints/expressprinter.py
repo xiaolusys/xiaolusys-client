@@ -16,6 +16,7 @@ from wx.html import HtmlEasyPrinting,HtmlWindow
 from taobao.common.environment import get_template
 from taobao.dao.dbsession import get_session
 from taobao.common.utils import create_session,format_datetime
+from taobao.common.regedit import updatePageSetupRegedit
 from taobao.dao.models import MergeTrade,Item,MergeOrder,ClassifyZone
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL,YUNDA_CODE
 from taobao.dao.yundao import get_classify_zone,get_zone_by_code
@@ -99,15 +100,25 @@ class ExpressPrinter(wx.Frame):
 #            html = u'<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'%trades[0]['company_name']
         return html
     
-
+    
+    def getPageSetup(self):
+        return {'margin_top':'10',
+                'margin_bottom':'10',
+                'margin_left':'10',
+                'margin_right':'10',
+                'footer':'',
+                'header':''}
+    
     #----------------------------------------------------------------------
     def onPrint(self, event):
         
         with create_session(self.Parent) as session: 
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_express_print':True},synchronize_session='fetch')
+                
+        updatePageSetupRegedit(self.getPageSetup())
+        
         self.html.Print(True)
-          
         event.Skip() 
  
     #----------------------------------------------------------------------

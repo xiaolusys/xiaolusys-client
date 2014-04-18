@@ -13,6 +13,7 @@ import wx.lib.iewin as iewin
 from taobao.common.utils import getconfig
 from taobao.common.utils import create_session
 from taobao.common.environment import get_template
+from taobao.common.regedit import updatePageSetupRegedit
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
 from taobao.dao.tradedao import get_used_orders,get_product_locations
 from taobao.dao.yundao import get_classify_zone,get_zone_by_code,printYUNDAPDF
@@ -60,7 +61,21 @@ class OrderReview(wx.Frame):
         self.panel.SetSizer(sizer)
         self.panel.SetAutoLayout(True)
     
- 
+    def getExPageSetup(self):
+        return {'margin_top':'10',
+                'margin_bottom':'10',
+                'margin_left':'10',
+                'margin_right':'10',
+                'footer':'',
+                'header':''}
+    
+    def getDePageSetup(self):
+        return {'margin_top':'10',
+                'margin_bottom':'10',
+                'margin_left':'10',
+                'margin_right':'10',
+                'footer':'',
+                'header':''}
     #----------------------------------------------------------------------
     def onExpressPreview(self,event):
         """ """
@@ -74,8 +89,10 @@ class OrderReview(wx.Frame):
             else:   
                 html_text = self.createExpressHtml([self.trade_id])
                 self.html.LoadString(html_text)
-                self.html.PrintPreview()
                 
+                updatePageSetupRegedit(self.getExPageSetup())
+                
+                self.html.PrintPreview()
                 session.query(MergeTrade).filter_by(id=self.trade_id).update({MergeTrade.is_express_print:True})
         event.Skip()
         
@@ -84,7 +101,11 @@ class OrderReview(wx.Frame):
         """"""
         html_text = self.createPickingHtml([self.trade_id])
         self.html.LoadString(html_text)
+        
+        updatePageSetupRegedit(self.getDePageSetup())
+        
         self.html.PrintPreview()
+        
         with create_session(self.Parent) as session:
             session.query(MergeTrade).filter_by(id=self.trade_id).update({MergeTrade.is_picking_print:True})
         event.Skip()
