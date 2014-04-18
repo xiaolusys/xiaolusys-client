@@ -66,8 +66,7 @@ class OrderReview(wx.Frame):
         """ """
         with create_session(self.Parent) as session:
             trade = session.query(MergeTrade).filter_by(id=self.trade_id).first()
-            session.refresh(trade,['is_locked','is_picking_print','is_express_print'
-                                      ,'is_qrcode','operator','out_sid','logistics_company','sys_status'])
+            session.expire(trade)
             
             if trade.is_qrcode and trade.logistics_company.code == 'YUNDA':
                 #调用韵达打印接口并打印
@@ -225,21 +224,21 @@ class OrderReview(wx.Frame):
             express_data_list = []
             for trade in send_trades:
                 
-                session.refresh(trade,['is_locked','is_picking_print','is_express_print'
-                                        ,'operator','out_sid','logistics_company_id','sys_status'])
-                logistic_company = session.query(LogisticsCompany).filter_by(id=trade.logistics_company_id).first()
+                session.expire(trade)
+                logistic_company = session.query(LogisticsCompany).filter_by(
+                                                        id=trade.logistics_company_id).first()
                 trade_data = {}
                         
                 trade_data['trade_id']     = trade.id
                 trade_data['seller_nick']  = trade.seller_nick
                 trade_data['seller_contacter']  = trade.user.contacter
-                trade_data['seller_phone']  = trade.user.phone
-                trade_data['seller_mobile']  = trade.user.mobile
+                trade_data['seller_phone']      = trade.user.phone
+                trade_data['seller_mobile']     = trade.user.mobile
                 trade_data['seller_area_code']  = trade.user.area_code
-                trade_data['seller_location']  = trade.user.location
+                trade_data['seller_location']   = trade.user.location
                 
                 trade_data['post_date']    = dt
-                trade_data['buyer_nick']        = trade.buyer_nick
+                trade_data['buyer_nick']   = trade.buyer_nick
                 trade_data['out_sid']      = trade.out_sid
                 trade_data['company_name'] = logistic_company and logistic_company.name
                 trade_data['company_code'] = logistic_company and logistic_company.code

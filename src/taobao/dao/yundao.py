@@ -74,7 +74,7 @@ API_DICT = {
 
 demon_url = 'http://order.yundasys.com:10235/cus_order/order_interface/'
 PARTNER_ID = "10134210001"
-SECRET     = "123456"
+SECRET     = "rsOwTCQ7GbpgXuiHKHGW5RdgR1epwU"
 
 
 ########################################## 分拨中心分配  ################################################
@@ -301,7 +301,7 @@ def handle_demon(action,xml_data,partner_id,secret):
     
     req = urllib2.urlopen(demon_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-    
+    print 'response:',rep
     if action == REPRINT:
         return rep
         
@@ -328,7 +328,7 @@ def modify_order(ids,session=None):
     
     assert isinstance(ids,(list,tuple))
     
-    trades = session.query(MergeTrade).filter(MergeTrade.id.in_(ids))
+    trades = session.query(MergeTrade).filter(MergeTrade.id.in_(ids),is_qrcode=True)
     objs  = get_objs_from_trade([trades],session=session)
     
     order_xml = gen_orders_xml(objs)
