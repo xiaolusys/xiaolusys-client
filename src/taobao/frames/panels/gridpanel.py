@@ -463,10 +463,10 @@ class GridPanel(wx.Panel):
         selectedRows = sorted(list(self._selectedRows))
         for row in selectedRows:
             
-            trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-            logistic = self.grid.GetCellValue(row,cfg.LOG_COMPANY_CELL_COL)
+            trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL).strip()
+            logistic = self.grid.GetCellValue(row,cfg.LOG_COMPANY_CELL_COL).strip()
             
-            if logistic.startswith(YUNDA_NAME):
+            if not logistic.startswith(YUNDA_NAME):
                 dial = wx.MessageDialog(None, u'请选择韵达快递', u'快递单号预览提示', 
                                         wx.OK | wx.ICON_EXCLAMATION)
                 dial.ShowModal()

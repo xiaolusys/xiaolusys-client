@@ -247,7 +247,6 @@ def get_objs_from_trade(trades,session=None):
 #            zone = get_zone_by_code(trade.reserveo,session=session)
         
         if not zone:
-            print 'debug trade:',trade,trade.receiver_state
             zone = get_classify_zone(trade.receiver_state,trade.receiver_city,
                                      trade.receiver_district,address=trade.receiver_address,session=session)
             
@@ -304,7 +303,7 @@ def handle_demon(action,xml_data,partner_id,secret):
     
     req = urllib2.urlopen(demon_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-    print 'response:',rep
+    
     if action == REPRINT:
         return rep
         
