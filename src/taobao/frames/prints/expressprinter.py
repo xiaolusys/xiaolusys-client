@@ -102,10 +102,10 @@ class ExpressPrinter(wx.Frame):
     
     
     def getPageSetup(self):
-        return {'margin_top':'10',
-                'margin_bottom':'10',
-                'margin_left':'10',
-                'margin_right':'10',
+        return {'margin_top':'0.393700',
+                'margin_bottom':'0.629920',
+                'margin_left':'0.393700',
+                'margin_right':'0.393700',
                 'footer':'',
                 'header':''}
     
@@ -116,8 +116,6 @@ class ExpressPrinter(wx.Frame):
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_express_print':True},synchronize_session='fetch')
                 
-        updatePageSetupRegedit(self.getPageSetup())
-        
         self.html.Print(True)
         event.Skip() 
  
@@ -139,6 +137,9 @@ class ExpressPrinter(wx.Frame):
         
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_express_print':True},synchronize_session='fetch')
+                
+        updatePageSetupRegedit(self.getPageSetup())
+        
         self.html.PrintPreview()
         #self.Parent.refreshTable()  
         event.Skip()

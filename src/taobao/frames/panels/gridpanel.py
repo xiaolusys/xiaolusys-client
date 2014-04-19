@@ -25,7 +25,7 @@ from taobao.dao import yundao
 from taobao.common.logger import log_exception
 
 ZERO_REGEX = '^[0]+'
-YUNDA_NAME = u'韵达快运'
+YUNDA_NAME = u'韵达'
 
 
 fill_sid_btn_id = wx.NewId()
@@ -466,7 +466,7 @@ class GridPanel(wx.Panel):
             trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
             logistic = self.grid.GetCellValue(row,cfg.LOG_COMPANY_CELL_COL)
             
-            if logistic != YUNDA_NAME:
+            if logistic.startswith(YUNDA_NAME):
                 dial = wx.MessageDialog(None, u'请选择韵达快递', u'快递单号预览提示', 
                                         wx.OK | wx.ICON_EXCLAMATION)
                 dial.ShowModal()
