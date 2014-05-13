@@ -15,21 +15,21 @@ from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session,TEMP_FILE_ROOT
-from taobao.dao.models import MergeOrder,MergeTrade,LogisticsCompany,Product,ProductSku
+from taobao.dao.models import MergeOrder,MergeTrade,LogisticsCompany,Product,ProductSku,YundaCustomer
 from taobao.dao.tradedao import get_used_orders,get_oparetor,get_datasource_by_type_and_mode,locking_trade
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter 
 from taobao.frames.prints.expressprinter import ExpressPrinter
 from taobao.frames.prints.pickleprinter import PicklePrinter
 from taobao.frames.prints.revieworder import OrderReview
-from taobao.dao import yundao 
+from taobao.dao import yundao
 from taobao.common.logger import log_exception
 
 ZERO_REGEX = '^[0]+'
-YUNDA_NAME = u'韵达'
-
+YUNDA_CODE = 'YUNDA'
+RM_CODE    = '_QR'
 
 fill_sid_btn_id = wx.NewId()
-picking_print_btn_id = wx.NewId()
+invoice_print_btn_id = wx.NewId()
 express_print_btn_id = wx.NewId()
 scan_check_btn_id = wx.NewId()
 scan_weight_btn_id = wx.NewId()
@@ -78,7 +78,7 @@ class GridPanel(wx.Panel):
         self.btnNext = wx.Button(pag_panel, -1, label=u'下一页', style=0)
    
         self.fill_sid_btn = wx.Button(pag_panel, fill_sid_btn_id, label=u'填物流单号',name=u'打印发货单前，需将物流单号与订单绑定')
-        self.picking_print_btn = wx.Button(pag_panel, picking_print_btn_id, label=u'打印发货单',name=u'打印发货单，进行配货')
+        self.picking_print_btn = wx.Button(pag_panel, invoice_print_btn_id, label=u'打印发货单',name=u'打印发货单，进行配货')
         self.express_print_btn = wx.Button(pag_panel,express_print_btn_id,label=u'打印物流单',name=u'打印物流单，为打印配货单准备')
         self.post_print_btn = wx.Button(pag_panel,pickle_print_btn_id,label=u'打印配货单',name=u'打印配货单，为扫描验货准备')
         self.review_orders_btn = wx.Button(pag_panel,review_orders_btn_id,label=u'审查订单',name=u'审查指定订单问题并处理')
@@ -91,9 +91,9 @@ class GridPanel(wx.Panel):
         self.fill_sid_panel   = wx.Panel(self.inner_panel,-1)
         self.fill_sid_label1  = wx.StaticText(self.fill_sid_panel,-1,u'起始物流单号')
         self.fill_sid_text   = wx.TextCtrl(self.fill_sid_panel,-1,size=(200,-1))
-        self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,u'韵达二维码')
+        self.fill_sid_label2  = wx.StaticText(self.fill_sid_panel,-1,u'热敏打印')
         self.fill_sid_checkbox1   = wx.CheckBox(self.fill_sid_panel,-1)
-        self.receive_btn      = wx.Button(self.fill_sid_panel,-1,u'接单')
+        #self.receive_btn      = wx.Button(self.fill_sid_panel,-1,u'接单')
         self.preview_btn      = wx.Button(self.fill_sid_panel,-1,u'预览')
         self.fill_sid_btn2   = wx.Button(self.fill_sid_panel,fill_sid_btn2_id,u'确定')
         
@@ -178,15 +178,14 @@ class GridPanel(wx.Panel):
         self.fill_sid_sizer.Add(self.fill_sid_text,0,1)
         self.fill_sid_sizer.Add(self.fill_sid_label2,0,2)
         self.fill_sid_sizer.Add(self.fill_sid_checkbox1,0,3)
-        self.fill_sid_sizer.Add(self.receive_btn,0,4)
-        self.fill_sid_sizer.Add(self.preview_btn,0,5)
-        self.fill_sid_sizer.Add(self.fill_sid_btn2,0,6)
-        self.fill_sid_sizer.Add(self.out_sid_start_label,0,7)
-        self.fill_sid_sizer.Add(self.out_sid_start_text,0,8)
-        self.fill_sid_sizer.Add(self.out_sid_end_label,0,9)
-        self.fill_sid_sizer.Add(self.out_sid_end_text,0,10)
-        self.fill_sid_sizer.Add(self.fill_sid_btn4,0,11)
-        self.fill_sid_sizer.Add(self.fill_sid_btn3,0,12)
+        self.fill_sid_sizer.Add(self.preview_btn,0,4)
+        self.fill_sid_sizer.Add(self.fill_sid_btn2,0,5)
+        self.fill_sid_sizer.Add(self.out_sid_start_label,0,6)
+        self.fill_sid_sizer.Add(self.out_sid_start_text,0,7)
+        self.fill_sid_sizer.Add(self.out_sid_end_label,0,8)
+        self.fill_sid_sizer.Add(self.out_sid_end_text,0,9)
+        self.fill_sid_sizer.Add(self.fill_sid_btn4,0,10)
+        self.fill_sid_sizer.Add(self.fill_sid_btn3,0,11)
         self.fill_sid_panel.SetSizer(self.fill_sid_sizer)
 
         self.inner_box_sizer = wx.BoxSizer(wx.VERTICAL) 
@@ -211,7 +210,7 @@ class GridPanel(wx.Panel):
         self.Bind(grd.EVT_GRID_EDITOR_CREATED, self.onEditorCreated, self.grid)
         self.Bind(grd.EVT_GRID_CELL_RIGHT_CLICK,self.showPopupMenu,self.grid)
         
-        self.Bind(wx.EVT_CHECKBOX, self.onClickSelectYunda,self.fill_sid_checkbox1 )
+        self.Bind(wx.EVT_CHECKBOX,self.onClickQRPrint,self.fill_sid_checkbox1)
         self.Bind(wx.EVT_CHECKBOX,self.onSelectAllCheckbox,self.select_all_check)
         self.Bind(wx.EVT_COMBOBOX,self.onComboBox,self.page_size_select)
         
@@ -224,7 +223,6 @@ class GridPanel(wx.Panel):
         
         self.Bind(wx.EVT_BUTTON, self.onClickRollBackBtn,self.fill_sid_btn3 )
         self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_down)
-        self.Bind(wx.EVT_BUTTON, self.receiveYundaOrder,self.receive_btn)
         self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell,self.preview_btn)
         
         #分页栏，订单操作事件
@@ -273,7 +271,6 @@ class GridPanel(wx.Panel):
     
     def initialFillSidPanel(self):
         self.preview_btn.Enable()
-        self.receive_btn.Enable(False)
         self.fill_sid_btn2.Enable(False)
         self.fill_sid_btn4.Enable(False)
         
@@ -372,6 +369,10 @@ class GridPanel(wx.Panel):
         menu.Destroy()
         self.Bind(wx.EVT_MENU,self.onMenuRefreshTable)
         
+    def onClickQRPrint(self,evt):
+        
+        self.fill_sid_text.Enable(not evt.IsChecked())
+        evt.Skip()
     
     def onMenuRefreshTable(self,evt):
         eventid = evt.GetId()
@@ -456,22 +457,34 @@ class GridPanel(wx.Panel):
             self.itempanel.Hide()
         self.Layout()    
     
-    def get_yunda_ids(self):
+    def getYundaCustomerByUserCode(self,user_code,session=None):
+        
+        return session.query(YundaCustomer).filter_by(code=user_code).one()
+        
+        
+    def get_yunda_ids(self,session=None):
         
         trade_ids = []
         
         selectedRows = sorted(list(self._selectedRows))
+        trade_user_code = ''
         for row in selectedRows:
             
             trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL).strip()
-            logistic = self.grid.GetCellValue(row,cfg.LOG_COMPANY_CELL_COL).strip()
-            
-            if not logistic.startswith(YUNDA_NAME):
-                dial = wx.MessageDialog(None, u'请选择韵达快递', u'快递单号预览提示', 
+            logistic_code = self.grid.GetCellValue(row,cfg.LOG_COMPANY_CELL_COL).strip().split('-')[1]
+            if not(logistic_code.startswith(YUNDA_CODE) and logistic_code.endswith(RM_CODE)):
+                dial = wx.MessageDialog(None, u'请选择韵达热敏', u'快递单号预览提示', 
                                         wx.OK | wx.ICON_EXCLAMATION)
                 dial.ShowModal()
                 return 
+            trade   = session.query(MergeTrade).filter_by(id=trade_id).first()
+            trade_user_code = trade_user_code or trade.user.user_code
             
+            if not trade.user.user_code or trade.user.user_code != trade_user_code:
+                dial = wx.MessageDialog(None, u'由于您是多客户模式，请选择具体店铺', u'快递单号预览提示', 
+                                        wx.OK | wx.ICON_EXCLAMATION)
+                dial.ShowModal()
+                return
             trade_ids.append(trade_id)
             
         return trade_ids
@@ -507,9 +520,8 @@ class GridPanel(wx.Panel):
                     id_compile    = re.compile(company_regex)
                     is_out_sid_match = id_compile.match(out_sid)
  
-                    if is_out_sid_match and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
-                        is_locked = locking_trade(trade.id,operator,session=session)
-                        if is_locked: 
+                    if is_out_sid_match and trade.isPrepareSend():
+                        if locking_trade(trade.id,operator,session=session): 
                             self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
                             if company_code.upper() == "ZJS":
                                 if (start_out_sid%10)/6==1:
@@ -536,8 +548,7 @@ class GridPanel(wx.Panel):
                 company_regex = trade.logistics_company.reg_mail_no
                 id_compile = re.compile(company_regex)
                 if id_compile.match(str(start_out_sid)):
-                    is_locked = locking_trade(trade.id,operator,session=session)
-                    if not is_locked: 
+                    if locking_trade(trade.id,operator,session=session): 
                         dial = wx.MessageDialog(None, u'订单已被其他用户锁定', u'订单预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
@@ -560,28 +571,43 @@ class GridPanel(wx.Panel):
             #如果选择使用韵达二维码，则系统自动从韵达获取单号
             elif is_yunda_qrcode:
                 #对选中订单进行过滤
-                yunda_ids = self.get_yunda_ids()
-                
+                yunda_ids = self.get_yunda_ids(session=session)
                 if not yunda_ids:
                     return
-                    
                 try:
-                    #查询运单号
-                    im_map = yundao.search_order(yunda_ids,session=session)
+                    user_code = session.query(MergeTrade).filter_by(id=yunda_ids[0]).first().user.user_code
+                    yd_customer  = self.getYundaCustomerByUserCode(user_code,session=session)
+                    
+                    yundao.modify_order(yunda_ids, 
+                                        session=session,
+                                        partner_id=yd_customer.qr_id,
+                                        secret=yd_customer.qr_code)
+                    #创建韵达订单
+                    im_map = yundao.create_order(yunda_ids,
+                                        session=session,
+                                        partner_id=yd_customer.qr_id,
+                                        secret=yd_customer.qr_code)
                     
                     #将运单号填入系统订单，并标记订单为二维码订单
                     for row in self._selectedRows:
                         trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                         trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
-                        out_sid  = im_map.get(trade_id,None)
                         
-                        if out_sid and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
-                            is_locked = locking_trade(trade.id,operator,session=session)
-                            if is_locked:
-                                self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
-                    
-                    self.fill_sid_btn2.Enable(len(im_map.keys()) > len(yunda_ids)*0.9)
-                    
+                        if not im_map.has_key(trade_id) or not locking_trade(trade.id,operator,session=session):
+                            continue
+                        out_sid = im_map[trade_id]['mailno'].strip()
+                        qr_msg  = im_map[trade_id]['msg']
+                        
+                        session.query(MergeTrade).filter_by(id=trade_id).update(
+                                            {'out_sid':out_sid,'qrcode_msg':qr_msg},synchronize_session='fetch')
+                        
+                        if im_map[trade_id]['status']:
+                            self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
+                        else:
+                            self.grid.SetCellValue(row,cfg.QR_MSG_CELL_COL,qr_msg)
+                        
+                        self.preview_btn.Enable(False)
+                        self.fill_sid_btn2.Enable(True)
                 except Exception,exc :
                     dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
@@ -598,51 +624,27 @@ class GridPanel(wx.Panel):
     def receiveYundaOrder(self,evt):
         
         is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked()
-        
         if not is_yunda_qrcode:
             return
         
         with create_session(self.Parent) as session:
             #对选中订单进行过滤
             yunda_ids = self.get_yunda_ids()
-            
             if not yunda_ids:
                 return
-            
-#            try:
-                
-            yundao.modify_order(yunda_ids, session=session)
-            #将之前取消得订单重新生效
-            yundao.valid_order(yunda_ids)
-            #创建物流订单
-            yundao.create_order(yunda_ids,session=session)
-                    
-#            except Exception,exc :
-#                dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
-#                                            wx.OK | wx.ICON_EXCLAMATION)
-#                dial.ShowModal()
-#                raise exc
+            try:
+                pass
+            except Exception,exc :
+                dial = wx.MessageDialog(None, u'接单错误：'+exc.message, u'快递单号预览提示', 
+                                            wx.OK | wx.ICON_EXCLAMATION)
+                dial.ShowModal()
+                raise exc
         
-        self.receive_btn.Enable(False)
         self.preview_btn.Enable()
         self._can_fresh = True
         
         evt.Skip()
     
-    def onClickSelectYunda(self,evt):
-        
-        if evt.IsChecked():
-            self.receive_btn.Enable()
-            self.preview_btn.Enable(False)
-            self.fill_sid_text.Clear()
-            self.fill_sid_text.Enable(False)
-        else:
-            self.receive_btn.Enable(False)
-            self.preview_btn.Enable(True)
-            self.fill_sid_text.Enable()
-            
-        evt.Skip()
-        
     def disablePicklePrintBtn(self):
         """ 将打印配货单按钮设无效 """
         self.post_print_btn.Enable(False)
@@ -658,32 +660,21 @@ class GridPanel(wx.Panel):
         with create_session(self.Parent) as session: 
             if eventid == fill_sid_btn2_id:
                 effect_row = 0
-                
                 is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked()
                 if is_yunda_qrcode:
-                    #对选中订单进行过滤
-                    yunda_ids = self.get_yunda_ids()
-                    
-                    if not yunda_ids:
-                        return 
-                    
                     try:
-                        #查询运单号
-                        im_map = yundao.search_order(yunda_ids,force_update=True,session=session)
-                        
+                        #对选中订单进行过滤
+                        yunda_ids = self.get_yunda_ids(session=session)
+                        if not yunda_ids:
+                            return
                         #将运单号填入系统订单，并标记订单为二维码订单
                         final_rows = set()
                         for row in self._selectedRows:
                             trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-                            trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
-                            out_sid  = im_map.get(trade_id,None)
+                            out_sid  = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL).strip()
                             
-                            if out_sid and trade.sys_status == cfg.SYS_STATUS_PREPARESEND:
-                                is_locked = locking_trade(trade.id,operator,session=session)
-                                if is_locked:
-                                    self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
-                            
-                                    final_rows.add(row)
+                            if out_sid and locking_trade(trade_id,operator,session=session):
+                                final_rows.add(row)
                         
                         self._selectedRows = final_rows
                     except Exception,exc:
@@ -725,10 +716,7 @@ class GridPanel(wx.Panel):
                     if not is_yunda_qrcode :
                         self.disablePicklePrintBtn() 
                         self.fill_sid_btn4.Enable(True)
-                     
-                    if is_yunda_qrcode:
-                        self.receive_btn.Enable(True)   
-                        
+                      
                     self.fill_sid_btn2.Enable(False)
                      
                 else:      
@@ -751,12 +739,21 @@ class GridPanel(wx.Panel):
                     dial = wx.MessageDialog(None, u'输入的起始单号与所填单号不符', u'快递单打印提示', 
                             wx.OK | wx.ICON_EXCLAMATION)
                     dial.ShowModal()
-            elif eventid == picking_print_btn_id:
+            elif eventid == invoice_print_btn_id:
                 trade_ids = []
+                trade_user_code = ''
                 for row in self._selectedRows:
-                    out_sid = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL)
-                    operator = self.grid.GetCellValue(row,cfg.OPERATOR_CELL_COL)
-                    if out_sid and operator:
+                    trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
+                    trade = session.query(MergeTrade).filter_by(id=trade_id).one()
+                    trade_user_code = trade_user_code or trade.user.user_code
+                    
+                    if trade_user_code != trade.user.user_code:
+                        dial = wx.MessageDialog(None, u'由于您是多客户模式，请选择具体店铺', u'拣货单打印提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                        dial.ShowModal()
+                        return
+                        
+                    if trade.out_sid and trade.operator:
                         trade_ids.append(self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL))
                 if trade_ids:
                     DeliveryPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
@@ -971,9 +968,11 @@ class QueryObjectGridPanel(GridPanel):
             object_array.append(order.is_picking_print)
             object_array.append(order.is_express_print)
             object_array.append(order.can_review)
-            object_array.append(self.logisticMapping.get(order.logistics_company_id,u'其他'))
+            object_array.append(u'%s-%s'%(order.logistics_company and order.logistics_company.name or u'其它',
+                                          order.logistics_company and order.logistics_company.code or u'NONE'))
             object_array.append(order.out_sid)
             object_array.append(order.out_sid and order.operator or '')
+            object_array.append(order.qrcode_msg)
             object_array.append(str(order.prod_num))
             object_array.append(order.payment)
             object_array.append(order.total_fee)
@@ -982,7 +981,6 @@ class QueryObjectGridPanel(GridPanel):
             object_array.append(order.weight_time or '')
             array_object.append(object_array)
         return array_object
-    
     
     
 class SimpleGridPanel(wx.Panel):
@@ -1032,7 +1030,8 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
             return array_object
         
         with create_session(self.Parent) as session:
-            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id,sys_status=cfg.IN_EFFECT)
+            orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id,
+                                                         sys_status=cfg.IN_EFFECT)
             array_object = [] 
             for order in orders:
                 object_array = []
@@ -1187,7 +1186,8 @@ class CheckOrdersGridPanel(SimpleGridPanel):
             for order in orders:
                 object_array = []     
                 product = session.query(Product).filter_by(outer_id=order.outer_id).first()
-                product_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product_id=product.id).first()
+                product_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,
+                                                                  product_id=product.id).first()
                 post_check  = (product_sku and product_sku.post_check or product.post_check) and 'Y' or 'N'
                 barcode    = product_sku and product_sku.BARCODE or product.BARCODE
                 
@@ -1219,7 +1219,8 @@ class CheckGridPanel(wx.Panel):
         self.trade = None
         self.code_num_dict = {}
        
-        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品编码',u'规格编码',u'订单属性',u'商品属性',u'需验单',u'订单状态',u'商品条码',u'扫描次数')
+        colLabels = (u'商品图片',u'子订单ID',u'商品ID',u'商品简称',u'订购数量',u'商品编码',u'规格编码',u'订单属性',
+                     u'商品属性',u'需验单',u'订单状态',u'商品条码',u'扫描次数')
         self.ordergridpanel = CheckOrdersGridPanel(self,colLabels=colLabels)
         
         self.__set_properties()
@@ -1244,7 +1245,8 @@ class CheckGridPanel(wx.Panel):
                 product = session.query(Product).filter_by(outer_id=outer_id).first()
                 product_sku = None
                 if outer_sku_id:
-                    product_sku = session.query(ProductSku).filter_by(outer_id=outer_sku_id,product_id=product.id).first()
+                    product_sku = session.query(ProductSku).filter_by(outer_id=outer_sku_id,
+                                                                      product_id=product.id).first()
                     
                 barcode    = product_sku and product_sku.BARCODE or product.BARCODE
                 post_check = product_sku and product_sku.post_check or product.post_check

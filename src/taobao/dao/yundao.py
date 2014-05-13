@@ -68,14 +68,8 @@ API_DICT = {
                }
 
 
-#demon_url = 'http://orderdev.yundasys.com:10209/cus_order/order_interface/'
-#PARTNER_ID = "YUNDA"
-#SECRET     = "123456"
-
-demon_url = 'http://order.yundasys.com:10235/cus_order/order_interface/'
-PARTNER_ID = "10134210001"
-SECRET     = "rsOwTCQ7GbpgXuiHKHGW5RdgR1epwU"
-
+PARTNER_ID = "YUNDA"
+SECRET     = "123456"
 
 ########################################## 分拨中心分配  ################################################
 
@@ -146,42 +140,6 @@ def get_classify_zone(state,city,district,address='',session=None):
     return ''        
     
 
-
-def get_yunda_conn():
-    
-    conn = MySQLdb.connect(host= "192.168.0.19",
-                  user="root",
-                  passwd="123",
-                  db="ydwd")
-    
-    return conn
-
-def insert_yunda_fjbak(txm,weight):
-    
-    conn = get_yunda_conn()
-    weight = ('.' in weight) and float(weight) or float(weight)/1000.0
-    
-    weight = weight>0 and weight-weight*0.06 or 0
-    
-    cfg = getconfig()
-    cr = conn.cursor()
-    cr.execute ("INSERT INTO yjsm_bak(TXM,WPZL,DD,XJDD,YSFS,SJ,SMLB,SMY,SFD) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-               (txm,
-                str(round(weight,2)),
-                cfg.get('custom','DD'),
-                cfg.get('custom','XJDD'),
-                cfg.get('custom','YSFS'),
-                format_datetime(datetime.datetime.now()),
-                cfg.get('custom','SMLB'),
-                cfg.get('custom','SMY'),
-                cfg.get('custom','SFD')))
-    
-    row = cr.fetchall()
-    cr.close()
-    conn.close()
-    return row
-
-
 ########################################## 韵达二维码  ################################################
 
 def getText(nodelist):
@@ -231,7 +189,7 @@ def gen_orders_xml(objs):
         _xml_list.append(u'<cus_area1>分拣号:%s</cus_area1>'%obj['zone'])
         _xml_list.append(u'<cus_area2>宝贝妈咪移动不便，请快递大哥帮忙送到家啦，谢谢！</cus_area2>')
         _xml_list.append('<callback_id></callback_id>')
-        _xml_list.append('<wave_no></wave_no></order>')
+        _xml_list.append('<wave_no></wave_no><receiver_force>1</receiver_force></order>')
         
     _xml_list.append('</orders>')
     
@@ -276,15 +234,13 @@ def parseTreeID2MailnoMap(doc):
     orders = doc.getElementsByTagName('response')
     for order in orders:
         status = getText(order.getElementsByTagName('status')[0].childNodes)
-        order_mail_no = order.getElementsByTagName('mailno')
-        
-        if status != '1' and not order_mail_no:
-            continue
         
         order_serial_no = getText(order.getElementsByTagName('order_serial_no')[0].childNodes)
-        mailno   = getText(order_mail_no[0].childNodes)
+        mailno   = getText(order.getElementsByTagName('mail_no')[0].childNodes)
         
-        im_map[order_serial_no] = mailno
+        msg    = getText(order.getElementsByTagName('msg')[0].childNodes)
+        
+        im_map[order_serial_no] = {'status':int(status),'mailno':mailno,'msg':msg}
         
     return im_map
         
@@ -293,6 +249,8 @@ def handle_demon(action,xml_data,partner_id,secret):
     
     xml_data  = base64.encodestring(xml_data).strip()
     validate = hashlib.md5(xml_data+partner_id+secret).hexdigest()
+    config = getconfig()
+    qrcode_url = config.get('yunda','qrcode_url')
     
     params = {'partnerid':partner_id,
           'version':'1.0',
@@ -301,18 +259,16 @@ def handle_demon(action,xml_data,partner_id,secret):
           'validation':validate
           }
     
-    req = urllib2.urlopen(demon_url+API_DICT[action], urllib.urlencode(params))
+    req = urllib2.urlopen(qrcode_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-    
+    print 'debug rep:',rep
     if action == REPRINT:
         return rep
         
-    doc = minidom.parseString(rep)
-    
-    return doc
+    return minidom.parseString(rep)
      
      
-def create_order(ids,session=None):
+def create_order(ids,session=None,partner_id=PARTNER_ID,secret=SECRET):
     
     assert isinstance(ids,(list,tuple))
     
@@ -320,26 +276,28 @@ def create_order(ids,session=None):
     objs   = get_objs_from_trade(trades,session=session)
     
     order_xml = gen_orders_xml(objs)
-    
-    tree = handle_demon(RECEIVE_MAILNO,order_xml,PARTNER_ID,SECRET)
+    print 'debug create:',order_xml
+    tree = handle_demon(RECEIVE_MAILNO,order_xml,partner_id,secret)
             
-    return tree
+    return parseTreeID2MailnoMap(tree)
     
 
-def modify_order(ids,session=None):
+def modify_order(ids,session=None,partner_id=PARTNER_ID,secret=SECRET):
     
     assert isinstance(ids,(list,tuple))
     
     trades = session.query(MergeTrade).filter(MergeTrade.id.in_(ids),MergeTrade.is_qrcode==True)
     objs  = get_objs_from_trade(trades,session=session)
     
+    if not objs:
+        return 
     order_xml = gen_orders_xml(objs)
-    
-    tree = handle_demon(MODIFY,order_xml,PARTNER_ID,SECRET)
+    print 'debug modify:',order_xml
+    tree = handle_demon(MODIFY,order_xml,partner_id,secret)
     
     return tree
     
-def cancel_order(ids):
+def cancel_order(ids,partner_id=PARTNER_ID,secret=SECRET):
     
     assert isinstance(ids,(list,tuple))
     
@@ -349,11 +307,11 @@ def cancel_order(ids):
         
     order_xml += "</orders>"
     
-    tree = handle_demon(CANCEL,order_xml,PARTNER_ID,SECRET)
+    tree = handle_demon(CANCEL,order_xml,partner_id,secret)
     
     return tree
     
-def search_order(ids,force_update=False,session=None):
+def search_order(ids,session=None,partner_id=PARTNER_ID,secret=SECRET):
     
     assert isinstance(ids,(list,tuple))
     
@@ -363,37 +321,13 @@ def search_order(ids,force_update=False,session=None):
     
     order_xml += "</orders>"
     
-    tree = handle_demon(ORDERINFO,order_xml,PARTNER_ID,SECRET)
+    tree = handle_demon(ORDERINFO,order_xml,partner_id,secret)
     
-    if not force_update:
-        return parseTreeID2MailnoMap(tree)
-    
-    im_map = {}
-    #更新订单二维码标识
-    orders = tree.getElementsByTagName('response')
-    for order in orders:
-        status  = getText(order.getElementsByTagName('status')[0].childNodes)
-        order_serial_no = getText(order.getElementsByTagName('order_serial_no')[0].childNodes)
-        order_mail_no   = order.getElementsByTagName('mailno')
-        mail_no = order_mail_no and getText(order_mail_no[0].childNodes) or None
-        msg     = getText(order.getElementsByTagName('msg')[0].childNodes)
-        if status == '1' and mail_no:
-            
-            session.query(MergeTrade).filter_by(id=order_serial_no,sys_status=cfg.SYS_STATUS_PREPARESEND)\
-                .update({'is_qrcode':True,'out_sid':mail_no,},synchronize_session='fetch')
-            
-            im_map[order_serial_no] = mail_no
-        else:
-            
-            session.query(MergeTrade).filter_by(id=order_serial_no,sys_status=cfg.SYS_STATUS_PREPARESEND)\
-                .update({MergeTrade.reason_code:MergeTrade.reason_code+',1,',
-                         MergeTrade.sys_memo:MergeTrade.sys_memo+msg,
-                         MergeTrade.sys_status:cfg.SYS_STATUS_WAITAUDIT},synchronize_session='fetch')
-        
-    return im_map
+    return parseTreeID2MailnoMap(tree)
+ 
 
 
-def valid_order(ids):
+def valid_order(ids,partner_id=PARTNER_ID,secret=SECRET):
     
     assert isinstance(ids,(list,tuple))
     
@@ -402,12 +336,12 @@ def valid_order(ids):
         order_xml += "<order><order_serial_no>%s</order_serial_no></order>"%str(i)
     order_xml += "</orders>"
     
-    tree = handle_demon(VALID,order_xml,PARTNER_ID,SECRET)
+    tree = handle_demon(VALID,order_xml,partner_id,secret)
     
     return tree
 
 
-def print_order(ids):
+def print_order(ids,partner_id=PARTNER_ID,secret=SECRET):
     
     assert isinstance(ids,(list,tuple))
     
@@ -417,7 +351,7 @@ def print_order(ids):
         
     order_xml += "</orders>"
     
-    pdftext = handle_demon(REPRINT,order_xml,PARTNER_ID,SECRET)
+    pdftext = handle_demon(REPRINT,order_xml,partner_id,secret)
     
     return pdftext
 

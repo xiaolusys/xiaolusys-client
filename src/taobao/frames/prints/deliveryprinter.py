@@ -90,12 +90,19 @@ class DeliveryPrinter(wx.Frame):
         Creates an html file in the home directory of the application
         that contains the information to display the snapshot
         '''
- 
-        trades = self.getTradePickingData(trade_ids)
-
-        template = get_template('trade_picking_template.html') 
-        html =template.render(trades=trades)
+        with create_session(self.Parent) as session: 
+            trade_user_code = session.query(MergeTrade).filter_by(id=trade_ids[0])\
+                .one().user.user_code.lower()
         
+        trades = self.getTradePickingData(trade_ids)
+        try:
+            template = get_template('invoice/invoice_%s_template.html'%trade_user_code) 
+            html =template.render(trades=trades)
+        except:
+            dial = wx.MessageDialog(None, u'你还没有创建改店铺对应发货单模板', u'拣货单打印提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+            dial.ShowModal()
+            return
         return html
 
     def getPageSetup(self):

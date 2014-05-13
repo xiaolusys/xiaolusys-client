@@ -9,6 +9,7 @@ import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Table, Column, Integer, BigInteger,Float , String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
+from . import configparams as cfg 
 
 Base = declarative_base()
 #memo_compile = re.compile('^\((?P<key>\w+),(?P<value>[\w\W]+),(?P<memo>[\w\W]+)\)$')
@@ -38,7 +39,8 @@ class User(Base):
     top_parameters = Column(String(1000), default='')
     
     visitor_id = Column(String(32), default='')
-    nick = Column(String(32), default='')
+    nick       = Column(String(32), default='')
+    user_code  = Column(String(16), default='')
     
     merge_trades = relationship("MergeTrade", backref="user")
     contacter = Column(String(32), default='')
@@ -48,11 +50,7 @@ class User(Base):
     location  = Column(String(256), default='')
     
     type = Column(String(2), default='')
-    item_img_num = Column(Integer, nullable=True)
-    item_img_size = Column(Integer, nullable=True)
     
-    prop_img_num = Column(Integer, nullable=True)
-    prop_img_size = Column(Integer, nullable=True)
     auto_repost = Column(String(16), default='')
     promoted_type = Column(String(32), default='')
     
@@ -282,7 +280,6 @@ class MergeTrade(Base):
     is_picking_print = Column(Boolean)
     is_express_print = Column(Boolean)
     is_send_sms      = Column(Boolean)
-    is_qrcode        = Column(Boolean)
     has_refund       = Column(Boolean)
     has_memo         = Column(Boolean)
     remind_time      = Column(DateTime)
@@ -294,6 +291,9 @@ class MergeTrade(Base):
     is_charged       = Column(Boolean)
     has_merge        = Column(Boolean)
     sys_status       = Column(String(32),index=True)  
+    
+    is_qrcode        = Column(Boolean)
+    qrcode_msg       = Column(String(32))
     
     reserveo       =  Column(String(32))       
     reservet       =  Column(String(32)) 
@@ -309,6 +309,8 @@ class MergeTrade(Base):
             total_nums += order.num
         return total_nums
     
+    def isPrepareSend(self):
+        return self.sys_status == cfg.SYS_STATUS_PREPARESEND
             
 class TradeExtraInfo(Base):
     """
@@ -451,7 +453,69 @@ class ClassifyZone(Base):
     def __repr__(self):
         return "<ClassifyZone('%s','%s','%s')>" % (self.state, self.city, self.district)
     
+
+class YundaCustomer(Base):
+    
+    __tablename__ = 'shop_yunda_customer'
+    
+    id      = Column(Integer,primary_key=True)
+    name    = Column(String(64)) 
+    code    = Column(String(16)) 
+    
+    company_name = Column(String(32)) 
+    cus_id       = Column(String(32)) 
+    
+    qr_id       = Column(String(32)) 
+    qr_code     = Column(String(32)) 
+    
+    contacter   = Column(String(32))
+    state       = Column(String(16))
+    city        = Column(String(16))
+    district    = Column(String(16))
+    
+    address     = Column(String(128))
+    zip         = Column(String(10))
+    mobile      = Column(String(20))
+    phone       = Column(String(20))
+    
+    on_qrcode   = Column(Boolean)
+    memo    = Column(String(20)) 
+    
+    status  = Column(String(10),index=True) 
+    
+    def __repr__(self):
+        return "<YundaCustomer('%s','%s')>" %(self.code,self.name)
     
     
+class YundaOrder(Base): 
     
-        
+    __tablename__ = 'shop_yunda_order'
+    
+    id         = Column(BigInteger, primary_key=True)
+    cus_oid    = Column(String(64),index=True)
+    yd_customer_id   = Column(Integer, ForeignKey('shop_yunda_customer.id'))
+    
+    out_sid    = Column(String(64),index=True)
+    
+    receiver_name    =  Column(String(64),index=True)
+    receiver_state   =  Column(String(16),index=True)
+    receiver_city    =  Column(String(16),index=True)
+    receiver_district  =  Column(String(16),index=True)
+    
+    receiver_address   =  Column(String(128),index=True)
+    receiver_zip       =  Column(String(10),index=True)
+    receiver_mobile    =  Column(String(20),index=True)
+    receiver_phone     =  Column(String(20),index=True)
+    
+    weight             = Column(String(10),index=True)
+    
+    valid_code     =  Column(String(4),index=True)
+    dc_code        =  Column(String(8),index=True)
+    
+    is_jzhw        =  Column(Boolean)
+    weighted       =  Column(DateTime, index=True, nullable=True)
+    
+    status         =  Column(String(10),index=True)
+    
+    def __repr__(self):
+        return "<YundaOrder('%s')>" % self.out_sid    

@@ -8,6 +8,7 @@ import copy
 import wx
 import wx.grid as grd
 from taobao.frames.tables.renderer import BitmapRenderer
+from taobao.dao import configparams as cfg
 
 class GridTable(grd.PyGridTableBase):
     def __init__(self,datasource,rowLabels=None,colLabels=None,selectedcolour="green"):
@@ -80,7 +81,10 @@ class GridTable(grd.PyGridTableBase):
     def SetValue(self, row, col, value):#给表赋值
         if col ==0:
             self.data[(row,col)]= True if value else False
-        elif col in (8,9,10,11):
+        elif col in (cfg.LOCKED_CELL_COL,
+                     cfg.EXPRESS_CELL_COL,
+                     cfg.PICKLE_CELL_COL,
+                     cfg.REVIEW_CELL_COL):
             self.data[(row,col)]= True if value == 'True' or value=='1' else False
         else:    
             self.data[(row,col)] = value
@@ -97,13 +101,17 @@ class GridTable(grd.PyGridTableBase):
         if col == 0:
             attr = self.attr
             attr.IncRef()
-        elif col in (8,9,10,11):
+        elif col in (cfg.LOCKED_CELL_COL,
+                     cfg.EXPRESS_CELL_COL,
+                     cfg.PICKLE_CELL_COL,
+                     cfg.REVIEW_CELL_COL):
             attr = self.boolattr
             attr.IncRef()
-        elif col == 14:
+        elif col == cfg.OPERATOR_CELL_COL:
             attr = self.sid_attr
             attr.IncRef()
-        elif col in (1,12,13):
+        elif col in (cfg.TRADE_ID_CELL_COL,
+                     cfg.OUT_SID_CELL_COL):
             attr = self.sid_cell
             attr.IncRef()
         else:

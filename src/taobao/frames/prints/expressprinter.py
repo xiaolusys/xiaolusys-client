@@ -93,7 +93,7 @@ class ExpressPrinter(wx.Frame):
         '''
         trades = self.getLogisticsData(trade_ids)
 #        try:
-        template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
+        template_name = 'logistic/logistics_%s_template.html'%trades[0]['company_code'].lower()
         template = get_template(template_name) 
         html = template.render(trades=trades)
 #        except:
