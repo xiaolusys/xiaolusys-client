@@ -13,7 +13,7 @@ from xml.dom import minidom
 from taobao.dao import configparams as cfg
 from taobao.dao.dbsession import get_session
 from taobao.common.utils import TEMP_FILE_ROOT,getconfig
-from taobao.dao.models import ClassifyZone,MergeTrade,BranchZone
+from taobao.dao.models import ClassifyZone,MergeTrade,BranchZone,YundaCustomer
 from taobao.common.utils import getconfig,format_datetime,escape_invalid_xml_char
 import webbrowser
 
@@ -261,7 +261,7 @@ def handle_demon(action,xml_data,partner_id,secret):
     
     req = urllib2.urlopen(qrcode_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-    print 'debug rep:',rep
+    
     if action == REPRINT:
         return rep
         
@@ -276,7 +276,7 @@ def create_order(ids,session=None,partner_id=PARTNER_ID,secret=SECRET):
     objs   = get_objs_from_trade(trades,session=session)
     
     order_xml = gen_orders_xml(objs)
-    print 'debug create:',order_xml
+    
     tree = handle_demon(RECEIVE_MAILNO,order_xml,partner_id,secret)
             
     return parseTreeID2MailnoMap(tree)
@@ -292,7 +292,7 @@ def modify_order(ids,session=None,partner_id=PARTNER_ID,secret=SECRET):
     if not objs:
         return 
     order_xml = gen_orders_xml(objs)
-    print 'debug modify:',order_xml
+    
     tree = handle_demon(MODIFY,order_xml,partner_id,secret)
     
     return tree
@@ -356,10 +356,18 @@ def print_order(ids,partner_id=PARTNER_ID,secret=SECRET):
     return pdftext
 
 ################################ 打印韵达pdf文档方法  ####################################
+def getYDCustomerByTradeId(trade_id,session=None):
+    
+    trade   = session.query(MergeTrade).filter_by(id=trade_id).first()
+    return session.query(YundaCustomer).filter_by(code=trade.user.user_code.strip()).one()
+
 
 def printYUNDAPDF(trade_ids,direct=False,session=None):
-                    
-    pdfdoc  = print_order(trade_ids)
+                   
+    yd_customer = getYDCustomerByTradeId(trade_ids[0],session=session)
+    pdfdoc  = print_order(trade_ids,
+                          partner_id=yd_customer.qr_id,
+                          secret=yd_customer.qr_code)
     #更新订单打印状态
     session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
         .update({'is_express_print':True},synchronize_session='fetch')

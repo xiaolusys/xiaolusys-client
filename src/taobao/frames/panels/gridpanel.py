@@ -575,9 +575,8 @@ class GridPanel(wx.Panel):
                 if not yunda_ids:
                     return
                 try:
-                    user_code = session.query(MergeTrade).filter_by(id=yunda_ids[0]).first().user.user_code
-                    yd_customer  = self.getYundaCustomerByUserCode(user_code,session=session)
-                    
+                    yd_customer  = yundao.getYDCustomerByTradeId(yunda_ids[0],
+                                                                 session=session)
                     yundao.modify_order(yunda_ids, 
                                         session=session,
                                         partner_id=yd_customer.qr_id,
@@ -593,27 +592,29 @@ class GridPanel(wx.Panel):
                         trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                         trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
                         
-                        if not im_map.has_key(trade_id) or not locking_trade(trade.id,operator,session=session):
+                        if  not im_map.has_key(trade_id) or \
+                            not locking_trade(trade.id,operator,session=session):
                             continue
                         out_sid = im_map[trade_id]['mailno'].strip()
                         qr_msg  = im_map[trade_id]['msg']
                         
                         session.query(MergeTrade).filter_by(id=trade_id).update(
-                                            {'out_sid':out_sid,'qrcode_msg':qr_msg},synchronize_session='fetch')
+                                            {'out_sid':out_sid,'qrcode_msg':qr_msg,'is_qrcode':True},
+                                            synchronize_session='fetch')
                         
                         if im_map[trade_id]['status']:
                             self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
                         else:
                             self.grid.SetCellValue(row,cfg.QR_MSG_CELL_COL,qr_msg)
                         
-                        self.preview_btn.Enable(False)
-                        self.fill_sid_btn2.Enable(True)
                 except Exception,exc :
                     dial = wx.MessageDialog(None, u'预览错误：'+exc.message, u'快递单号预览提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
                     dial.ShowModal()
                     raise exc
-                
+                else:
+                    self.preview_btn.Enable(False)
+                    self.fill_sid_btn2.Enable(True)
         self._can_fresh = False
         self.fill_sid_text.Clear()
         self.grid.ForceRefresh()
@@ -712,17 +713,13 @@ class GridPanel(wx.Panel):
                                                 wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         break
-                if effect_row>1:
-                    if not is_yunda_qrcode :
-                        self.disablePicklePrintBtn() 
-                        self.fill_sid_btn4.Enable(True)
+                    
+                if effect_row>1 and not is_yunda_qrcode:
+                    self.disablePicklePrintBtn() 
+                    self.fill_sid_btn4.Enable(True)
                       
-                    self.fill_sid_btn2.Enable(False)
-                     
-                else:      
-                    self.fill_sid_btn2.Enable(False)
-                    self.preview_btn.Enable(True)
-                
+                self.fill_sid_btn2.Enable(False)
+                self.preview_btn.Enable(True)
                 self._can_fresh = True
                 
             elif eventid == fill_sid_btn4_id:
@@ -756,7 +753,8 @@ class GridPanel(wx.Panel):
                     if trade.out_sid and trade.operator:
                         trade_ids.append(self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL))
                 if trade_ids:
-                    DeliveryPrinter(parent=self,trade_ids=trade_ids).ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
+                    DeliveryPrinter(parent=self,trade_ids=trade_ids)\
+                        .ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
             
             elif eventid == express_print_btn_id:
                 
@@ -965,8 +963,8 @@ class QueryObjectGridPanel(GridPanel):
             object_array.append(cfg.SYS_STATUS.get(order.sys_status,u'其他'))
             object_array.append(order.receiver_state+'-'+order.receiver_city+'-'+order.receiver_district)
             object_array.append(order.is_locked)
-            object_array.append(order.is_picking_print)
             object_array.append(order.is_express_print)
+            object_array.append(order.is_picking_print)
             object_array.append(order.can_review)
             object_array.append(u'%s-%s'%(order.logistics_company and order.logistics_company.name or u'其它',
                                           order.logistics_company and order.logistics_company.code or u'NONE'))

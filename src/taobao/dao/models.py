@@ -486,36 +486,3 @@ class YundaCustomer(Base):
     def __repr__(self):
         return "<YundaCustomer('%s','%s')>" %(self.code,self.name)
     
-    
-class YundaOrder(Base): 
-    
-    __tablename__ = 'shop_yunda_order'
-    
-    id         = Column(BigInteger, primary_key=True)
-    cus_oid    = Column(String(64),index=True)
-    yd_customer_id   = Column(Integer, ForeignKey('shop_yunda_customer.id'))
-    
-    out_sid    = Column(String(64),index=True)
-    
-    receiver_name    =  Column(String(64),index=True)
-    receiver_state   =  Column(String(16),index=True)
-    receiver_city    =  Column(String(16),index=True)
-    receiver_district  =  Column(String(16),index=True)
-    
-    receiver_address   =  Column(String(128),index=True)
-    receiver_zip       =  Column(String(10),index=True)
-    receiver_mobile    =  Column(String(20),index=True)
-    receiver_phone     =  Column(String(20),index=True)
-    
-    weight             = Column(String(10),index=True)
-    
-    valid_code     =  Column(String(4),index=True)
-    dc_code        =  Column(String(8),index=True)
-    
-    is_jzhw        =  Column(Boolean)
-    weighted       =  Column(DateTime, index=True, nullable=True)
-    
-    status         =  Column(String(10),index=True)
-    
-    def __repr__(self):
-        return "<YundaOrder('%s')>" % self.out_sid    

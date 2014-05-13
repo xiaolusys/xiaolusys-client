@@ -16,7 +16,8 @@ from taobao.common.environment import get_template
 from taobao.common.regedit import updatePageSetupRegedit
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
 from taobao.dao.tradedao import get_used_orders,get_product_locations
-from taobao.dao.yundao import get_classify_zone,get_zone_by_code,printYUNDAPDF
+from taobao.dao.yundao import get_classify_zone,get_zone_by_code,modify_order,\
+    getYDCustomerByTradeId,printYUNDAPDF
 from taobao.dao.configparams import JUHUASUAN_CODE,YUNDA_CODE
 
 FONTSIZE = 10  
@@ -83,7 +84,13 @@ class OrderReview(wx.Frame):
             trade = session.query(MergeTrade).filter_by(id=self.trade_id).first()
             session.expire(trade)
             
-            if trade.is_qrcode and trade.logistics_company.code == 'YUNDA':
+            if trade.is_qrcode and trade.logistics_company and trade.logistics_company.code.endswith('_QR'):
+                
+                yd_customer  = getYDCustomerByTradeId(self.trade_id,session=session)
+                modify_order([self.trade_id],
+                             partner_id=yd_customer.qr_id,
+                             secret=yd_customer.qr_code,
+                             session=session)
                 #调用韵达打印接口并打印
                 printYUNDAPDF([self.trade_id],session=session)
             else:   
@@ -126,7 +133,8 @@ class OrderReview(wx.Frame):
             template = get_template(template_name) 
             html = template.render(trades=trades)
         except:
-            html = u'<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'%trades[0]['company_name']
+            html = u'<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'\
+                %trades[0]['company_name']
             
         return html
  
@@ -136,11 +144,19 @@ class OrderReview(wx.Frame):
         Creates an html file in the home directory of the application
         that contains the information to display the snapshot
         '''
- 
+        with create_session(self.Parent) as session: 
+            trade_user_code = session.query(MergeTrade).filter_by(id=trade_ids[0])\
+                .one().user.user_code.lower()
+                
         trades = self.getTradePickingData(trade_ids)
-        template = get_template('trade_picking_template.html') 
-        html =template.render(trades=trades)
-
+        try:
+            template = get_template('invoice/invoice_%s_template.html'%trade_user_code) 
+            html =template.render(trades=trades)
+        except:
+            dial = wx.MessageDialog(None, u'发货单模板异常', u'拣货单打印提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+            dial.ShowModal()
+            return
         return html
     
     #----------------------------------------------------------------------

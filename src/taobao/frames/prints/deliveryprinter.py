@@ -99,10 +99,7 @@ class DeliveryPrinter(wx.Frame):
             template = get_template('invoice/invoice_%s_template.html'%trade_user_code) 
             html =template.render(trades=trades)
         except:
-            dial = wx.MessageDialog(None, u'你还没有创建改店铺对应发货单模板', u'拣货单打印提示', 
-                            wx.OK | wx.ICON_EXCLAMATION)
-            dial.ShowModal()
-            return
+            return u'<center>模板异常</center>'
         return html
 
     def getPageSetup(self):
@@ -153,6 +150,7 @@ class DeliveryPrinter(wx.Frame):
         with create_session(self.Parent) as session:
             grid = self.Parent.grid
             rows = self.Parent.grid.GetNumberRows()
+            
             for row in xrange(0,rows):
                 trade_id = grid.GetCellValue(row,TRADE_ID_CELL_COL)
                 trade = session.query(MergeTrade).filter_by(id=trade_id).first()

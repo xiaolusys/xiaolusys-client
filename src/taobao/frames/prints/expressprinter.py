@@ -92,12 +92,12 @@ class ExpressPrinter(wx.Frame):
         that contains the information to display the snapshot
         '''
         trades = self.getLogisticsData(trade_ids)
-#        try:
-        template_name = 'logistic/logistics_%s_template.html'%trades[0]['company_code'].lower()
-        template = get_template(template_name) 
-        html = template.render(trades=trades)
-#        except:
-#            html = u'<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'%trades[0]['company_name']
+        try:
+            template_name = 'logistic/logistics_%s_template.html'%trades[0]['company_code'].lower()
+            template = get_template(template_name) 
+            html = template.render(trades=trades)
+        except:
+            html = u'<html><head></head><body style="text-align:center;">对不起，你还没有添加%s的物流单模板。</body></html>'%trades[0]['company_name']
         return html
     
     
@@ -158,6 +158,7 @@ class ExpressPrinter(wx.Frame):
         with create_session(self.Parent) as session:
             grid = self.Parent.grid
             rows = self.Parent.grid.GetNumberRows()
+            
             for row in xrange(0,rows):
                 trade_id = grid.GetCellValue(row,TRADE_ID_CELL_COL)
                 trade = session.query(MergeTrade).filter_by(id=trade_id).first()

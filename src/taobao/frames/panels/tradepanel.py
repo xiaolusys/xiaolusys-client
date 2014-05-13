@@ -40,7 +40,7 @@ class TradePanel(wx.Panel):
         self.normalradio = wx.RadioButton(self, -1, u'单打模式', pos=(20, 50),style=wx.RB_GROUP)
         self.dividradio  = wx.RadioButton(self, -1, u'分打模式', pos=(20, 50))  
   
-        colLabels = (u'订单号',u'卖家昵称',u'买家昵称',u'订单类型',u'订单状态',u'系统状态',u'省-市-区',u'锁定',u'发货单',u'物流单',u'复审',
+        colLabels = (u'订单号',u'卖家昵称',u'买家昵称',u'订单类型',u'订单状态',u'系统状态',u'省-市-区',u'锁定',u'物流单',u'发货单',u'复审',
                      u'物流公司',u'物流单号',u'操作员',u'热敏打印信息',u'品类数',u'实付',u'总金额',u'付款时间',u'发货时间',u'称重时间')
         self.grid = QueryObjectGridPanel(self,-1,rowLabels=None,colLabels=colLabels)
         self.grid.setDataSource(cfg.SYS_STATUS_PREPARESEND)
