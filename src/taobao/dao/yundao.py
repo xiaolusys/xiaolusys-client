@@ -186,8 +186,8 @@ def gen_orders_xml(objs):
         _xml_list.append('<weight></weight><size></size><value></value>')
         _xml_list.append('<collection_value></collection_value><special></special>')
         _xml_list.append('<item></item><remark></remark>')
-        _xml_list.append(u'<cus_area1>分拣号:%s</cus_area1>'%obj['zone'])
-        _xml_list.append(u'<cus_area2>宝贝妈咪移动不便，请快递大哥帮忙送到家啦，谢谢！</cus_area2>')
+        _xml_list.append(u'<cus_area1>订单号:%s\n分拣号:%s</cus_area1>'%(obj['id'],obj['zone']))
+        _xml_list.append(u'<cus_area2>%s</cus_area2>'%obj['sender_memo'])
         _xml_list.append('<callback_id></callback_id>')
         _xml_list.append('<wave_no></wave_no><receiver_force>1</receiver_force></order>')
         
@@ -207,15 +207,17 @@ def get_objs_from_trade(trades,session=None):
         if not zone:
             zone = get_classify_zone(trade.receiver_state,trade.receiver_city,
                                      trade.receiver_district,address=trade.receiver_address,session=session)
-            
+        
+        yd_customer = session.query(YundaCustomer).filter_by(code=trade.user.user_code).one()
         objs.append({"id":trade.id,
-                     "sender_name":u"优尼世界",
-                     "sender_company":u"优尼世界旗舰店",
-                     "sender_city":u"上海,上海市",
+                     "sender_name":yd_customer.name,
+                     "sender_company":yd_customer.company_name,
+                     "sender_city":'%s,%s'%(yd_customer.state,yd_customer.city),
                      "sender_address":u"",
                      "sender_postcode":u"",
-                     "sender_phone":u"021-37698479",
-                     "sender_mobile":u"",
+                     "sender_phone":yd_customer.phone,
+                     "sender_mobile":yd_customer.mobile,
+                     "sender_memo":yd_customer.memo,
                      "receiver_name":escape_invalid_xml_char(trade.receiver_name),
                      "receiver_company":u'',
                      "receiver_city":escape_invalid_xml_char(','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district])),

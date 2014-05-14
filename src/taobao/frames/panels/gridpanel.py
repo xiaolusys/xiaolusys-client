@@ -719,7 +719,7 @@ class GridPanel(wx.Panel):
                     self.fill_sid_btn4.Enable(True)
                       
                 self.fill_sid_btn2.Enable(False)
-                self.preview_btn.Enable(True)
+                self.preview_btn.Enable(is_yunda_qrcode or effect_row == 1)
                 self._can_fresh = True
                 
             elif eventid == fill_sid_btn4_id:
