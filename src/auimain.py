@@ -20,7 +20,7 @@ ID_ScanCharge      = wx.NewId()
 ID_Help            = wx.NewId()
 
 class MainFrame(wx.Frame):
-    def __init__(self, parent, id=-1, title=u"互一云计算ERP客户端", pos=wx.DefaultPosition,
+    def __init__(self, parent, id=-1, title=u"互一云计算电商ERP客户端", pos=wx.DefaultPosition,
                  size=(1300,700), style=wx.DEFAULT_FRAME_STYLE |wx.SUNKEN_BORDER |wx.CLIP_CHILDREN):
 
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
@@ -36,7 +36,7 @@ class MainFrame(wx.Frame):
         view_menu.Append(ID_TradeMainPage, u"订单列表",u"订单操作主界面")
         view_menu.Append(ID_ScanCheck, u"扫描验货",u"扫描物流单编号，扫描商品条码")
         view_menu.Append(ID_ScanWeight, u"扫描称重",u"扫描物流单编号，包裹称重")
-        view_menu.Append(ID_ScanCharge, u"揽件确认",u"扫描物流单编号，确认揽件")
+        #view_menu.Append(ID_ScanCharge, u"揽件确认",u"扫描物流单编号，确认揽件")
         view_menu.Append(wx.ID_EXIT, u"退出")
         view_menu.AppendSeparator()
         
@@ -64,8 +64,8 @@ class MainFrame(wx.Frame):
         self._mgr.AddPane(self.CreateDeliveryView(), wx.aui.AuiPaneInfo().Name("scan_weight_content").
                           CenterPane().Hide())
         
-        self._mgr.AddPane(self.CreateChargeView(), wx.aui.AuiPaneInfo().Name("scan_charge_content").
-                          CenterPane().Hide())
+#        self._mgr.AddPane(self.CreateChargeView(), wx.aui.AuiPaneInfo().Name("scan_charge_content").
+#                          CenterPane().Hide())
         
         all_panes = self._mgr.GetAllPanes()
         for ii in xrange(len(all_panes)):
@@ -77,7 +77,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_TradeMainPage)
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_ScanCheck)
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_ScanWeight)
-        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_ScanCharge)
+#        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_ScanCharge)
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
         
     
@@ -86,7 +86,7 @@ class MainFrame(wx.Frame):
         self._mgr.GetPane("order_grid_content").Show(event.GetId() == ID_TradeMainPage)
         self._mgr.GetPane("scan_check_content").Show(event.GetId() == ID_ScanCheck)
         self._mgr.GetPane("scan_weight_content").Show(event.GetId() == ID_ScanWeight)
-        self._mgr.GetPane("scan_charge_content").Show(event.GetId() == ID_ScanCharge)
+#        self._mgr.GetPane("scan_charge_content").Show(event.GetId() == ID_ScanCharge)
         self._mgr.Update()    
                 
     def CreateOrderGrid(self):
