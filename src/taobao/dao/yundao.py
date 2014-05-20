@@ -238,11 +238,11 @@ def parseTreeID2MailnoMap(doc):
         status = getText(order.getElementsByTagName('status')[0].childNodes)
         
         order_serial_no = getText(order.getElementsByTagName('order_serial_no')[0].childNodes)
-        mailno   = getText(order.getElementsByTagName('mail_no')[0].childNodes)
+        mailno   = getText(order.getElementsByTagName('mail_no')[0].childNodes).strip()
         
         msg    = getText(order.getElementsByTagName('msg')[0].childNodes)
         
-        im_map[order_serial_no] = {'status':int(status),'mailno':mailno,'msg':msg}
+        im_map[order_serial_no] = {'status':mailno and 1 or 0,'mailno':mailno,'msg':msg}
         
     return im_map
         
