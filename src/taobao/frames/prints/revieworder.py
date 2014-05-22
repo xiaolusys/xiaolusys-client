@@ -129,7 +129,7 @@ class OrderReview(wx.Frame):
         '''
         trades = self.getLogisticsData(trade_ids)
         try:
-            template_name = 'logistics_%s_template.html'%trades[0]['company_code'].lower()
+            template_name = 'logistic/logistics_%s_template.html'%trades[0]['company_code'].lower()
             template = get_template(template_name) 
             html = template.render(trades=trades)
         except:
@@ -176,7 +176,7 @@ class OrderReview(wx.Frame):
                 trade_data['pay_time']    = trade.pay_time
                 trade_data['buyer_nick']   = trade.buyer_nick
                 trade_data['out_sid']      = trade.out_sid
-                trade_data['company_name'] = trade.logistics_company.name
+                trade_data['company_name'] = trade.logistics_company and trade.logistics_company.name
                 trade_data['order_nums']   = 0
                 trade_data['total_fee']    = 0
                 trade_data['discount_fee'] = 0
@@ -277,8 +277,8 @@ class OrderReview(wx.Frame):
                 trade_data['post_date']    = dt
                 trade_data['buyer_nick']   = trade.buyer_nick
                 trade_data['out_sid']      = trade.out_sid
-                trade_data['company_name'] = logistic_company and logistic_company.name
-                trade_data['company_code'] = logistic_company and logistic_company.code
+                trade_data['company_name'] = logistic_company and logistic_company.name or ''
+                trade_data['company_code'] = logistic_company and logistic_company.code or ''
                 
                 trade_data['receiver_name']     = trade.receiver_name
                 trade_data['receiver_phone']    = trade.receiver_phone

@@ -190,8 +190,10 @@ class ExpressPrinter(wx.Frame):
                 trade_data['post_date']    = dt
                 trade_data['buyer_nick']   = trade.buyer_nick
                 trade_data['out_sid']      = trade.out_sid
-                trade_data['company_name'] = trade.logistics_company.name
-                trade_data['company_code'] = trade.logistics_company.code
+                trade_data['company_name'] = (trade.logistics_company and 
+                                              trade.logistics_company.name or 'NULL')
+                trade_data['company_code'] = (trade.logistics_company and 
+                                              trade.logistics_company.code or 'NULL')
                 
                 trade_data['receiver_name']     = trade.receiver_name
                 trade_data['receiver_phone']    = trade.receiver_phone

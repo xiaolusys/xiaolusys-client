@@ -184,7 +184,7 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['pay_time']    = trade.pay_time
                 trade_data['buyer_nick']   = trade.buyer_nick
                 trade_data['out_sid']      = trade.out_sid
-                trade_data['company_name'] = trade.logistics_company.name
+                trade_data['company_name'] = trade.logistics_company and trade.logistics_company.name
                 trade_data['order_nums']   = 0
                 trade_data['total_fee']    = 0
                 trade_data['discount_fee'] = 0
