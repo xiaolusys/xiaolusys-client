@@ -185,7 +185,7 @@ def gen_orders_xml(objs):
  
         _xml_list.append('<weight></weight><size></size><value></value>')
         _xml_list.append('<collection_value></collection_value><special></special>')
-        _xml_list.append('<item></item><remark></remark>')
+        _xml_list.append('<items></items><remark>%s</remark>'%obj['item'])
         _xml_list.append(u'<cus_area1>订单号:%s\n分拣号:%s</cus_area1>'%(obj['id'],obj['zone']))
         _xml_list.append(u'<cus_area2>%s</cus_area2>'%obj['sender_memo'])
         _xml_list.append('<callback_id></callback_id>')
@@ -218,6 +218,7 @@ def get_objs_from_trade(trades,session=None):
                      "sender_phone":yd_customer.phone,
                      "sender_mobile":yd_customer.mobile,
                      "sender_memo":yd_customer.memo,
+                     "item":yd_customer.company_trade,
                      "receiver_name":escape_invalid_xml_char(trade.receiver_name),
                      "receiver_company":u'',
                      "receiver_city":escape_invalid_xml_char(','.join([trade.receiver_state,trade.receiver_city,trade.receiver_district])),
@@ -225,7 +226,7 @@ def get_objs_from_trade(trades,session=None):
                      "receiver_postcode":escape_invalid_xml_char(trade.receiver_zip),
                      "receiver_phone":escape_invalid_xml_char(trade.receiver_phone),
                      "receiver_mobile":escape_invalid_xml_char(trade.receiver_mobile),
-                     "zone":zone and zone.code or ''
+                     "zone":zone and zone.code or '',
                      })
     
     return objs
@@ -241,6 +242,9 @@ def parseTreeID2MailnoMap(doc):
         mailno   = getText(order.getElementsByTagName('mail_no')[0].childNodes).strip()
         
         msg    = getText(order.getElementsByTagName('msg')[0].childNodes)
+
+        if order_serial_no == '0' and status == '0':
+            raise Exception(msg)
         
         im_map[order_serial_no] = {'status':mailno and 1 or 0,'mailno':mailno,'msg':msg}
         
@@ -263,7 +267,7 @@ def handle_demon(action,xml_data,partner_id,secret):
     
     req = urllib2.urlopen(qrcode_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-    
+
     if action == REPRINT:
         return rep
         

@@ -463,6 +463,7 @@ class YundaCustomer(Base):
     code    = Column(String(16)) 
     
     company_name = Column(String(32)) 
+    company_trade = Column(String(32)) 
     cus_id       = Column(String(32)) 
     
     qr_id       = Column(String(32)) 
@@ -479,7 +480,9 @@ class YundaCustomer(Base):
     phone       = Column(String(20))
     
     on_qrcode   = Column(Boolean)
-    memo    = Column(String(20)) 
+    memo        = Column(String(20)) 
+    reserveo    = Column(String(64))
+    reservet    = Column(String(64))
     
     status  = Column(String(10),index=True) 
     
