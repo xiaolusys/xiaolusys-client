@@ -171,7 +171,7 @@ class OrderReview(wx.Frame):
                 dt         = datetime.datetime.now() 
                         
                 trade_data['trade_id']     = trade.id
-                trade_data['seller_nick']  = trade.seller_nick
+                trade_data['seller_nick']  = trade.user.nick
                 trade_data['post_date']    = dt
                 trade_data['pay_time']    = trade.pay_time
                 trade_data['buyer_nick']   = trade.buyer_nick
@@ -267,7 +267,7 @@ class OrderReview(wx.Frame):
                 trade_data = {}
                         
                 trade_data['trade_id']     = trade.id
-                trade_data['seller_nick']  = trade.seller_nick
+                trade_data['seller_nick']  = trade.user.nick
                 trade_data['seller_contacter']  = trade.user.contacter
                 trade_data['seller_phone']      = trade.user.phone
                 trade_data['seller_mobile']     = trade.user.mobile

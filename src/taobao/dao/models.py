@@ -178,8 +178,7 @@ class MergeOrder(Base):
     __tablename__ = 'shop_trades_mergeorder'
     
     id = Column(BigInteger, primary_key=True)
-    oid = Column(BigInteger,index=True)
-    tid = Column(BigInteger,index=True)
+    oid = Column(String(32),index=True)
     
     cid = Column(BigInteger,index=True)
     merge_trade_id = Column(BigInteger, ForeignKey('shop_trades_mergetrade.id'))
@@ -217,19 +216,19 @@ class MergeOrder(Base):
     sys_status = Column(String(32), nullable=True)
         
     def __repr__(self):
-        return "<Order('%s','%s','%s')>" % (str(self.oid), self.seller_nick, self.buyer_nick)
+        return "<Order('%s','%s','%s')>" % (str(self.id), self.seller_nick, self.buyer_nick)
         
 
 class MergeTrade(Base):
     __tablename__ = 'shop_trades_mergetrade'
     
     id = Column(BigInteger, primary_key=True)
-    tid = Column(BigInteger, primary_key=True)
+    tid = Column(String(32), index=True)
     merge_orders = relationship("MergeOrder", backref="merge_trade")
     user_id = Column(Integer, ForeignKey('shop_users_user.id'))
 
-    seller_id = Column(String(64), index=True, nullable=True)
-    seller_nick = Column(String(64), nullable=True)
+#    seller_id = Column(String(64), index=True, nullable=True)
+#    seller_nick = Column(String(64), nullable=True)
     buyer_nick = Column(String(64), nullable=True)
     type = Column(String(32), nullable=True)
     shipping_type = Column(String(12), default='')
@@ -300,7 +299,7 @@ class MergeTrade(Base):
     reserveh       =  Column(String(32))
     
     def __repr__(self):
-        return "<Trade('%s','%s','%s','%s')>" % (str(self.id),str(self.tid), self.seller_nick, self.buyer_nick)
+        return "<Trade('%s','%s')>" % (str(self.id), self.buyer_nick)
     
     @property
     def total_num(self):

@@ -188,7 +188,7 @@ class BasicPanel(wx.Panel):
         if not trade: 
             return 
         self.trade   = trade
-        self.order_content1.SetValue(trade.seller_nick)
+        self.order_content1.SetValue(trade.user.nick)
         self.order_content2.SetValue(cfg.TRADE_TYPE.get(trade.type,u'其他'))
         self.order_content3.SetValue(str(trade.tid))
         self.order_content4.SetValue(trade.buyer_nick)

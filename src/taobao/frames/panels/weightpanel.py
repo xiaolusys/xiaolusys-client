@@ -220,7 +220,7 @@ class ScanWeightPanel(wx.Panel):
         
     def setTradeInfoPanel(self,trade):
  
-        self.order_content1.SetValue(trade.seller_nick)
+        self.order_content1.SetValue(trade.user.nick)
         self.order_content3.SetValue(cfg.TRADE_TYPE.get(trade.type,u'其他'))
         self.order_content4.SetValue(trade.buyer_nick)
         self.order_content5.SetValue(trade.logistics_company.name)

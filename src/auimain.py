@@ -20,7 +20,7 @@ ID_ScanCharge      = wx.NewId()
 ID_Help            = wx.NewId()
 
 class MainFrame(wx.Frame):
-    def __init__(self, parent, id=-1, title=u"互一云计算电商ERP客户端", pos=wx.DefaultPosition,
+    def __init__(self, parent, id=-1, title=u"互一云计算电商软件", pos=wx.DefaultPosition,
                  size=(1300,700), style=wx.DEFAULT_FRAME_STYLE |wx.SUNKEN_BORDER |wx.CLIP_CHILDREN):
 
         wx.Frame.__init__(self, parent, id, title, pos, size, style)

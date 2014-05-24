@@ -956,7 +956,7 @@ class QueryObjectGridPanel(GridPanel):
             
             object_array = []
             object_array.append(order.id)
-            object_array.append(order.seller_nick)
+            object_array.append(order.user.nick)
             object_array.append(order.buyer_nick)
             object_array.append(cfg.TRADE_TYPE.get(order.type,u'其他'))
             object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
@@ -1086,7 +1086,7 @@ class WeightGridPanel(wx.Panel):
     def getTradeItems(self,trade):
         items = []
         items.append(str(trade.id))
-        items.append(trade.seller_nick)
+        items.append(trade.user.nick)
         items.append(trade.buyer_nick)
         items.append(cfg.SYS_STATUS.get(trade.sys_status,u'其它'))
         items.append(trade.logistics_company.name)

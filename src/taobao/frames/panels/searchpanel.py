@@ -234,7 +234,7 @@ class SearchPanel(wx.Panel):
                     status_dict = dict([(v,k) for k,v in cfg.TRADE_STATUS.items()])
                     datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(),None))
                 if seller_id:
-                    datasource = datasource.filter_by(seller_nick=seller_id.strip())
+                    datasource = datasource.join(User).filter(User.nick==seller_id.strip())
                 if buyer_nick:
                     datasource = datasource.filter_by(buyer_nick=buyer_nick.strip())
                 if start_time:
