@@ -52,10 +52,8 @@ class User(Base):
     type = Column(String(2), default='')
     
     auto_repost = Column(String(16), default='')
-    promoted_type = Column(String(32), default='')
     
     alipay_bind = Column(String(10), default='')
-    alipay_account = Column(String(48), default='')
     alipay_no = Column(String(20), default='')
     created_at = Column(DateTime, nullable=True)
     status = Column(String(12), default='')
@@ -184,7 +182,7 @@ class MergeOrder(Base):
     merge_trade_id = Column(BigInteger, ForeignKey('shop_trades_mergetrade.id'))
 
     title = Column(String(128), nullable=True)
-    price = Column(String(12), nullable=True)
+    price = Column(Float)
     num_iid = Column(BigInteger, nullable=True)
 
     sku_id = Column(String(20), nullable=True)
@@ -192,11 +190,11 @@ class MergeOrder(Base):
     
     outer_id = Column(String(64), nullable=True)
     outer_sku_id = Column(String(20), nullable=True)
-    total_fee = Column(String(12), nullable=True)
+    total_fee = Column(Float)
 
-    payment = Column(String(12), nullable=True)
-    discount_fee = Column(String(12), nullable=True)
-    adjust_fee = Column(String(12), nullable=True)
+    payment = Column(Float)
+    discount_fee = Column(Float)
+    adjust_fee = Column(Float)
 
     sku_properties_name = Column(String(256), nullable=True)
     
@@ -234,19 +232,18 @@ class MergeTrade(Base):
     shipping_type = Column(String(12), default='')
     trade_from    = Column(Integer)
     
-    prod_num  = Column(Integer)
+    prod_num   = Column(Integer)
     refund_num = Column(Integer)
-    payment = Column(String(10), nullable=True)
-    discount_fee = Column(String(10), nullable=True)
-    adjust_fee = Column(String(10), nullable=True)
-    post_fee = Column(String(10), nullable=True)
-    total_fee = Column(String(10), nullable=True)
-    alipay_no = Column(String(128), default='')
+    payment = Column(Float)
+    discount_fee = Column(Float)
+    adjust_fee = Column(Float)
+    post_fee = Column(Float)
+    total_fee = Column(Float)
     
-    seller_cod_fee = Column(String(10), nullable=True)
-    buyer_cod_fee  = Column(String(10), nullable=True)
-    cod_fee        = Column(String(10), nullable=True)
-    cod_status     = Column(String(10), nullable=True)
+    seller_cod_fee = Column(Float)
+    buyer_cod_fee  = Column(Float)
+    cod_fee        = Column(Float)
+    cod_status     = Column(Float)
 
     created = Column(DateTime, index=True, nullable=True)
     pay_time = Column(DateTime, nullable=True)
@@ -261,7 +258,7 @@ class MergeTrade(Base):
     
     out_sid       = Column(String(64),index=True)
     weight        = Column(String(10))
-    post_cost     = Column(String(10))
+    post_cost     = Column(Float)
     logistics_company_id = Column(Integer,ForeignKey('shop_logistics_company.id'))
     receiver_name = Column(String(64), default='')
     receiver_state = Column(String(8), default='')
@@ -270,8 +267,8 @@ class MergeTrade(Base):
     
     receiver_address = Column(String(64), default='')
     receiver_zip = Column(String(10), default='')
-    receiver_mobile = Column(String(20), default='')
-    receiver_phone = Column(String(20), default='')
+    receiver_mobile = Column(String(24), default='')
+    receiver_phone = Column(String(24), default='')
     
     reason_code = Column(String(100), nullable=True)
     status      = Column(String(32) ,index=True ,nullable=True)

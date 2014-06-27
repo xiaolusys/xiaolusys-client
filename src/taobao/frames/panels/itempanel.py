@@ -195,19 +195,19 @@ class BasicPanel(wx.Panel):
         self.order_content5.SetValue(str(trade.pay_time or '')) 
         
         self.order_content6.SetValue(trade.prod_num)
-        self.order_content7.SetValue(trade.total_fee)
-        self.order_content8.SetValue(trade.payment)
+        self.order_content7.SetValue('%.2f'%trade.total_fee)
+        self.order_content8.SetValue('%.2f'%trade.payment)
         self.order_content9.SetValue(trade.logistics_company and trade.logistics_company.code or '')
         self.order_content10.SetValue(str(trade.weight_time or ''))
         
         self.order_content11.SetValue(cfg.SHIPPING_TYPE.get(trade.shipping_type,u'其他'))
-        self.order_content12.SetValue(trade.post_fee)
+        self.order_content12.SetValue('%.2f'%trade.post_fee)
         self.order_content13.SetValue(trade.logistics_company and trade.logistics_company.name or '')
         self.order_content14.SetValue(trade.out_sid) 
         self.order_content15.SetValue(str(trade.consign_time or '')) 
         
         self.order_content16.SetValue(trade.weight)
-        self.order_content17.SetValue(trade.post_cost)
+        self.order_content17.SetValue('%.2f'%trade.post_cost)
         self.order_content18.SetValue(cfg.TRADE_STATUS.get(trade.status,u'其他'))
         self.order_content19.SetValue(cfg.SYS_STATUS.get(trade.sys_status,u'其他'))
         self.order_content20.SetValue(str(trade.created or ''))
@@ -217,12 +217,12 @@ class BasicPanel(wx.Panel):
         self.order_content24.SetValue(trade.sys_memo)
         
         self.operator_text.SetValue(trade.operator)
-        self.discount_fee_text.SetValue(trade.discount_fee)
+        self.discount_fee_text.SetValue('%.2f'%trade.discount_fee)
         self.reason_code_text.SetValue(trade.reason_code)
-        self.refund_num_text.SetValue(str(trade.refund_num))
-        self.seller_cod_text.SetValue(trade.seller_cod_fee)
-        self.buyer_cod_text.SetValue(trade.buyer_cod_fee)
-        self.cod_fee_text.SetValue(trade.cod_fee)
+        self.refund_num_text.SetValue('%d'%trade.refund_num)
+        self.seller_cod_text.SetValue('%.2f'%trade.seller_cod_fee)
+        self.buyer_cod_text.SetValue('%.2f'%trade.buyer_cod_fee)
+        self.cod_fee_text.SetValue('%.2f'%trade.cod_fee)
         self.cod_status_text.SetValue(trade.cod_status)
         
         self.delivery_pick_check.SetValue(trade.is_picking_print)
@@ -287,8 +287,6 @@ class ReceiverPanel(wx.Panel):
         self.order_content6  = wx.TextCtrl(self,-1)
         self.order_label7  = wx.StaticText(self,-1,u'所在地区')
         self.order_content7  = wx.TextCtrl(self,-1)
-        self.order_label8  = wx.StaticText(self,-1,u'收货人信息')
-        self.order_content8 = wx.TextCtrl(self,-1)
         self.order_label9  = wx.StaticText(self,-1,u'收货地址')
         self.order_content9  = wx.TextCtrl(self,-1,size=(600,-1))
 
@@ -305,7 +303,6 @@ class ReceiverPanel(wx.Panel):
         self.control_array.append(self.order_content5)
         self.control_array.append(self.order_content6)
         self.control_array.append(self.order_content7)
-        self.control_array.append(self.order_content8)
         self.control_array.append(self.order_content9)
 
  
@@ -327,8 +324,6 @@ class ReceiverPanel(wx.Panel):
         base_order_sizer.Add(self.order_content6,1,3)
         base_order_sizer.Add(self.order_label7,1,4)
         base_order_sizer.Add(self.order_content7,1,5)
-        base_order_sizer.Add(self.order_label8,1,6)
-        base_order_sizer.Add(self.order_content8,1,7)
         
         box_sizer = wx.BoxSizer(wx.HORIZONTAL)
         box_sizer.Add(self.order_label9,0,flag=wx.EXPAND,border=10)
@@ -351,7 +346,6 @@ class ReceiverPanel(wx.Panel):
         self.order_content5.SetValue(trade.receiver_state)
         self.order_content6.SetValue(trade.receiver_city)
         self.order_content7.SetValue(trade.receiver_district) 
-        self.order_content8.SetValue(trade.alipay_no)  
         self.order_content9.SetValue(trade.receiver_address)  
   
     
