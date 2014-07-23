@@ -72,9 +72,9 @@ class OrderReview(wx.Frame):
     
     def getDePageSetup(self):
         return {'margin_top':'0.393700',
-                'margin_bottom':'0.393700',
+                'margin_bottom':'0.629920',
                 'margin_left':'0.393700',
-                'margin_right':'0.629920',
+                'margin_right':'0.393700',
                 'footer':'',
                 'header':''}
     #----------------------------------------------------------------------
