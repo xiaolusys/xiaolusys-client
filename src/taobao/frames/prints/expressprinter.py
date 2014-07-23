@@ -18,7 +18,12 @@ from taobao.dao.dbsession import get_session
 from taobao.common.utils import create_session,format_datetime
 from taobao.common.regedit import updatePageSetupRegedit
 from taobao.dao.models import MergeTrade,Item,MergeOrder,ClassifyZone
-from taobao.dao.configparams import SYS_STATUS_PREPARESEND ,TRADE_STATUS_WAIT_SEND_GOODS,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL,YUNDA_CODE
+from taobao.dao.configparams import (SYS_STATUS_PREPARESEND ,
+                                     TRADE_STATUS_WAIT_SEND_GOODS,
+                                     EXPRESS_CELL_COL,
+                                     PICKLE_CELL_COL,
+                                     TRADE_ID_CELL_COL,
+                                     YUNDA_CODE)
 from taobao.dao.yundao import get_classify_zone,get_zone_by_code
 from taobao.common.utils import TEMP_FILE_ROOT
 

@@ -16,8 +16,12 @@ from taobao.common.environment import get_template
 from taobao.common.regedit import updatePageSetupRegedit
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
 from taobao.dao.tradedao import get_used_orders,get_product_locations
-from taobao.dao.yundao import get_classify_zone,get_zone_by_code,modify_order,\
-    getYDCustomerByTradeId,printYUNDAPDF
+from taobao.dao.yundao import (get_classify_zone,
+                               get_zone_by_code,
+                               create_order,
+                               modify_order,
+                               getYDCustomerByTradeId,
+                               printYUNDAPDF)
 from taobao.dao.configparams import JUHUASUAN_CODE,YUNDA_CODE
 
 FONTSIZE = 10  
@@ -84,15 +88,23 @@ class OrderReview(wx.Frame):
             trade = session.query(MergeTrade).filter_by(id=self.trade_id).first()
             session.expire(trade)
             
-            if trade.is_qrcode and trade.logistics_company and trade.logistics_company.code.endswith('_QR'):
+            if trade.logistics_company and trade.logistics_company.code.endswith('_QR'):
                 
                 yd_customer  = getYDCustomerByTradeId(self.trade_id,session=session)
-                modify_order([self.trade_id],
-                             partner_id=yd_customer.qr_id,
-                             secret=yd_customer.qr_code,
-                             session=session)
+                if trade.is_qrcode:
+                    modify_order([self.trade_id],
+                                 partner_id=yd_customer.qr_id,
+                                 secret=yd_customer.qr_code,
+                                 session=session)
+                else :
+                    create_order([self.trade_id],
+                                 partner_id=yd_customer.qr_id,
+                                 secret=yd_customer.qr_code,
+                                 session=session)
+                    trade.is_qrcode = True
                 #调用韵达打印接口并打印
                 printYUNDAPDF([self.trade_id],session=session)
+                
             else:   
                 html_text = self.createExpressHtml([self.trade_id])
                 self.html.LoadString(html_text)
@@ -100,7 +112,9 @@ class OrderReview(wx.Frame):
                 updatePageSetupRegedit(self.getExPageSetup())
                 
                 self.html.PrintPreview()
-                session.query(MergeTrade).filter_by(id=self.trade_id).update({MergeTrade.is_express_print:True})
+            session.query(MergeTrade).filter_by(id=self.trade_id).update(
+                                    {MergeTrade.is_express_print:True,
+                                     MergeTrade.is_qrcode:trade.is_qrcode})
         event.Skip()
         
     #----------------------------------------------------------------------
