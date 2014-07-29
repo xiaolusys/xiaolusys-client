@@ -1,7 +1,6 @@
 #-*- coding:utf8 -*-
 '''
 Created on 2012-7-23
-
 @author: user1
 '''
 import re
@@ -21,6 +20,15 @@ FONT_PATH = 'c:\Windows\Fonts\simsun.ttc'
 IMAGE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\images\\'
 MEDIA_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\media\\'
 TEMP_FILE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(taobao.__file__)))+'\\tmpfile\\'
+
+if not os.path.exists(IMAGE_ROOT):
+    os.makedirs(IMAGE_ROOT)
+    
+if not os.path.exists(MEDIA_ROOT):
+    os.makedirs(MEDIA_ROOT)
+    
+if not os.path.exists(TEMP_FILE_ROOT):
+    os.makedirs(TEMP_FILE_ROOT)
 
 def parse_datetime(dt,format='%m/%d/%Y %H:%M:%S'):
     return datetime.datetime(*(time.strptime(dt,format)[0:6]))

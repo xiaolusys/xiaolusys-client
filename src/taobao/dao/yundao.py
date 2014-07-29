@@ -1,9 +1,10 @@
 #-*- coding:utf8 -*-
+import os
+import sys
+import re
 import time
 import datetime
 import MySQLdb
-import sys
-import re
 import hashlib
 import base64
 import urllib
@@ -379,10 +380,13 @@ def printYUNDAPDF(trade_ids,direct=False,session=None):
     session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
         .update({'is_express_print':True},synchronize_session='fetch')
     
-    file_name = '%s%d.pdf'%(TEMP_FILE_ROOT,int(time.time()))
+    for fname in os.listdir(TEMP_FILE_ROOT):
+        os.remove(os.path.join(TEMP_FILE_ROOT,fname))
+    
+    file_name = os.path.join(TEMP_FILE_ROOT,'%d.pdf'%int(time.time()))
     with open(file_name,'wb') as f:
         f.write(pdfdoc)
-    
+        
     if direct:
         conf  =  getconfig()
         gsprint_exe = conf.get('custom','gsprint_exe')

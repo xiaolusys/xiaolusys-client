@@ -283,6 +283,8 @@ class MergeTrade(Base):
     can_review       = Column(Boolean)
     priority         = Column(Integer,index=True)
     operator         = Column(String(32))
+    scanner          = Column(String(64))
+    weighter         = Column(String(64))
     is_locked        = Column(Boolean)
     is_charged       = Column(Boolean)
     has_merge        = Column(Boolean)

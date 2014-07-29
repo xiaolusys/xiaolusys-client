@@ -254,7 +254,9 @@ class GridPanel(wx.Panel):
         print_mode       = self.Parent.getPrintMode()
         session          = self.Parent.Session
         
-        self.datasource,self.counter = get_datasource_by_type_and_mode(status_type,print_mode=print_mode,session=session)
+        self.datasource,self.counter = get_datasource_by_type_and_mode(status_type,
+                                                                       print_mode=print_mode,
+                                                                       session=session)
         self.paginator = paginator = Paginator(self.datasource,self.page_size,counter=self.counter)
         self.page = paginator.page(1)
         
@@ -262,7 +264,9 @@ class GridPanel(wx.Panel):
         self.picking_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
         self.express_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
         self.post_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
-        self.review_orders_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK,cfg.SYS_STATUS_WAITSCANWEIGHT,cfg.SYS_STATUS_FINISHED))
+        self.review_orders_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK,
+                                                    cfg.SYS_STATUS_WAITSCANWEIGHT,
+                                                    cfg.SYS_STATUS_FINISHED))
         self.scan_check_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK))
         self.scan_weight_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANWEIGHT))
         
@@ -974,6 +978,7 @@ class QueryObjectGridPanel(GridPanel):
             object_array.append(str(order.prod_num))
             object_array.append(order.payment)
             object_array.append(order.total_fee)
+            object_array.append(order.scanner)
             object_array.append(order.pay_time)
             object_array.append(order.consign_time or '')
             object_array.append(order.weight_time or '')
@@ -1006,7 +1011,9 @@ class SimpleGridPanel(wx.Panel):
 
     def setData(self,trade,grid_table_type=SimpleGridTable):
         object_list = self.parseObjectToList(trade)
-        gridtable = weakref.ref(grid_table_type(object_list, self.rowLabels, self.colLabels))
+        gridtable = weakref.ref(grid_table_type(object_list, 
+                                                self.rowLabels, 
+                                                self.colLabels))
         self.grid.SetTable(gridtable(),True)
         self.grid.AutoSize()
         self.grid.SetColSize(0,80)
