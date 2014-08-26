@@ -793,11 +793,11 @@ class GridPanel(wx.Panel):
                                                 wx.OK|wx.CANCEL|wx.ICON_EXCLAMATION)
                         result = dial.ShowModal()
                         dial.Destroy()
-                        
                         #如果不继续，则退出
                         if result != wx.ID_OK:
                             return 
-                    
+                    #调用韵达本地服务打印
+                    #yundao.printYUNDAService(sort_ids,session=session)
                     #调用韵达打印接口并打印
                     yundao.printYUNDAPDF(sort_ids,session=session)
                                         
