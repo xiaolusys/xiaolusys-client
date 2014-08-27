@@ -273,7 +273,7 @@ def handle_demon(action,xml_data,partner_id,secret):
     
     req = urllib2.urlopen(qrcode_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-    
+    print 'rep:',rep
     if action == REPRINT:
         return rep
         
@@ -398,7 +398,8 @@ def printYUNDAPDF(trade_ids,direct=False,session=None):
     yd_customer = getYDCustomerByTradeId(trade_ids[0],session=session)
     pdfdoc  = print_order(trade_ids,
                           partner_id=yd_customer.qr_id,
-                          secret=yd_customer.qr_code)
+                          secret=yd_customer.qr_code
+                          )
     
     #更新订单打印状态
     session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
