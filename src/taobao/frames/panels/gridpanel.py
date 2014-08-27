@@ -956,7 +956,7 @@ class QueryObjectGridPanel(GridPanel):
         array_object = []
         session      = self.Session
         for order in object_list:
-            session.expire(order)
+            #session.expire(order)
             
             object_array = []
             object_array.append(order.id)
