@@ -1,9 +1,10 @@
 #-*- coding:utf8 -*-
+import os
+import sys
+import re
 import time
 import datetime
 import MySQLdb
-import sys
-import re
 import hashlib
 import base64
 import urllib
@@ -243,11 +244,15 @@ def parseTreeID2MailnoMap(doc):
         mailno   = getText(order.getElementsByTagName('mail_no')[0].childNodes).strip()
         
         msg    = getText(order.getElementsByTagName('msg')[0].childNodes)
-
+        
         if order_serial_no == '0' and status == '0':
             raise Exception(msg)
         
-        im_map[order_serial_no] = {'status':mailno and 1 or 0,'mailno':mailno,'msg':msg}
+        pdf_info = getText(order.getElementsByTagName('pdf_info')[0].childNodes).strip()
+        im_map[order_serial_no] = {'status':mailno and 1 or 0,
+                                   'mailno':mailno,
+                                   'pdf_info':pdf_info,
+                                   'msg':msg}
         
     return im_map
         
@@ -268,7 +273,7 @@ def handle_demon(action,xml_data,partner_id,secret):
     
     req = urllib2.urlopen(qrcode_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-
+    
     if action == REPRINT:
         return rep
         
@@ -369,20 +374,43 @@ def getYDCustomerByTradeId(trade_id,session=None):
     return session.query(YundaCustomer).filter_by(code=trade.user.user_code.strip()).one()
 
 
+def printYUNDAService(trade_ids,session=None):
+    
+    yd_customer = getYDCustomerByTradeId(trade_ids[0],session=session)
+    im_map = search_order(trade_ids,
+                          session=session,
+                          partner_id=yd_customer.qr_id,
+                          secret=yd_customer.qr_code)
+    print_list = []
+    for im in im_map:
+        print_list.append(im['pdf_info'])
+        
+    _url = "http://127.0.0.1:9090/ydecx/service/mailpx/printDirect.pdf?"
+    req = urllib2.urlopen(_url, urllib.urlencode({'tname':'mailtmp_s12',
+                                                 'docname':'mailpdfm1',
+                                                 'value':'@'.join(print_list)}))
+    print req.read()
+        
+    
+
 def printYUNDAPDF(trade_ids,direct=False,session=None):
                    
     yd_customer = getYDCustomerByTradeId(trade_ids[0],session=session)
     pdfdoc  = print_order(trade_ids,
                           partner_id=yd_customer.qr_id,
                           secret=yd_customer.qr_code)
+    
     #更新订单打印状态
     session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
         .update({'is_express_print':True},synchronize_session='fetch')
     
-    file_name = '%s%d.pdf'%(TEMP_FILE_ROOT,int(time.time()))
+    for fname in os.listdir(TEMP_FILE_ROOT):
+        os.remove(os.path.join(TEMP_FILE_ROOT,fname))
+    
+    file_name = os.path.join(TEMP_FILE_ROOT,'%d.pdf'%int(time.time()))
     with open(file_name,'wb') as f:
         f.write(pdfdoc)
-    
+        
     if direct:
         conf  =  getconfig()
         gsprint_exe = conf.get('custom','gsprint_exe')

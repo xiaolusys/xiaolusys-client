@@ -10,7 +10,7 @@ import wx,wx.grid
 from taobao.common.utils import create_session
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import CheckGridPanel
-from taobao.dao.tradedao import get_used_orders
+from taobao.dao.tradedao import get_used_orders,get_oparetor
 from taobao.dao import configparams as cfg 
 from taobao.dao.yundao import printYUNDAPDF
 from taobao.common.logger import get_sentry_logger,log_exception
@@ -128,36 +128,41 @@ class ScanCheckPanel(wx.Panel):
         return sid[0:13]
     
     def onOutsidTextChange(self,evt):
-        try:
-            company_name = self.company_select.GetValue().strip()
-            out_sid      = self.getSid()
-            trades = None
-            with create_session(self.Parent) as session:
-                if company_name and out_sid:
-                    logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
-                    trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
-                           logistics_company=logistics_company,sys_status=cfg.SYS_STATUS_WAITSCANCHECK,reason_code='')
-                elif out_sid :
-                    trades = session.query(MergeTrade).filter_by(out_sid=out_sid,sys_status=cfg.SYS_STATUS_WAITSCANCHECK,reason_code='')
-            count = trades.count() if trades else 0 
-            if count > 1 :
-                self.error_text.SetLabel(u'该快递单号已重复，请审核后再扫描')
-                self.status_bar.SetBackgroundColour('RED')
-            elif count == 1:
-                self.trade = trades.one()
-                self.gridpanel.setData(self.trade)
-                self.barcode_text.SetFocus()
-                self.error_text.SetLabel('')
-                self.status_bar.SetBackgroundColour('GREEN')
-            else:
-                self.error_text.SetLabel(u'未找到该订单')
-                self.out_sid_text.Clear()
-                self.out_sid_text.SetFocus()
-                self.status_bar.SetBackgroundColour('RED')
-            evt.Skip()
+#        try:
+        company_name = self.company_select.GetValue().strip()
+        out_sid      = self.getSid()
+        trades = None
+        with create_session(self.Parent) as session:
+            if company_name and out_sid:
+                logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
+                       logistics_company=logistics_company,sys_status=cfg.SYS_STATUS_WAITSCANCHECK,reason_code='')
+            elif out_sid :
+                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,
+                                                             sys_status=cfg.SYS_STATUS_WAITSCANCHECK,
+                                                             reason_code='')
+        count = trades.count() if trades else 0 
+        
+        if count > 1 :
+            self.error_text.SetLabel(u'该快递单号已重复，请审核后再扫描')
+            self.status_bar.SetBackgroundColour('RED')
+        elif count == 1:
+            self.trade = trades.one()
             
-        except Exception,exc:
-            logger.error(exc.message,exc_info=True)
+            self.gridpanel.setData(self.trade)
+            
+            #self.barcode_text.SetFocus()
+            #self.error_text.SetLabel('')
+            #self.status_bar.SetBackgroundColour('GREEN')
+        else:
+            self.error_text.SetLabel(u'未找到该订单')
+            self.out_sid_text.Clear()
+            self.out_sid_text.SetFocus()
+            self.status_bar.SetBackgroundColour('RED')
+        evt.Skip()
+            
+#        except Exception,exc:
+#            logger.error(exc.message,exc_info=True)
             
              
     def setBarCode(self):
@@ -179,8 +184,11 @@ class ScanCheckPanel(wx.Panel):
                 if self.gridpanel.isCheckOver():
                     with create_session(self.Parent) as session: 
                         #库存减掉后，修改发货状态
-                        session.query(MergeTrade).filter_by(id=self.trade.id,sys_status=cfg.SYS_STATUS_WAITSCANCHECK)\
-                            .update({'sys_status':cfg.SYS_STATUS_WAITSCANWEIGHT},synchronize_session='fetch')
+                        session.query(MergeTrade).filter_by(id=self.trade.id,
+                                                            sys_status=cfg.SYS_STATUS_WAITSCANCHECK)\
+                            .update({'sys_status':cfg.SYS_STATUS_WAITSCANWEIGHT,
+                                     'scanner':get_oparetor()},
+                                    synchronize_session='fetch')
                     
                     self.gridpanel.clearTable()
                     self.out_sid_text.Clear()

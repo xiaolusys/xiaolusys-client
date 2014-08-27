@@ -53,7 +53,7 @@ def get_sentry_logger():
                 },
             'taobao.erp.client': {
                 'handlers': ['console', 'sentry'],
-                'level': 'ERROR',
+                'level': 'DEBUG',
                 'propagate': True,
             },
         }

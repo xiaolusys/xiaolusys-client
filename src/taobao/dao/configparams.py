@@ -42,12 +42,13 @@ TRADE_STATUS = {
 
 
 TRADE_TYPE = {
-    'fixed':u'一口价',
-    'auction':u'拍卖',
-    'guarantee_trade':u'一口价拍卖',
-    'auto_delivery':u'自动发货',
-    'cod':u'货到付款',
+    'fixed':u'淘宝&商城',
     'fenxiao':u'分销',
+    'jd':u'京东',
+    'dd':u'当当',
+    'wx':u'微信',
+    'yhd':u'一号店',
+    'amz':u'亚马逊',
     'direct':u'内售',
     'exchange':u'退换货',
     'reissue':u'补发'

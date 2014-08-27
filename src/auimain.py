@@ -114,7 +114,7 @@ app = wx.PySimpleApp()
 try:
     config = getconfig()
     db_host = config.get('db','db_host')
-    if pinghost(db_host):
+    if False and pinghost(db_host):
         dial = wx.MessageDialog(None, u'数据库连接失败(host:%s)'%db_host, 
                                 u'数据库连接失败提示', wx.OK | wx.ICON_EXCLAMATION)
         dial.ShowModal()

@@ -4,7 +4,6 @@ Created on 2012-7-19
 
 @author: user1
 '''
-import datetime
 import wx
 from   sqlalchemy import or_
 from taobao.dao.models import MergeTrade,MergeOrder,User,LogisticsCompany
@@ -26,8 +25,8 @@ class SearchPanel(wx.Panel):
         self.taobao_status_select = wx.ComboBox(self,-1,size=(90,-1))
         self.seller_label = wx.StaticText(self,-1,u'店铺名称')
         self.seller_select = wx.ComboBox(self,-1,size=(90,-1)) 
-        self.buyer_label = wx.StaticText(self,-1,u'买家称呼')
-        self.buyer_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER,size=(90,-1))
+        self.buyer_label = wx.StaticText(self,-1,u'操作员')
+        self.buyer_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.outer_id_label = wx.StaticText(self,-1,u'商品编码')
         self.outer_id_text =  wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER) 
         self.sku_outer_id_label = wx.StaticText(self,-1,u'规格编码')
@@ -192,8 +191,8 @@ class SearchPanel(wx.Panel):
         trade_id   = self.order_text.GetValue()
         receiver_name = self.order_receiver_name.GetValue()
         trade_status = self.taobao_status_select.GetValue()
-        seller_id = self.seller_select.GetValue()
-        buyer_nick = self.buyer_text.GetValue()
+        operator     = self.buyer_text.GetValue()
+        seller_id    = self.seller_select.GetValue()
         
         start_time = self.start_time_select.GetValue()
         end_time   = self.end_time_select.GetValue()
@@ -215,7 +214,7 @@ class SearchPanel(wx.Panel):
         weight_end_time   = self.weight_end_select.GetValue()
         weight_start_time = wxdate2pydate(weight_start_time)
         weight_end_time = wxdate2pydate(weight_end_time)
-
+        
         def getSid(out_sid):
         
             if len(out_sid) < 20:
@@ -223,6 +222,7 @@ class SearchPanel(wx.Panel):
             return out_sid[0:13]
             
         def appendFilter(datasource):
+            
             if trade_id:
                 datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
             elif logistics_id:
@@ -235,8 +235,11 @@ class SearchPanel(wx.Panel):
                     datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(),None))
                 if seller_id:
                     datasource = datasource.join(User).filter(User.nick==seller_id.strip())
-                if buyer_nick:
-                    datasource = datasource.filter_by(buyer_nick=buyer_nick.strip())
+                
+                if operator:
+                    datasource = datasource.filter(or_(MergeTrade.operator.like('%'+operator.strip()+'%'),
+                                                       MergeTrade.scanner.like('%'+operator.strip()+'%'),
+                                                       MergeTrade.weighter.like('%'+operator.strip()+'%')))
                 if start_time:
                     datasource = datasource.filter("pay_time >=:start").params(start=start_time)
                 if end_time:
@@ -262,16 +265,19 @@ class SearchPanel(wx.Panel):
                     datasource = datasource.filter_by(is_express_print=express_print_state == 1 and True or False)
                 if juhuasuan:
                     if juhuasuan == 1:
-                        datasource = datasource.filter(MergeTrade.trade_from.op('&')(cfg.JUHUASUAN_CODE) == cfg.JUHUASUAN_CODE)
+                        datasource = datasource.filter(MergeTrade.trade_from.op('&')
+                                                       (cfg.JUHUASUAN_CODE) == cfg.JUHUASUAN_CODE)
                     else:
-                        datasource = datasource.filter(MergeTrade.trade_from.op('&')(cfg.JUHUASUAN_CODE) != cfg.JUHUASUAN_CODE)
+                        datasource = datasource.filter(MergeTrade.trade_from.op('&')
+                                                       (cfg.JUHUASUAN_CODE) != cfg.JUHUASUAN_CODE)
                 if outer_id:
                     trade_ids = [t.id for t in datasource]
                     with create_session(self.Parent) as session:
                         
                         merge_orders = session.query(MergeOrder).filter(MergeOrder.merge_trade_id.in_(trade_ids))
                         if outer_id and sku_outer_id:
-                            merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id,MergeOrder.outer_sku_id==sku_outer_id)
+                            merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id,
+                                                               MergeOrder.outer_sku_id==sku_outer_id)
                         else :
                             merge_orders = merge_orders.filter(MergeOrder.outer_id==outer_id)
                         

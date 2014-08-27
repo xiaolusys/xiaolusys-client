@@ -21,20 +21,22 @@ class BitmapRenderer(wx.grid.PyGridCellRenderer):
     
     def parseUrlToBitmap(self,image_url):
         try:
-            fp  = urllib.urlopen(image_url+'_50x50q90.jpg')
-            data = fp.read()
-            img = wx.ImageFromStream(StringIO(data))
+            #fp  = urllib.urlopen(image_url+'_50x50q90.jpg')
+#            data = fp.read()
+#            img = wx.ImageFromStream(StringIO(data))
+            image_path = IMAGE_ROOT+'unavailible.jpg'
+            img = wx.Image(image_path)
         except:
             try:
                 image_path = IMAGE_ROOT+'unavailible.jpg'
                 img = wx.Image(image_path)
             except :
                 pass
-        finally:
-            try:
-                fp.close()
-            except:
-                pass
+#        finally:
+#            try:
+#                fp.close()
+#            except:
+#                pass
         img = img.Scale(50,50,wx.IMAGE_QUALITY_NORMAL)
         return wx.BitmapFromImage(img)
     

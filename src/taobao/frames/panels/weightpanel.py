@@ -13,7 +13,7 @@ from MySQLdb import IntegrityError
 from taobao.common.utils import create_session,MEDIA_ROOT
 from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import WeightGridPanel
-from taobao.dao.tradedao import get_used_orders,get_return_orders
+from taobao.dao.tradedao import get_used_orders,get_return_orders,get_oparetor
 from taobao.common.utils import getconfig
 from taobao.dao import configparams as cfg
 
@@ -277,9 +277,13 @@ class ScanWeightPanel(wx.Panel):
                         .update({Product.collect_num:Product.collect_num+order.num})
                     
             #称重后，内部状态变为发货已发货
-            session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus())).filter_by(id=trade.id)\
-                    .update({'weight':weight,'sys_status':cfg.SYS_STATUS_FINISHED,
-                             'weight_time':datetime.datetime.now(),'reserveh':self.valid_code}
+            session.query(MergeTrade).filter(MergeTrade.sys_status.in_(self.getPreWeightStatus()))\
+                    .filter_by(id=trade.id)\
+                    .update({'weight':weight,
+                             'sys_status':cfg.SYS_STATUS_FINISHED,
+                             'weighter':get_oparetor(),
+                             'weight_time':datetime.datetime.now(),
+                             'reserveh':self.valid_code}
                     ,synchronize_session='fetch')
                     
         self.gridpanel.InsertTradeRows(trade)
