@@ -127,6 +127,7 @@ class ScanCheckPanel(wx.Panel):
             return sid
         return sid[0:13]
     
+    @log_exception
     def onOutsidTextChange(self,evt):
 #        try:
         company_name = self.company_select.GetValue().strip()
@@ -151,9 +152,9 @@ class ScanCheckPanel(wx.Panel):
             
             self.gridpanel.setData(self.trade)
             
-            #self.barcode_text.SetFocus()
-            #self.error_text.SetLabel('')
-            #self.status_bar.SetBackgroundColour('GREEN')
+            self.barcode_text.SetFocus()
+            self.error_text.SetLabel('')
+            self.status_bar.SetBackgroundColour('GREEN')
         else:
             self.error_text.SetLabel(u'未找到该订单')
             self.out_sid_text.Clear()
