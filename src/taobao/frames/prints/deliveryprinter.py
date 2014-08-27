@@ -104,8 +104,8 @@ class DeliveryPrinter(wx.Frame):
 
     def getPageSetup(self):
         return {'margin_top':'0.393700',
-                'margin_bottom':'0.629920',
-                'margin_left':'0.393700',
+                'margin_bottom':'0.393700',
+                'margin_left':'0.629920',
                 'margin_right':'0.393700',
                 'footer':'',
                 'header':''}
