@@ -221,8 +221,8 @@ class DeliveryPrinter(wx.Frame):
                     product  = session.query(Product).filter_by(outer_id=order.outer_id).first()
                     prod_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,product=product).first()
                     
-                    product_id = product.id
-                    sku_id     = prod_sku and prod_sku.id
+                    product_id = product and product.id or ''
+                    sku_id     = prod_sku and prod_sku.id or ''
                     
                     promptmsg = (prod_sku and prod_sku.buyer_prompt) or (product and product.buyer_prompt) or ''
                     if promptmsg:
