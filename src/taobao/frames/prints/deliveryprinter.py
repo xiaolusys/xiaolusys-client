@@ -13,9 +13,10 @@ import wx
 import wx.lib.iewin as iewin
 import time
 import datetime
+import urllib
 from wx.html import HtmlEasyPrinting,HtmlWindow 
 from taobao.common.environment import get_template
-from taobao.common.utils import create_session,format_datetime
+from taobao.common.utils import create_session,format_datetime,getconfig
 from taobao.common.regedit import updatePageSetupRegedit
 from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
 from taobao.dao.tradedao import get_used_orders,get_product_locations
@@ -53,16 +54,25 @@ class DeliveryPrinter(wx.Frame):
         wx.Frame.__init__(self, parent, wx.ID_ANY, title, size=(850,500))
         
         self.trade_ids = trade_ids
+        self.trade_user_code = self.getTradeUserCode(trade_ids)
         
         self.panel = wx.Panel(self, wx.ID_ANY)
         self.printer = HtmlPrinter(name=u'打印', parentWindow=None)
- 
+        
         self.html = iewin.IEHtmlWindow(self.panel,-1)
         #trade_ids = [200165044022938,165155430754126]
        
-        html_text = self.createHtml(trade_ids)
-        #self.saveHtml2File(html_text,len(trade_ids))
-        self.html.LoadString(html_text)
+        if self.isAsyncPDFPrint():
+            
+            if self.printPromptOk():
+                self.html.LoadUrl(self.getAsyncPDFPrintUrl(self.trade_user_code, trade_ids))
+            else:
+                self.Close()
+            
+        else:
+            html_text = self.createHtml(trade_ids)
+            #self.saveHtml2File(html_text,len(trade_ids))
+            self.html.LoadString(html_text)
         
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
         #printBtn = wx.Button(self.panel,wx.ID_ANY,u'打印')
@@ -83,7 +93,28 @@ class DeliveryPrinter(wx.Frame):
  
         self.panel.SetSizer(sizer)
         self.panel.SetAutoLayout(True)
- 
+    
+    def isAsyncPDFPrint(self):
+        cfg  = getconfig()
+        return cfg.get('print','invoice_pdf_print')
+         
+    def getAsyncPDFPrintUrl(self,user_code,trade_ids):
+        cfg  = getconfig()
+        host_name = cfg.get('url','web_host')
+        async_print_url = cfg.get('print','async_print_url')
+        
+        print_params = {'user_code':user_code,
+                        'trade_ids':','.join(trade_ids)}
+        
+        return '%s?%s'%(async_print_url%(host_name),urllib.urlencode(print_params))
+        
+    def getTradeUserCode(self,trade_ids):
+        
+        with create_session(self.Parent) as session: 
+            trade_user_code = session.query(MergeTrade).filter_by(id=trade_ids[0])\
+                .one().user.user_code.lower()
+        return trade_user_code
+        
     #----------------------------------------------------------------------
     def createHtml(self,trade_ids=[]):
         '''
@@ -101,7 +132,28 @@ class DeliveryPrinter(wx.Frame):
         except:
             return u'<center>模板异常</center>'
         return html
-
+    
+    def printPromptOk(self):
+        
+        with create_session(self.Parent) as session: 
+            trades = session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids)).filter_by(is_picking_print=True)
+            rept_num = trades.count()
+            if rept_num > 0:
+                dial = wx.MessageDialog(None, u'该批订单有（%d）单已打印发货单，还要继续吗？'%rept_num, u'发货单重打提示', 
+                                        wx.OK|wx.CANCEL|wx.ICON_EXCLAMATION)
+                result = dial.ShowModal()
+                dial.Destroy()
+                
+                #如果不继续，则退出
+                if result != wx.ID_OK:
+                    return False
+                    
+            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
+                .update({'is_picking_print':True},synchronize_session='fetch')
+                
+            return True
+    
+    
     def getPageSetup(self):
         return {'margin_top':'0.393700',
                 'margin_bottom':'0.393700',
@@ -123,21 +175,8 @@ class DeliveryPrinter(wx.Frame):
     #----------------------------------------------------------------------
     def onPreview(self,event):
         """"""
-        with create_session(self.Parent) as session: 
-            trades = session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids)).filter_by(is_picking_print=True)
-            rept_num = trades.count()
-            if rept_num > 0:
-                dial = wx.MessageDialog(None, u'该批订单有（%d）单已打印发货单，还要继续吗？'%rept_num, u'发货单重打提示', 
-                                        wx.OK|wx.CANCEL|wx.ICON_EXCLAMATION)
-                result = dial.ShowModal()
-                dial.Destroy()
-                
-                #如果不继续，则退出
-                if result != wx.ID_OK:
-                    return 
-                    
-            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
-                .update({'is_picking_print':True},synchronize_session='fetch')
+        if not self.printPromptOk():
+            return 
                 
         updatePageSetupRegedit(self.getPageSetup())
         
