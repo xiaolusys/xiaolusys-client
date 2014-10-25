@@ -258,7 +258,7 @@ def parseTreeID2MailnoMap(doc):
         
        
 def handle_demon(action,xml_data,partner_id,secret):
-    
+    print 'action:',xml_data
     xml_data  = base64.encodestring(xml_data).strip()
     validate = hashlib.md5(xml_data+partner_id+secret).hexdigest()
     config = getconfig()

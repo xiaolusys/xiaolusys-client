@@ -249,19 +249,21 @@ class ScanWeightPanel(wx.Panel):
                 outer_sku_id = order.outer_sku_id 
                 product = session.query(Product).filter_by(outer_id=outer_id).first()
                 if product and outer_sku_id:
-                    session.query(ProductSku).filter_by(outer_id=outer_sku_id,product=product)\
-                        .update({ProductSku.quantity:ProductSku.quantity-order.num})
-                        
-                    if order.gift_type in (cfg.REAL_ORDER_GIT_TYPE,cfg.COMBOSE_SPLIT_GIT_TYPE):
-                        session.query(ProductSku).filter_by(outer_id=outer_sku_id,product=product)\
-                        .update({ProductSku.wait_post_num:ProductSku.wait_post_num-order.num})
-                
-                session.query(Product).filter_by(outer_id=outer_id)\
-                    .update({Product.collect_num:Product.collect_num-order.num})
                     
+                    update_params = {ProductSku.quantity:ProductSku.quantity-order.num}
+                    if order.gift_type in (cfg.REAL_ORDER_GIT_TYPE,cfg.COMBOSE_SPLIT_GIT_TYPE):
+                        update_params.update({ProductSku.wait_post_num:ProductSku.wait_post_num-order.num,
+                                              ProductSku.retrieval_num:ProductSku.retrieval_num+order.num})
+                        
+                    session.query(ProductSku).filter_by(outer_id=outer_sku_id,product=product).update(update_params)
+                 
+                update_params = {Product.collect_num:Product.collect_num-order.num}   
                 if order.gift_type in (cfg.REAL_ORDER_GIT_TYPE,cfg.COMBOSE_SPLIT_GIT_TYPE):
-                    session.query(Product).filter_by(outer_id=outer_id)\
-                    .update({Product.wait_post_num:Product.wait_post_num-order.num})
+                    update_params.update({Product.wait_post_num:Product.wait_post_num-order.num,
+                                         Product.retrieval_num:Product.retrieval_num+order.num})
+                    
+                session.query(Product).filter_by(outer_id=outer_id).update(update_params)
+                    
             
             if trade.type == 'exchange':
                 return_orders = get_return_orders(session,self.trade.id)
