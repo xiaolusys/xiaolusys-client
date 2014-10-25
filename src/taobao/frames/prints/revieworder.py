@@ -70,7 +70,7 @@ class OrderReview(wx.Frame):
     
     def isAsyncPDFPrint(self):
         cfg  = getconfig()
-        return cfg.get('print','invoice_pdf_print')
+        return cfg.get('print','invoice_pdf_print').lower() == 'true'
          
     def getAsyncPDFPrintUrl(self,user_code,trade_ids):
         cfg  = getconfig()
