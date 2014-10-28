@@ -108,8 +108,9 @@ class create_session():
         
         if self.session:
             try:
-                self.session.flush()
+                self.session.commit()
             except Exception,exc:
+                self.session.rollback()
                 from taobao.common.logger import get_sentry_logger
                 logger = get_sentry_logger()
                 logger.error(exc.message,exc_info=True)

@@ -23,6 +23,7 @@ from taobao.frames.prints.pickleprinter import PicklePrinter
 from taobao.frames.prints.revieworder import OrderReview
 from taobao.dao import yundao
 from taobao.common.logger import log_exception
+from taobao.common.utils import logtime
 
 ZERO_REGEX = '^[0]+'
 YUNDA_CODE = 'YUNDA'
@@ -247,7 +248,8 @@ class GridPanel(wx.Panel):
             lg_map[lg.id] = lg.name
         
         return lg_map
-        
+    
+    @logtime(tag="setDataSource")    
     def setDataSource(self, status_type): 
         """设置数据源"""
         self.status_type = status_type
@@ -481,18 +483,18 @@ class GridPanel(wx.Panel):
                                         wx.OK | wx.ICON_EXCLAMATION)
                 dial.ShowModal()
                 return 
-            trade   = session.query(MergeTrade).filter_by(id=trade_id).first()
-            trade_user_code = trade_user_code or trade.user.user_code
-            
-            if not trade.user.user_code or trade.user.user_code != trade_user_code:
-                dial = wx.MessageDialog(None, u'由于您是多客户模式，请选择具体店铺', u'快递单号预览提示', 
-                                        wx.OK | wx.ICON_EXCLAMATION)
-                dial.ShowModal()
-                return
+#            #trade   = session.query(MergeTrade).filter_by(id=trade_id).first()
+#            trade_user_code = "QIYUE"#trade_user_code or trade.user.user_code
+#            
+#            if not trade.user.user_code or trade.user.user_code != trade_user_code:
+#                dial = wx.MessageDialog(None, u'由于您是多客户模式，请选择具体店铺', u'快递单号预览提示', 
+#                                        wx.OK | wx.ICON_EXCLAMATION)
+#                dial.ShowModal()
+#                return
             trade_ids.append(trade_id)
             
         return trade_ids
-
+    
     @log_exception        
     def fillOutSidToCell(self,evt):
         
@@ -954,7 +956,7 @@ class QueryObjectGridPanel(GridPanel):
     def parseObjectToList(self, object_list):
         
         array_object = []
-        session      = self.Session
+#        session      = self.Session
         for order in object_list:
             #session.expire(order)
             
