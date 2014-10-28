@@ -70,7 +70,7 @@ class OrderReview(wx.Frame):
     
     def isAsyncPDFPrint(self):
         cfg  = getconfig()
-        return cfg.get('print','invoice_pdf_print')
+        return cfg.get('print','invoice_pdf_print').lower() == 'true'
          
     def getAsyncPDFPrintUrl(self,user_code,trade_ids):
         cfg  = getconfig()
@@ -99,9 +99,9 @@ class OrderReview(wx.Frame):
     
     def getDePageSetup(self):
         return {'margin_top':'0.393700',
-                'margin_bottom':'0.393700',
+                'margin_bottom':'0.629920',
                 'margin_left':'0.393700',
-                'margin_right':'0.629920',
+                'margin_right':'0.393700',
                 'footer':'',
                 'header':''}
     #----------------------------------------------------------------------
