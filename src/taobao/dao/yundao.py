@@ -107,7 +107,6 @@ def get_classify_zone(state,city,district,address='',session=None):
                 if rp.search(address):
                     return sz
              
-            
         czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
                     (ClassifyZone.city.like(ldistrict+'%'))|(ClassifyZone.district.like(ldistrict+'%')))
         
