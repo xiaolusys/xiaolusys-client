@@ -420,8 +420,11 @@ class GridPanel(wx.Panel):
                 for row in self._selectedRows:
                     trade_ids.add(int(self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)))
                     
-                session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).filter_by(operator=operator).update({
-                          'is_express_print':False,'is_picking_print':False,'out_sid':''})
+                session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
+                    .filter_by(operator=operator).update({'is_express_print':False,
+                                                          'is_picking_print':False,
+                                                          'out_sid':''},
+                                                         synchronize_session='fetch')
             
             self.initialFillSidPanel()
             self.refreshTable()
@@ -535,7 +538,8 @@ class GridPanel(wx.Panel):
 #                                if (start_out_sid%10)/6==1:
 #                                    incr_value = 4
 #                                else:
-#                                    incr_value = 11 
+#                                    incr_value = 11
+                    self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
                     start_out_sid += incr_value
 #                    elif not is_out_sid_match:
 #                        dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示', 
