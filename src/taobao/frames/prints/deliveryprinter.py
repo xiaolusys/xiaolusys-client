@@ -58,6 +58,7 @@ class DeliveryPrinter(wx.Frame):
         
         self.panel = wx.Panel(self, wx.ID_ANY)
         self.printer = HtmlPrinter(name=u'打印', parentWindow=None)
+        self.printed = False
         
         self.html = iewin.IEHtmlWindow(self.panel,-1)
         #trade_ids = [200165044022938,165155430754126]
@@ -150,7 +151,8 @@ class DeliveryPrinter(wx.Frame):
                     
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_picking_print':True},synchronize_session='fetch')
-                
+            self.printed = True
+            
             return True
     
     
@@ -186,14 +188,11 @@ class DeliveryPrinter(wx.Frame):
  
     #----------------------------------------------------------------------
     def onCancel(self, event):
-        with create_session(self.Parent) as session:
-            grid = self.Parent.grid
-            rows = self.Parent.grid.GetNumberRows()
-            
-            for row in xrange(0,rows):
-                trade_id = grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                trade = session.query(MergeTrade).filter_by(id=trade_id).first()
-                grid.SetCellValue(row,PICKLE_CELL_COL,trade.is_picking_print and '1' or '')
+        grid = self.Parent.grid
+        rows = self.Parent.grid.GetNumberRows()
+        
+        for row in xrange(0,rows):
+            grid.SetCellValue(row,PICKLE_CELL_COL,self.printed and '1' or '')
                 
         self.Parent.grid.ForceRefresh()
         self.Close()

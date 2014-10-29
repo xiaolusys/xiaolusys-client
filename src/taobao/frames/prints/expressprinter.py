@@ -59,6 +59,7 @@ class ExpressPrinter(wx.Frame):
         
         self.trade_ids = trade_ids
         self.panel = wx.Panel(self, wx.ID_ANY)
+        self.printed = False
         #self.printer = HtmlPrinter(name=u'打印', parentWindow=self)
  
         self.html = iewin.IEHtmlWindow(self.panel,-1)
@@ -142,7 +143,9 @@ class ExpressPrinter(wx.Frame):
         
             session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
                 .update({'is_express_print':True},synchronize_session='fetch')
-                
+            
+            self.printed = True
+            
         updatePageSetupRegedit(self.getPageSetup())
         
         self.html.PrintPreview()
@@ -160,14 +163,11 @@ class ExpressPrinter(wx.Frame):
     #----------------------------------------------------------------------
     def onCancel(self, event):
         """ onCancel """
-        with create_session(self.Parent) as session:
-            grid = self.Parent.grid
-            rows = self.Parent.grid.GetNumberRows()
-            
-            for row in xrange(0,rows):
-                trade_id = grid.GetCellValue(row,TRADE_ID_CELL_COL)
-                trade = session.query(MergeTrade).filter_by(id=trade_id).first()
-                grid.SetCellValue(row,EXPRESS_CELL_COL,trade.is_express_print and '1' or '')
+        grid = self.Parent.grid
+        rows = self.Parent.grid.GetNumberRows()
+        
+        for row in xrange(0,rows):
+            grid.SetCellValue(row,EXPRESS_CELL_COL,self.printed and '1' or '')
                     
         self.Parent.grid.ForceRefresh()
         self.Close()
