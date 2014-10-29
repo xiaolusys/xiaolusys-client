@@ -517,33 +517,37 @@ class GridPanel(wx.Panel):
                     zero_head = zero_match.group()
                 start_out_sid  = int(start_out_sid)
                 incr_value     = 1
-                
+                trade_ids  = []
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-                    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
-                    company_regex = trade.logistics_company.reg_mail_no
-                    company_code  = trade.logistics_company.code
-
+#                    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+#                    company_regex = trade.logistics_company.reg_mail_no
+#                    company_code  = trade.logistics_company.code
+#
                     out_sid = zero_head+str(start_out_sid)
-                    id_compile    = re.compile(company_regex)
-                    is_out_sid_match = id_compile.match(out_sid)
- 
-                    if is_out_sid_match and trade.isPrepareSend():
-                        if locking_trade(trade.id,operator,session=session): 
-                            self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
-                            if company_code.upper() == "ZJS":
-                                if (start_out_sid%10)/6==1:
-                                    incr_value = 4
-                                else:
-                                    incr_value = 11 
-                            start_out_sid += incr_value
-                    elif not is_out_sid_match:
-                        dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示', 
-                            wx.OK | wx.ICON_EXCLAMATION)
-                        dial.ShowModal()
-                        self.fill_sid_text.Clear()
-                        self.refreshTable()
-                        return
+#                    id_compile    = re.compile(company_regex)
+#                    is_out_sid_match = id_compile.match(out_sid)
+                     
+#                    if is_out_sid_match and trade.isPrepareSend():
+#                        if locking_trade(trade.id,operator,session=session): 
+#                            self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
+#                            if company_code.upper() == "ZJS":
+#                                if (start_out_sid%10)/6==1:
+#                                    incr_value = 4
+#                                else:
+#                                    incr_value = 11 
+                    start_out_sid += incr_value
+#                    elif not is_out_sid_match:
+#                        dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示', 
+#                            wx.OK | wx.ICON_EXCLAMATION)
+#                        dial.ShowModal()
+#                        self.fill_sid_text.Clear()
+#                        self.refreshTable()
+#                        return
+                    trade_ids.append(int(trade_id))
+                session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).filter_by(is_locked=False).update(
+                                {'is_locked':True,'operator':operator},synchronize_session='fetch')
+                
                 self.end_sid = str(start_out_sid - incr_value) 
                 
                 self.preview_btn.Enable(False)
@@ -598,10 +602,10 @@ class GridPanel(wx.Panel):
                     #将运单号填入系统订单，并标记订单为二维码订单
                     for row in self._selectedRows:
                         trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-                        trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
+                        #trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
                         
                         if  not im_map.has_key(trade_id) or \
-                            not locking_trade(trade.id,operator,session=session):
+                            not locking_trade(trade_id,operator,session=session):
                             continue
                         out_sid = im_map[trade_id]['mailno'].strip()
                         qr_msg  = im_map[trade_id]['msg']
@@ -670,52 +674,55 @@ class GridPanel(wx.Panel):
             if eventid == fill_sid_btn2_id:
                 effect_row = 0
                 is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked()
-                if is_yunda_qrcode:
-                    try:
-                        #对选中订单进行过滤
-                        yunda_ids = self.get_yunda_ids(session=session)
-                        if not yunda_ids:
-                            return
-                        #将运单号填入系统订单，并标记订单为二维码订单
-                        final_rows = set()
-                        for row in self._selectedRows:
-                            trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-                            out_sid  = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL).strip()
-                            
-                            if out_sid and locking_trade(trade_id,operator,session=session):
-                                final_rows.add(row)
-                        
-                        self._selectedRows = final_rows
-                    except Exception,exc:
-                        dial = wx.MessageDialog(None, u'确认错误：'+exc.message, u'快递单号确认提示', 
-                                                    wx.OK | wx.ICON_EXCLAMATION)
-                        dial.ShowModal()
-                        raise exc
+#                if is_yunda_qrcode:
+#                    try:
+#                        #对选中订单进行过滤
+#                        yunda_ids = self.get_yunda_ids(session=session)
+#                        if not yunda_ids:
+#                            return
+#                        yunda_ids = [int(yid) for yid in yunda_ids]
+#                        #将运单号填入系统订单，并标记订单为二维码订单
+#                        final_rows = set()
+#                        for row in self._selectedRows:
+#                            trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
+#                            out_sid  = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL).strip()
+#                            
+#                            if out_sid and locking_trade(trade_id,operator,session=session):
+#                                final_rows.add(row)
+#                        
+#                        self._selectedRows = final_rows
+#                        session.query(MergeTrade).filter(MergeTrade.id.in_(yunda_ids)).filter_by(is_locked=False).update(
+#                                {'is_locked':True,'operator':operator},synchronize_session='fetch')
+#                    except Exception,exc:
+#                        dial = wx.MessageDialog(None, u'确认错误：'+exc.message, u'快递单号确认提示', 
+#                                                    wx.OK | wx.ICON_EXCLAMATION)
+#                        dial.ShowModal()
+#                        raise exc
                 
                 for row in self._selectedRows:
                     try:
                         trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                         out_sid  = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL)
-                        trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
-                        company_regex = trade.logistics_company.reg_mail_no if trade else None
-                        company_name  = trade.logistics_company.name
-                        is_match_pass = True
-                        if company_regex:
-                            id_compile = re.compile(company_regex)
-                            is_match_pass = id_compile.match(out_sid)
-                        if is_match_pass:
-                            session.query(MergeTrade).filter_by(id=trade_id)\
-                                .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
-                            self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
-                            self.grid.SetCellValue(row,cfg.OPERATOR_CELL_COL,operator)
-                            effect_row += 1  
-                        elif not out_sid:
-                            pass
-                        else:
-                            dial = wx.MessageDialog(None, u'快递单号(%s)不符合%s单号规则'%(out_sid,company_name), u'快递单打印提示', 
-                            wx.OK | wx.ICON_EXCLAMATION)
-                            dial.ShowModal()
-                            break
+#                        trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
+#                        company_regex = trade.logistics_company.reg_mail_no if trade else None
+#                        company_name  = trade.logistics_company.name
+#                        is_match_pass = True
+#                        if company_regex:
+#                            id_compile = re.compile(company_regex)
+#                            is_match_pass = id_compile.match(out_sid)
+#                        if is_match_pass:
+                        session.query(MergeTrade).filter_by(id=trade_id)\
+                            .update({'out_sid':out_sid,'operator':operator},synchronize_session='fetch')
+                        self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
+                        self.grid.SetCellValue(row,cfg.OPERATOR_CELL_COL,operator)
+                        effect_row += 1  
+#                        elif not out_sid:
+#                            pass
+#                        else:
+#                            dial = wx.MessageDialog(None, u'快递单号(%s)不符合%s单号规则'%(out_sid,company_name), u'快递单打印提示', 
+#                            wx.OK | wx.ICON_EXCLAMATION)
+#                            dial.ShowModal()
+#                            break
                     except Exception,exc:
                         dial = wx.MessageDialog(None, u'单号填充错误:'+exc.message, u'快递单打印提示', 
                                                 wx.OK | wx.ICON_EXCLAMATION)
