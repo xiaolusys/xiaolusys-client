@@ -415,11 +415,13 @@ class GridPanel(wx.Panel):
         
         if result == wx.ID_OK:
             operator      = get_oparetor()
+            trade_ids     = set()
             with create_session(self.Parent) as session:
                 for row in self._selectedRows:
-                    trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-                    session.query(MergeTrade).filter_by(id=trade_id,operator=operator).update({
-                              'is_express_print':False,'is_picking_print':False,'out_sid':''})
+                    trade_ids.add(int(self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)))
+                    
+                session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).filter_by(operator=operator).update({
+                          'is_express_print':False,'is_picking_print':False,'out_sid':''})
             
             self.initialFillSidPanel()
             self.refreshTable()
@@ -747,17 +749,17 @@ class GridPanel(wx.Panel):
                 trade_user_code = ''
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-                    trade = session.query(MergeTrade).filter_by(id=trade_id).one()
-                    trade_user_code = trade_user_code or trade.user.user_code
+#                    trade = session.query(MergeTrade).filter_by(id=trade_id).one()
+#                    trade_user_code = trade_user_code or trade.user.user_code
                     
-                    if trade_user_code != trade.user.user_code:
-                        dial = wx.MessageDialog(None, u'由于您是多客户模式，请选择具体店铺', u'拣货单打印提示', 
-                            wx.OK | wx.ICON_EXCLAMATION)
-                        dial.ShowModal()
-                        return
-                        
-                    if trade.out_sid and trade.operator:
-                        trade_ids.append(self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL))
+#                    if trade_user_code != trade.user.user_code:
+#                        dial = wx.MessageDialog(None, u'由于您是多客户模式，请选择具体店铺', u'拣货单打印提示', 
+#                            wx.OK | wx.ICON_EXCLAMATION)
+#                        dial.ShowModal()
+#                        return
+#                        
+#                    if trade.out_sid and trade.operator:
+                    trade_ids.append(trade_id)
                 if trade_ids:
                     DeliveryPrinter(parent=self,trade_ids=trade_ids)\
                         .ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
