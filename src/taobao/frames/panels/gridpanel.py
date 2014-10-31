@@ -779,22 +779,21 @@ class GridPanel(wx.Panel):
                     dial.ShowModal()
             elif eventid == invoice_print_btn_id:
                 trade_ids = []
-                trade_user_code = ''
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-#                    trade = session.query(MergeTrade).filter_by(id=trade_id).one()
-#                    trade_user_code = trade_user_code or trade.user.user_code
+                    out_sid  = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL).strip()
+                    toperator = self.grid.GetCellValue(row,cfg.OPERATOR_CELL_COL).strip()
                     
-#                    if trade_user_code != trade.user.user_code:
-#                        dial = wx.MessageDialog(None, u'由于您是多客户模式，请选择具体店铺', u'拣货单打印提示', 
-#                            wx.OK | wx.ICON_EXCLAMATION)
-#                        dial.ShowModal()
-#                        return
-#                        
-#                    if trade.out_sid and trade.operator:
-                    trade_ids.append(trade_id)
-                if trade_ids:
-                    DeliveryPrinter(parent=self,trade_ids=trade_ids)\
+                    if out_sid and toperator:
+                        trade_ids.append(trade_id)
+                        
+                if not trade_ids:
+                    dial = wx.MessageDialog(None, u'请选择正确的订单项', u'发货单打印提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                    dial.ShowModal()
+                    return
+                    
+                DeliveryPrinter(parent=self,trade_ids=trade_ids)\
                         .ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
             
             elif eventid == express_print_btn_id:
