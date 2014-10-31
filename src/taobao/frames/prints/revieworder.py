@@ -340,7 +340,7 @@ class OrderReview(wx.Frame):
                         zone = get_classify_zone(trade.receiver_state,trade.receiver_city,trade.receiver_district,
                                                  address=trade.receiver_address,session=session)
 
-                    trade_data['zone'] = zone and zone.COMBO_CODE or trade.reservet
+                    trade_data['zone'] = zone and '%s %s'%(zone['name'],zone['code']) or trade.reservet
                 
                 express_data_list.append(trade_data)
                                

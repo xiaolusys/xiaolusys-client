@@ -1,21 +1,16 @@
 #-*- coding:utf8 -*-
 import os
-import sys
-import re
+import json
 import time
-import datetime
-import MySQLdb
 import hashlib
 import base64
 import urllib
 import urllib2
 import subprocess
 from xml.dom import minidom
-from taobao.dao import configparams as cfg
 from taobao.dao.dbsession import get_session
-from taobao.common.utils import TEMP_FILE_ROOT,getconfig
 from taobao.dao.models import ClassifyZone,MergeTrade,BranchZone,YundaCustomer
-from taobao.common.utils import getconfig,format_datetime,escape_invalid_xml_char
+from taobao.common.utils import TEMP_FILE_ROOT,getconfig,format_datetime,escape_invalid_xml_char
 import webbrowser
 
 
@@ -85,59 +80,28 @@ def get_zone_by_code(code,session=None):
 
 def get_classify_zone(state,city,district,address='',session=None):
     """ 根据地址获取分拨中心   """
-    if not session:
-        session = get_session()
-        
-    lstate = len(state)>1 and state[0:2] or ''
-    lcity  = len(city)>1  and city[0:2]  or ''
-    ldistrict  = len(district)>1  and district[0:2]  or ''
     
-    if district:
+    config = getconfig()
+    web_host   = config.get('url','web_host')
+    branchzone_url = config.get('yunda','branchzone_url')%web_host
         
-        if address and ldistrict == u'吴江' and lstate == u'江苏':
-            
-            szds = None
-            sz = session.query(BranchZone).filter_by(barcode='215201').first()
-            if sz:
-                szds = [ z.city for z in sz.classify_zone]
-                
-            if szds:
-                
-                rp   = re.compile('|'.join(szds))
-                if rp.search(address):
-                    return sz
-             
-        czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
-                    (ClassifyZone.city.like(ldistrict+'%'))|(ClassifyZone.district.like(ldistrict+'%')))
+    params = {'province':state,
+              'city':city,
+              'district':district}
+    if state.startswith(u'江苏') and district.startswith(u'吴江'):
+        params.update({'address':address})
         
-        if czones.count() == 1:
-            return czones.first().branch
-        
-        for czone in czones:
-            if czone.city == district or czone.district == district:
-                return czone.branch
-        
-    if city:
-        czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
-                                                  ClassifyZone.city.like(lcity+'%'),ClassifyZone.district=='')
-        if czones.count() == 1:
-            return czones.first().branch
-        
-        for czone in czones:
-            if czone.city == city:
-                return czone.branch
-            
-    if state:
-        czones = session.query(ClassifyZone).filter(ClassifyZone.state.like(lstate+'%'),
-                                                  ClassifyZone.city=='',ClassifyZone.district=='')
-        if czones.count() == 1:
-            return czones.first().branch
-        
-        for czone in czones:
-            if czone.state == state:
-                return czone.branch
+    try:
+        req = urllib2.urlopen(branchzone_url+'?'+urllib.urlencode(params))
+        bjson = json.loads(req.read())
+    except:
+        raise Exception(u'获取集包规则超时')
     
-    return ''        
+    if bjson['code'] != 0:
+        raise Exception(u'获取集包规则错误（%s）'%bjson['response_error'])
+    
+    bzone = bjson['response_content']['branch_zone']
+    return bzone    
     
 
 ########################################## 韵达二维码  ################################################
@@ -198,8 +162,11 @@ def gen_orders_xml(objs):
 def get_objs_from_trade(trades,session=None):
     
     objs = []
+    yd_customes_dict = {}
+    
     for trade in trades:
         
+        user_code = trade.user.user_code
         zone = None
 #        if trade.reserveo:
 #            zone = get_zone_by_code(trade.reserveo,session=session)
@@ -208,7 +175,12 @@ def get_objs_from_trade(trades,session=None):
             zone = get_classify_zone(trade.receiver_state,trade.receiver_city,
                                      trade.receiver_district,address=trade.receiver_address,session=session)
         
-        yd_customer = session.query(YundaCustomer).filter_by(code=trade.user.user_code).one()
+        if yd_customes_dict.has_key(user_code):
+            yd_customer = yd_customes_dict[user_code]
+        else:
+            yd_customer = session.query(YundaCustomer).filter_by(code=trade.user.user_code).one()
+            yd_customes_dict[user_code] = yd_customer
+        
         objs.append({"id":trade.id,
                      "tid":trade.tid,
                      "sender_name":yd_customer.name,
@@ -227,7 +199,7 @@ def get_objs_from_trade(trades,session=None):
                      "receiver_postcode":escape_invalid_xml_char(trade.receiver_zip),
                      "receiver_phone":escape_invalid_xml_char(trade.receiver_phone),
                      "receiver_mobile":escape_invalid_xml_char(trade.receiver_mobile),
-                     "zone":zone and zone.code or '',
+                     "zone":zone and zone['code'] or '',
                      })
     
     return objs
