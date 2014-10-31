@@ -472,7 +472,17 @@ class GridPanel(wx.Panel):
         
         return session.query(YundaCustomer).filter_by(code=user_code).one()
         
+    def isCompanyConsistent(self):
         
+        pre_company_id = ''
+        for row in self._selectedRows:
+            company_id = self.grid.GetCellValue(row,cfg.LOG_COMPANY_CELL_COL)
+            
+            if pre_company_id and pre_company_id != company_id:
+                return False
+            pre_company_id = company_id
+        return True
+            
     def get_yunda_ids(self,session=None):
         
         trade_ids = []
@@ -505,6 +515,12 @@ class GridPanel(wx.Panel):
         
         if self._can_fresh:
             self.refreshTable()
+        
+        if not self.isCompanyConsistent():
+            dial = wx.MessageDialog(None, u'请选择同一个快递的订单预览', u'订单预览提示', 
+                                                wx.OK | wx.ICON_EXCLAMATION)
+            dial.ShowModal()
+            return
             
         operator      = get_oparetor()
         start_out_sid = self.fill_sid_text.GetValue()
@@ -518,19 +534,30 @@ class GridPanel(wx.Panel):
                 zero_match = zhregex.match(start_out_sid)
                 if zero_match:
                     zero_head = zero_match.group()
+                    
+                company_regex = None
                 start_out_sid  = int(start_out_sid)
                 incr_value     = 1
                 trade_ids  = []
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-#                    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
-#                    company_regex = trade.logistics_company.reg_mail_no
-#                    company_code  = trade.logistics_company.code
-#
+                    if not company_regex:
+                        trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+                        company_regex_no = trade.logistics_company.reg_mail_no
+                        company_regex    = re.compile(company_regex_no)
+                    
                     out_sid = zero_head+str(start_out_sid)
-#                    id_compile    = re.compile(company_regex)
-#                    is_out_sid_match = id_compile.match(out_sid)
-                     
+                    if not company_regex.match(out_sid):
+                        dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                        dial.ShowModal()
+                        self.fill_sid_text.Clear()
+                        self.refreshTable()
+                        return
+                    
+                    self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
+                    start_out_sid += incr_value
+                    trade_ids.append(int(trade_id))
 #                    if is_out_sid_match and trade.isPrepareSend():
 #                        if locking_trade(trade.id,operator,session=session): 
 #                            self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
@@ -539,16 +566,7 @@ class GridPanel(wx.Panel):
 #                                    incr_value = 4
 #                                else:
 #                                    incr_value = 11
-                    self.grid.SetCellValue(row,cfg.OUT_SID_CELL_COL,out_sid)
-                    start_out_sid += incr_value
-#                    elif not is_out_sid_match:
-#                        dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示', 
-#                            wx.OK | wx.ICON_EXCLAMATION)
-#                        dial.ShowModal()
-#                        self.fill_sid_text.Clear()
-#                        self.refreshTable()
-#                        return
-                    trade_ids.append(int(trade_id))
+                    
                 session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).filter_by(is_locked=False).update(
                                 {'is_locked':True,'operator':operator},synchronize_session='fetch')
                 
