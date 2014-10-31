@@ -586,6 +586,11 @@ class GridPanel(wx.Panel):
                 yunda_ids = self.get_yunda_ids(session=session)
                 if not yunda_ids:
                     return
+                
+                session.query(MergeTrade).filter(MergeTrade.id.in_([int(yid) for yid in yunda_ids]),
+                                                 MergeTrade.is_locked==False).update({'is_locked':True,
+                                                                                      'operator':operator},
+                                                                                     synchronize_session='fetch')
                 try:
                     yd_customer  = yundao.getYDCustomerByTradeId(yunda_ids[0],
                                                                  session=session)
@@ -595,17 +600,16 @@ class GridPanel(wx.Panel):
                                         secret=yd_customer.qr_code)
                     #创建韵达订单
                     im_map = yundao.create_order(yunda_ids,
-                                        session=session,
-                                        partner_id=yd_customer.qr_id,
-                                        secret=yd_customer.qr_code)
+                                                session=session,
+                                                partner_id=yd_customer.qr_id,
+                                                secret=yd_customer.qr_code)
                     
                     #将运单号填入系统订单，并标记订单为二维码订单
                     for row in self._selectedRows:
                         trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
                         #trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
                         
-                        if  not im_map.has_key(trade_id) or \
-                            not locking_trade(trade_id,operator,session=session):
+                        if  not im_map.has_key(trade_id) :
                             continue
                         out_sid = im_map[trade_id]['mailno'].strip()
                         qr_msg  = im_map[trade_id]['msg']
@@ -778,15 +782,15 @@ class GridPanel(wx.Panel):
                 is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked() 
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-                    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
-                    if pre_company_id and pre_company_id != trade.logistics_company_id:
+                    company_id = self.grid.GetCellValue(row,cfg.LOG_COMPANY_CELL_COL)
+                    out_sid  = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL)
+                    
+                    if pre_company_id and pre_company_id != company_id:
                         dial = wx.MessageDialog(None, u'请确保批打订单快递相同', u'快递单打印提示', 
                             wx.OK | wx.ICON_EXCLAMATION)
                         dial.ShowModal()
                         return
-                    pre_company_id = trade.logistics_company_id
-                    out_sid = trade.out_sid
-                    operator = trade.operator
+                    pre_company_id = company_id
                     if out_sid and operator:
                         id_sid_map[trade_id] = out_sid 
                 
