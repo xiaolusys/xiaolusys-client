@@ -30,14 +30,14 @@ div {
 
 .left-panel {
 	float: left;
-	width: 440px;
+	width: 220px;
 	display: inline;
 }
 
 .right-panel {
 	float: right;
 	height: 160px;
-	width: 440px;
+	width: 400px;
 	display: inline;
 	text-align: left;
 }
@@ -105,7 +105,12 @@ div {
 	<div class='express'>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
 		<div class='head-panel'>
-			<div class='left-panel'></div>
+			<div class='left-panel'>
+				<div style="margin-top:100px;margin-left:100px;">
+					<span >上海松江</span><br>
+					<span >021-39698479</span>
+				</div>	
+			</div>
 			<div class='right-panel'>
 				<div class='receiver-name'>{{ trade.receiver_name }}</div>
 				<div class='receiver-addr'>
