@@ -19,14 +19,14 @@ class SearchPanel(wx.Panel):
         self.Session = parent.Session
         self.order_label = wx.StaticText(self,-1,u'订单号')
         self.order_text = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
-        self.order_receiver_name_label = wx.StaticText(self,-1,u'收货人')
-        self.order_receiver_name = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+#        self.order_receiver_name_label = wx.StaticText(self,-1,u'收货人')
+#        self.order_receiver_name = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.taobao_status_label = wx.StaticText(self,-1,u'订单状态')
         self.taobao_status_select = wx.ComboBox(self,-1,size=(90,-1))
         self.seller_label = wx.StaticText(self,-1,u'店铺名称')
         self.seller_select = wx.ComboBox(self,-1,size=(90,-1)) 
-        self.buyer_label = wx.StaticText(self,-1,u'操作员')
-        self.buyer_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
+#        self.buyer_label = wx.StaticText(self,-1,u'操作员')
+#        self.buyer_text  = wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER)
         self.outer_id_label = wx.StaticText(self,-1,u'商品编码')
         self.outer_id_text =  wx.TextCtrl(self,-1,style=wx.TE_PROCESS_ENTER) 
         self.sku_outer_id_label = wx.StaticText(self,-1,u'规格编码')
@@ -83,45 +83,45 @@ class SearchPanel(wx.Panel):
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)
         gridbagsizer.Add(self.order_label, pos=(0,0), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.order_text, pos=(0,1), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.order_receiver_name_label, pos=(0,2), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.order_receiver_name, pos=(0,3), span=(1,1), flag=wx.EXPAND)
+#        gridbagsizer.Add(self.order_receiver_name_label, pos=(0,2), span=(1,1), flag=wx.EXPAND)
+#        gridbagsizer.Add(self.order_receiver_name, pos=(0,3), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.logistics_label, pos=(0,2), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.logistics_text, pos=(0,3), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.taobao_status_label, pos=(0,4), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.taobao_status_select, pos=(0,5), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.seller_label, pos=(0,6), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.seller_select, pos=(0,7), span=(1,1), flag=wx.EXPAND) 
-        gridbagsizer.Add(self.buyer_label, pos=(0,8), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.buyer_text, pos=(0,9), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.outer_id_label, pos=(0,10), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.outer_id_text, pos=(0,11), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.sku_outer_id_label, pos=(0,12), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.sku_outer_id_text, pos=(0,13), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.logistics_pick_label, pos=(0,14), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.logistics_pick_check, pos=(0,15), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.delivery_pick_label, pos=(0,16), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.delivery_pick_check, pos=(0,17), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.single_prod_label, pos=(0,18), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.single_prod_check, pos=(0,19), span=(1,1), flag=wx.EXPAND)
+#        gridbagsizer.Add(self.buyer_label, pos=(0,6), span=(1,1), flag=wx.EXPAND)
+#        gridbagsizer.Add(self.buyer_text, pos=(0,7), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.outer_id_label, pos=(0,8), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.outer_id_text, pos=(0,9), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.sku_outer_id_label, pos=(0,10), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.sku_outer_id_text, pos=(0,11), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.logistics_pick_label, pos=(0,12), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.logistics_pick_check, pos=(0,13), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.delivery_pick_label, pos=(0,14), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.delivery_pick_check, pos=(0,15), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.single_prod_label, pos=(0,16), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.single_prod_check, pos=(0,17), span=(1,1), flag=wx.EXPAND)
         
         gridbagsizer.Add(self.start_time_label, pos=(1,0), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.start_time_select, pos=(1,1), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.end_time_label, pos=(1,2), span=(1,1), flag=wx.EXPAND)
         gridbagsizer.Add(self.end_time_select, pos=(1,3), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.logistics_label, pos=(1,4), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.logistics_text, pos=(1,5), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.trade_type_label, pos=(1,6), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.trade_type_select, pos=(1,7), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.logistics_company_label, pos=(1,8), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.logistics_company_select, pos=(1,9), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.weight_start_label, pos=(1,10), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.weight_start_select, pos=(1,11), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.weight_end_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.weight_end_select, pos=(1,13), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.is_locked_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.is_locked_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.urggent_doc_label, pos=(1,16), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.urggent_doc_check, pos=(1,17), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.juhuasuan_label, pos=(1,18), span=(1,1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.juhuasuan_check, pos=(1,19), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.trade_type_label, pos=(1,4), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.trade_type_select, pos=(1,5), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.logistics_company_label, pos=(1,6), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.logistics_company_select, pos=(1,7), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.weight_start_label, pos=(1,8), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.weight_start_select, pos=(1,9), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.weight_end_label, pos=(1,10), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.weight_end_select, pos=(1,11), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.is_locked_label, pos=(1,12), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.is_locked_check, pos=(1,13), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.urggent_doc_label, pos=(1,14), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.urggent_doc_check, pos=(1,15), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.juhuasuan_label, pos=(1,16), span=(1,1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.juhuasuan_check, pos=(1,17), span=(1,1), flag=wx.EXPAND)
 
         gridbagsizer.Layout()
         
@@ -130,8 +130,8 @@ class SearchPanel(wx.Panel):
     def __bind_evt(self):
         
         self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.order_text)
-        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.order_receiver_name)
-        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.buyer_text)
+#        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.order_receiver_name)
+#        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.buyer_text)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.outer_id_text)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.logistics_text)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnSearch, self.sku_outer_id_text)
@@ -158,10 +158,10 @@ class SearchPanel(wx.Panel):
     def clearSearchPanel(self,evt):
         
         self.order_text.Clear()
-        self.order_receiver_name.Clear()
+#        self.order_receiver_name.Clear()
         self.taobao_status_select.SetValue('')
         self.seller_select.SetValue('')
-        self.buyer_text.Clear()
+#        self.buyer_text.Clear()
         
         self.start_time_select.SetValue(wx.DefaultDateTime)
         self.end_time_select.SetValue(wx.DefaultDateTime)
@@ -189,9 +189,9 @@ class SearchPanel(wx.Panel):
         counter    = self.Parent.grid.counter
         
         trade_id   = self.order_text.GetValue()
-        receiver_name = self.order_receiver_name.GetValue()
+#        receiver_name = self.order_receiver_name.GetValue()
         trade_status = self.taobao_status_select.GetValue()
-        operator     = self.buyer_text.GetValue()
+#        operator     = self.buyer_text.GetValue()
         seller_id    = self.seller_select.GetValue()
         
         start_time = self.start_time_select.GetValue()
@@ -228,18 +228,18 @@ class SearchPanel(wx.Panel):
             elif logistics_id:
                 datasource = datasource.filter_by(out_sid=getSid(logistics_id))
             else:
-                if receiver_name:
-                    datasource = datasource.filter_by(receiver_name=receiver_name)
+#                if receiver_name:
+#                    datasource = datasource.filter_by(receiver_name=receiver_name)
                 if trade_status:
                     status_dict = dict([(v,k) for k,v in cfg.TRADE_STATUS.items()])
                     datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(),None))
                 if seller_id:
                     datasource = datasource.join(User).filter(User.nick==seller_id.strip())
                 
-                if operator:
-                    datasource = datasource.filter(or_(MergeTrade.operator.like('%'+operator.strip()+'%'),
-                                                       MergeTrade.scanner.like('%'+operator.strip()+'%'),
-                                                       MergeTrade.weighter.like('%'+operator.strip()+'%')))
+#                if operator:
+#                    datasource = datasource.filter(or_(MergeTrade.operator.like('%'+operator.strip()+'%'),
+#                                                       MergeTrade.scanner.like('%'+operator.strip()+'%'),
+#                                                       MergeTrade.weighter.like('%'+operator.strip()+'%')))
                 if start_time:
                     datasource = datasource.filter("pay_time >=:start").params(start=start_time)
                 if end_time:
