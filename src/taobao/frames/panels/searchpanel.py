@@ -254,7 +254,7 @@ class SearchPanel(wx.Panel):
                 if logistics_company :
                     with create_session(self.Parent) as session:
                         log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
-                    datasource = datasource.filter_by(logistics_company_id=log_company.id)
+                    datasource = datasource.filter(MergeTrade.logistics_company_id==log_company.id)
                 if urgent_doc_state:
                     datasource = datasource.filter_by(priority=1)
                 if single_prod:
