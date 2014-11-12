@@ -835,7 +835,14 @@ class GridPanel(wx.Panel):
                     #调用韵达本地服务打印
                     #yundao.printYUNDAService(sort_ids,session=session)
                     #调用韵达打印接口并打印
-                    yundao.printYUNDAPDF(sort_ids,session=session)
+                    try:
+                        yundao.printYUNDAPDF(sort_ids,session=session)
+                    except WindowsError:
+                        dial = wx.MessageDialog(None, u'请关闭上批快单打印PDF文件', u'快递单重打提示', 
+                                                wx.OK|wx.CANCEL|wx.ICON_EXCLAMATION)
+                        result = dial.ShowModal()
+                        dial.Destroy()
+                        
                                         
             elif eventid == pickle_print_btn_id:
                 PicklePrinter(parent=self).ShowFullScreen(True,style=wx.FULLSCREEN_ALL)#.Show()

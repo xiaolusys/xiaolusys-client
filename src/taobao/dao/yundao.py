@@ -85,11 +85,11 @@ def get_classify_zone(state,city,district,address='',session=None):
     web_host   = config.get('url','web_host')
     branchzone_url = config.get('yunda','branchzone_url')%web_host
         
-    params = {'province':state,
-              'city':city,
-              'district':district}
+    params = {'province':state.encode('utf8'),
+              'city':city.encode('utf8'),
+              'district':district.encode('utf8')}
     if state.startswith(u'江苏') and district.startswith(u'吴江'):
-        params.update({'address':address})
+        params.update({'address':address.encode('utf8')})
         
     try:
         req = urllib2.urlopen(branchzone_url+'?'+urllib.urlencode(params))
@@ -372,17 +372,17 @@ def printYUNDAPDF(trade_ids,direct=False,session=None):
                           secret=yd_customer.qr_code
                           )
     
-    #更新订单打印状态
-    session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
-        .update({'is_express_print':True},synchronize_session='fetch')
-    
     for fname in os.listdir(TEMP_FILE_ROOT):
         os.remove(os.path.join(TEMP_FILE_ROOT,fname))
     
     file_name = os.path.join(TEMP_FILE_ROOT,'%d.pdf'%int(time.time()))
     with open(file_name,'wb') as f:
         f.write(pdfdoc)
-        
+    
+    #更新订单打印状态
+    session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids))\
+        .update({'is_express_print':True},synchronize_session='fetch')
+    
     if direct:
         conf  =  getconfig()
         gsprint_exe = conf.get('custom','gsprint_exe')
