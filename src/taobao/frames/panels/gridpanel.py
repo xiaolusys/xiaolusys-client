@@ -1033,7 +1033,9 @@ class SimpleGridPanel(wx.Panel):
     def __init__(self, parent, id= -1, colLabels=None, rowLabels=None): 
         wx.Panel.__init__(self, parent, id) 
         
-        self.Session = parent.Session
+        if hasattr(parent,'Session'):
+            self.Session = parent.Session
+            
         self.rowLabels = rowLabels
         self.colLabels = colLabels
         self.grid =  grd.Grid(self, -1)
@@ -1135,19 +1137,19 @@ class WeightGridPanel(wx.Panel):
 
     def getTradeItems(self,trade):
         items = []
-        items.append(str(trade.id))
-        items.append(trade.user.nick)
-        items.append(trade.buyer_nick)
-        items.append(cfg.SYS_STATUS.get(trade.sys_status,u'其它'))
-        items.append(trade.logistics_company.name)
-        items.append(trade.out_sid)
-        items.append(trade.weight)
-        items.append(trade.receiver_name)
-        items.append(trade.receiver_state)
-        items.append(trade.receiver_city)
-        items.append(trade.receiver_district)
-        items.append(trade.receiver_address)
-        items.append(trade.receiver_mobile)
+        items.append(str(trade['trade_id']))
+        items.append(trade['seller_nick'])
+        items.append(trade['buyer_nick'])
+        items.append(trade['sys_status'])
+        items.append(trade['company_name'])
+        items.append(trade['package_no'])
+        items.append(trade['weight'])
+        items.append(trade['receiver_name'])
+        items.append(trade['receiver_state'])
+        items.append(trade['receiver_city'])
+        items.append(trade['receiver_district'])
+        items.append(trade['receiver_address'])
+        items.append(trade['receiver_mobile'])
         
         return items
       
@@ -1227,34 +1229,28 @@ class CheckOrdersGridPanel(SimpleGridPanel):
         if not trade :
             return array_object
         
-        with create_session(self.Parent) as session:
-            orders = get_used_orders(session,trade.id)
             
-            array_object = [] 
-            for order in orders:
-                object_array = []     
-                product = session.query(Product).filter_by(outer_id=order.outer_id).first()
-                product_sku = session.query(ProductSku).filter_by(outer_id=order.outer_sku_id,
-                                                                  product_id=product.id).first()
-                post_check  = (product_sku and product_sku.post_check or product.post_check) and 'Y' or 'N'
-                barcode    = product_sku and product_sku.BARCODE or product.BARCODE
-                
-                object_array.append(order.pic_path or product.pic_path)
-                object_array.append(str(order.id))
-                object_array.append(order.num_iid or order.outer_id)
-                
-                object_array.append(product.name if product else order.title)
-                object_array.append(order.num)
-                object_array.append(order.outer_id)
-                object_array.append(order.outer_sku_id)
-                object_array.append(order.sku_properties_name)
-                object_array.append(product_sku and product_sku.name or '')
-                object_array.append(post_check)
-                object_array.append(cfg.TRADE_STATUS.get(order.status,u'其他'))
-                object_array.append(barcode)
-                object_array.append(0)
-                
-                array_object.append(object_array)
+        array_object = [] 
+        for order in trade['order_items']:
+            object_array = []     
+            
+            object_array.append(order['pic_path'])
+            object_array.append(str(order['order_id']))
+            object_array.append('')
+            
+            object_array.append(order['title'])
+            object_array.append(order['num'])
+            object_array.append(order['outer_id'])
+            object_array.append(order['outer_sku_id'])
+            object_array.append(order['sku_properties_name'])
+            object_array.append(order['sku_name'])
+            object_array.append(order['post_check'] and 'Y' or 'N')
+            object_array.append(order['status'])
+            object_array.append(order['barcode'])
+            object_array.append(0)
+            
+            array_object.append(object_array)
+            
         return array_object
       
 
@@ -1263,7 +1259,6 @@ class CheckGridPanel(wx.Panel):
     def __init__(self,parent,id=-1):
         wx.Panel.__init__(self,parent,id)
 
-        self.Session = parent.Session
         self.trade = None
         self.code_num_dict = {}
        
@@ -1284,26 +1279,19 @@ class CheckGridPanel(wx.Panel):
         self.SetSizer(main_sizer)
       
     def getOrderCodeMapNumDict(self,trade):
-        with create_session(self.Parent) as session:
-            orders = get_used_orders(session,trade.id)
-            code_num_dict = {}    
-            for order in orders:
-                outer_id     = order.outer_id
-                outer_sku_id = order.outer_sku_id
-                product = session.query(Product).filter_by(outer_id=outer_id).first()
-                product_sku = None
-                if outer_sku_id:
-                    product_sku = session.query(ProductSku).filter_by(outer_id=outer_sku_id,
-                                                                      product_id=product.id).first()
-                    
-                barcode    = product_sku and product_sku.BARCODE or product.BARCODE
-                post_check = product_sku and product_sku.post_check or product.post_check
-                if code_num_dict.has_key(barcode):
-                    code_num_dict[barcode]['rnums'] += order.num
-                else:
-                    code_num_dict[barcode] = {'rnums':order.num,
-                                              'cnums':0,
-                                              'post_check':post_check}
+
+        code_num_dict = {}    
+        for order in trade['order_items']:
+                
+            barcode    = order['barcode']
+            post_check = order['post_check']
+            order_num  = order['num']
+            if code_num_dict.has_key(barcode):
+                code_num_dict[barcode]['rnums'] += order_num
+            else:
+                code_num_dict[barcode] = {'rnums':order_num,
+                                          'cnums':0,
+                                          'post_check':post_check}
                     
         return  code_num_dict
     
