@@ -93,21 +93,20 @@ class ScanCheckPanel(wx.Panel):
         if not out_sid:
             return 
         
-#        try:
-        trade = api.getTradeScanCheckInfo(out_sid)
-        self.trade = trade
-        print 'debug check 1:',trade
-        self.gridpanel.setData(self.trade)
-        
-        self.barcode_text.SetFocus()
-        self.error_text.SetLabel('')
-        self.status_bar.SetBackgroundColour('GREEN')
+        try:
+            trade = api.getTradeScanCheckInfo(out_sid)
+            self.trade = trade
+            self.gridpanel.setData(self.trade)
             
-#        except Exception,exc:
-#            self.error_text.SetLabel('%s'%exc.message)
-#            self.out_sid_text.Clear()
-#            self.out_sid_text.SetFocus()
-#            self.status_bar.SetBackgroundColour('RED')
+            self.barcode_text.SetFocus()
+            self.error_text.SetLabel('')
+            self.status_bar.SetBackgroundColour('GREEN')
+            
+        except Exception,exc:
+            self.error_text.SetLabel('%s'%exc.message)
+            self.out_sid_text.Clear()
+            self.out_sid_text.SetFocus()
+            self.status_bar.SetBackgroundColour('RED')
             
         evt.Skip()
             
