@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" ?>
-
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
@@ -19,13 +18,13 @@ div {
 
 .express {
 	width: 792px;
-	height: 384px;
+	height: 450px;
 	text-align:left;
 }
 
 .head-panel {
 	width: 100%;
-	height: 200px;
+	height: 180px;
 	margin-top: 0px;
 }
 
@@ -87,12 +86,12 @@ div {
 .bottom-panel {
 	clear: left;
 	width: 100%;
-	height: 120px;
+	height: 140px;
 }
 
 .post-fill{
 	width:100%;
-	height:80px;
+	height:100px;
 }
 
 .post-date{
@@ -104,6 +103,19 @@ div {
 		display:inline;
 		font-size:22px;
 	}
+.bottom-left{
+	display:inline;
+	width:45%;
+	float:left;
+	}
+.bottom-right{
+	display:inline;
+	text-align:right;
+	width:50%;
+	font-size:30px;
+	float:right;
+	margin-top:40px;
+	}
 </style>
 </head>
 <body>
@@ -112,13 +124,13 @@ div {
 		<div class="head-no">{{ trade.trade_id }}</div>
 		<div class='head-panel'>
 			<div class='left-panel'>
-				<div style="margin-top:160px;margin-left:100px;"><span class="zone">婴儿用品</span></div>	
+				<div style="margin-top:160px;margin-left:100px;"><span class="zone"><!--婴儿用品--></span></div>	
 			</div>
 			<div class='right-panel'>
 				<div class='receiver-name'>{{ trade.receiver_name }}</div>
 				<!--<div class='receiver-info'></div>-->
 				<div class='receiver-addr'>
-					<span>{{ trade.receiver_state }}&nbsp;&nbsp;{{
+					<span >{{ trade.receiver_state }}&nbsp;&nbsp;{{
 						trade.receiver_city }}&nbsp;&nbsp;{{ trade.receiver_district }} <br>
 					<br> {{ trade.receiver_address }}
 					</span>
@@ -130,8 +142,17 @@ div {
 			</div>
 		</div>
 		<div class='bottom-panel'>
-			<div class='post-fill'></div>
-			<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+			<div class="bottom-left">
+				<div class='post-fill'></div>
+				<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+			</div>
+			<div class="bottom-right">
+				<div style="margin-right:100px;"><span>
+				{{ trade.receiver_state }}<br>
+				{{ trade.receiver_city }}<br>
+				{{ trade.receiver_district }}</span>
+				</div>
+			</div>
 		</div>
 	</div>
 	{% endfor %}
