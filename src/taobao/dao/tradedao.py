@@ -16,6 +16,10 @@ def get_oparetor():
     cfg = getconfig()
     return cfg.get('user','username')
 
+def get_seller_ids():
+    cfg = getconfig()
+    return [i.strip() for i in cfg.get('user','seller_ids').split(',')]
+
 def is_normal_print_limit(session=None):
     
     if not session:
@@ -69,6 +73,11 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         
     datasource       = session.query(MergeTrade)
     counter          = session.query(func.count(MergeTrade.id))
+
+    seller_ids = get_seller_ids()
+    if seller_ids:
+        datasource = datasource.filter(MergeTrade.user_id.in_(seller_ids))
+        counter    = counter.filter(MergeTrade.user_id.in_(seller_ids))
     
     if status_type and status_type != pcfg.SYS_STATUS_ALL:
         datasource = datasource.filter_by(sys_status=status_type)
