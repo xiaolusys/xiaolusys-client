@@ -17,14 +17,20 @@ div {
 
 .express {
 	width: 792px;
-	height: 450px;
+	height: 437px;
 	text-align:left;
+}
+
+.express p{
+	margin-left:50px;	
+	height:15px;
+	padding:0px;
 }
 
 .head-panel {
 	width: 100%;
 	height: 180px;
-	margin-top: 0px;
+	margin-top: 40px;
 }
 
 
@@ -51,7 +57,7 @@ div {
 .receiver-name {
 	height: 25px;
 	width: 200px;
-	margin-top: 0px;
+	margin-top: 15px;
 	margin-left: 20px;
 }
 
@@ -90,7 +96,7 @@ div {
 
 .post-fill{
 	width:100%;
-	height:100px;
+	height:15px;
 }
 
 .post-date{
@@ -111,16 +117,17 @@ div {
 	display:inline;
 	text-align:right;
 	width:50%;
-	font-size:30px;
+	font-size:35px;
 	float:right;
-	margin-top:40px;
+	margin-top:0px;
+	margin-right:0px;
 	}
 </style>
 </head>
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
+		<p>{{ trade.trade_id }}</p>
 		<div class='head-panel'>
 			<div class='left-panel'><div class="start-dest"><!--青浦一部--></div></div>
 			<div class='right-panel'>
@@ -141,8 +148,8 @@ div {
 		<div class='bottom-panel'>
 			<div class='post-fill'></div>
 			<div class='post-date-dest'>
-				<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
-				<div class='destination'><!--{{ trade.receiver_city[0:-1] }}-{{ trade.receiver_district[0:-1] }}--></div>
+				<div class='bottom-left'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+				<div class='bottom-right'><div style="margin-right:160px;">{{ trade.receiver_city[0:-1] }}<br>{{ trade.receiver_district[0:-1] }}</div></div>
 			</div>
 		</div>
 	</div>

@@ -99,7 +99,6 @@ class Product(Base):
     warn_num    = Column(Integer)
     remain_num  = Column(Integer)
     wait_post_num  = Column(Integer)
-    retrieval_num  = Column(Integer)
     std_sale_price = Column(Float)
     
     created = Column(DateTime)
@@ -131,7 +130,6 @@ class ProductSku(Base):
     warn_num    = Column(Integer)
     remain_num  = Column(Integer)
     wait_post_num  = Column(Integer)
-    retrieval_num  = Column(Integer)
     std_sale_price = Column(Float)
     
     properties_name  = Column(String(200))
