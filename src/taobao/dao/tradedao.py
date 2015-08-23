@@ -14,15 +14,15 @@ from taobao.common.utils import getconfig
 
 def get_oparetor():
     cfg = getconfig()
-    return cfg.get('user','username',vars={'username':''})
+    return cfg.get('user','username')
 
 def get_seller_ids():
     cfg = getconfig()
-    return [i.strip() for i in cfg.get('user','seller_ids',vars={'seller_ids':''}).split(',') if i.strip()]
+    return [i.strip() for i in cfg.get('user','seller_ids').split(',') if i.strip()]
 
 def get_ware_id():
     cfg = getconfig()
-    return cfg.get('user','ware_id',vars={'username':''})
+    return cfg.get('user','ware_id')
 
 def is_normal_print_limit(session=None):
     
@@ -91,7 +91,7 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
     if status_type and status_type != pcfg.SYS_STATUS_ALL:
         datasource = datasource.filter_by(sys_status=status_type)
         counter    = counter.filter_by(sys_status=status_type)
-
+    print 'debug:',ware_id,seller_ids
     if print_mode == pcfg.DIVIDE_MODE:
         operator         = get_oparetor()
         per_request_num  = get_per_request_num(session)
