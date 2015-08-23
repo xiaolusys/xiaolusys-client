@@ -291,9 +291,9 @@ class MergeTrade(Base):
     is_charged       = Column(Boolean)
     has_merge        = Column(Boolean)
     sys_status       = Column(String(32),index=True)  
-    
     is_qrcode        = Column(Boolean)
     qrcode_msg       = Column(String(32))
+    ware_by          = Column(Integer,index=True)
     
     reserveo       =  Column(String(32))       
     reservet       =  Column(String(32)) 

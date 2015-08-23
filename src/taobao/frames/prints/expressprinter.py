@@ -50,7 +50,7 @@ class HtmlPrinter(HtmlEasyPrinting):
         self.SetFooter('@PAGENUM@/@PAGESCNT@')
         return HtmlEasyPrinting.PreviewText(self, self.GetHtmlText(text))
   
- 
+
 class ExpressPrinter(wx.Frame):
  
     #----------------------------------------------------------------------
