@@ -29,7 +29,8 @@ class PicklePrinter(wx.Frame):
         cfg  = getconfig()
         host_name   = cfg.get('url','web_host')
         client_name = cfg.get('user','username')
-        self.html.LoadUrl(cfg.get('url','post_url')%(host_name,client_name))
+        ware_id     = cfg.get('user','ware_id')
+        self.html.LoadUrl(cfg.get('url','post_url')%(host_name,ware_id,client_name))
         
         previewBtn = wx.Button(self.panel,wx.ID_ANY,u'打印预览')
         cancelBtn = wx.Button(self.panel, wx.ID_ANY, u'关闭窗口')
