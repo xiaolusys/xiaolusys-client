@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
@@ -12,19 +13,24 @@ body {
 }
 
 div {
-	margin: 0;
-	padding: 0;
+	margin: 0px auto;
+	padding: 0px;
 }
 
 .express {
-	width: 660px;
-	height: 1000px;
+	width: 792px;
+	height: 450px;
 	text-align:left;
+}
+
+.head-no{
+	margin-left:250px;
+	height:40px;
 }
 
 .head-panel {
 	width: 100%;
-	height: 300px;
+	height: 200px;
 	margin-top: 0px;
 }
 
@@ -46,27 +52,27 @@ div {
 	height: 25px;
 	width: 150px;
 	margin-top: 10px;
-	margin-left: 120px;
+	margin-left: 60px;
 }
 
 .receiver-addr {
 	height: 60px;
 	width: 260px;
 	margin-top: 20px;
-	margin-left: 120px;
+	margin-left: 60px;
 }
 
 .receiver-info {
 	height: 30px;
 	width: 300px;
-	margin-left: 120px;
+	margin-left: 60px;
 }
 
 .left-panel-bottom {
 	height: 30px;
 	width: 300px;
 	margin-top: 0px;
-	margin-left: 120px;
+	margin-left: 60px;
 }
 
 .receiver-mobile {
@@ -84,17 +90,17 @@ div {
 .botton-panel {
 	clear: left;
 	width: 100%;
-	height: 250px;
+	height: 200px;
 }
 
 .post-fill{
 	width:100%;
-	height:20%;
+	height:100px;
 }
 
 .post-date{
 	width:100%;
-	height:10%;
+	height:20px;
 	margin-left:80px;
 }
 
@@ -103,11 +109,11 @@ div {
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
+		<div class="head-no">{{ trade.trade_id }}</div>
 		<div class='head-panel'>
 			<div class='left-panel'>
-				<div style="margin-top:100px;margin-left:100px;">
-					<span >上海松江</span><br>
+				<div style="margin-top:60px;margin-left:40px;font-size:20px;">
+					<span >上海松江 超区勿转</span><br>
 					<span >021-39698479</span>
 				</div>	
 			</div>

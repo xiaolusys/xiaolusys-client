@@ -108,7 +108,7 @@ class create_session():
         
         if self.session:
             try:
-                self.session.commit()
+                self.session.flush()
             except Exception,exc:
                 self.session.rollback()
                 from taobao.common.logger import get_sentry_logger

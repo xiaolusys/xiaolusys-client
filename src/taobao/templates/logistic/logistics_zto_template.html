@@ -4,132 +4,132 @@
 <title>中通快递打印模板</title>
 <style type='text/css'>
 body {
-	backgroup-color: #9cc2a9;
-	margin: 0 auto;
-	padding: 0;
+	margin: 0px auto;
+	padding: 0px;
 	text-align: center;
 	font-size:16px;
 }
 
 div {
-	margin: 0;
-	padding: 0;
+	margin: 0px auto;
+	padding: 0px;
 }
 
 .express {
 	width: 792px;
-	height: 384px;
+	height: 437px;
 	text-align:left;
+}
+
+.express p{
+	margin-left:50px;	
+	height:15px;
+	padding:0px;
 }
 
 .head-panel {
 	width: 100%;
-	height: 220px;
-	margin-top: 0px;
+	height: 180px;
+	margin-top: 40px;
 }
+
+
+.head-no{
+	margin-left:250px;
+	height:60px;
+}
+
 
 .left-panel {
 	float: left;
-	width: 218px;
+	width: 390px;
 	display: inline;
-}
-
-.start-dest {
-	text-align:right;
-	margin-top:10px;
 }
 
 .right-panel {
 	float: right;
 	height: 160px;
-	width: 440px;
+	width: 390px;
 	display: inline;
 	text-align: left;
 }
 
 .receiver-name {
 	height: 25px;
-	width: 150px;
-	margin-top: 10px;
-	margin-left: 120px;
+	width: 200px;
+	margin-top: 15px;
+	margin-left: 20px;
 }
 
 .receiver-addr {
 	height: 60px;
-	width: 260px;
-	margin-top: 20px;
-	margin-left: 120px;
+	width: 280px;
+	margin-top: 10px;
+	margin-left: 20px;
 }
 
 .receiver-info {
 	height: 30px;
-	width: 300px;
-	margin-left: 120px;
+	width: 280px;
+	margin-left: 20px;
 }
 
 .left-panel-bottom {
-	height: 30px;
-	width: 300px;
-	margin-top: 0px;
-	margin-left: 120px;
+	height: 20px;
+	width: 280px;
+	margin-top: 25px;
+	margin-left: 20px;
 }
 
 .receiver-mobile {
 	float: left;
 	display: inline;
 	width: 160px;
+	margin-left: 60px;
 }
 
-.post-code {
-	float: right;
-	display: inline;
-	width: 100px;
-}
-
-.botton-panel {
+.bottom-panel {
 	clear: left;
 	width: 100%;
-	height: 250px;
+	height: 140px;
 }
 
 .post-fill{
 	width:100%;
-	height:30px;
-	
-}
-
-.post-date-dest{
-	height:50px;
-	clear:both;
-	position:relative;
-	overflow:hidden;
+	height:15px;
 }
 
 .post-date{
-	margin-top:30px;
+	width:100%;
+	height:20px;
 	margin-left:80px;
+}
+.zone{
+		display:inline;
+		font-size:22px;
+	}
+.bottom-left{
 	display:inline;
+	width:45%;
 	float:left;
-}
-
-.destination{
-	font-size:42px;
+	}
+.bottom-right{
 	display:inline;
+	text-align:right;
+	width:50%;
+	font-size:35px;
 	float:right;
-	margin-right:10px;
 	margin-top:0px;
-	position:absolute;
-	width:300px;
-	right:10px;
-}
+	margin-right:0px;
+	}
 </style>
 </head>
 <body>
 	{% for trade in trades %}
 	<div class='express'>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ trade.trade_id }}
+		<p>{{ trade.trade_id }}</p>
 		<div class='head-panel'>
-			<div class='left-panel'><div class="start-dest">青浦一部</div></div>
+			<div class='left-panel'><div class="start-dest"><!--青浦一部--></div></div>
 			<div class='right-panel'>
 				<div class='receiver-name'>{{ trade.receiver_name }}</div>
 				<div class='receiver-addr'>
@@ -148,8 +148,8 @@ div {
 		<div class='bottom-panel'>
 			<div class='post-fill'></div>
 			<div class='post-date-dest'>
-				<div class='post-date'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
-				<div class='destination'><!--{{ trade.receiver_city[0:-1] }}-{{ trade.receiver_district[0:-1] }}--></div>
+				<div class='bottom-left'>{{ trade.post_date|datetimeformat(format='%Y-%m-%d') }}</div>
+				<div class='bottom-right'><div style="margin-right:160px;">{{ trade.receiver_city[0:-1] }}<br>{{ trade.receiver_district[0:-1] }}</div></div>
 			</div>
 		</div>
 	</div>
