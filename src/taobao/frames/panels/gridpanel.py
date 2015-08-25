@@ -797,7 +797,6 @@ class GridPanel(wx.Panel):
                         .ShowFullScreen(True,style=wx.FULLSCREEN_NOBORDER)
             
             elif eventid == express_print_btn_id:
-                
                 id_sid_map = {}
                 pre_company_id = ''
                 is_yunda_qrcode   = self.fill_sid_checkbox1.IsChecked() 
