@@ -241,10 +241,9 @@ def handle_demon(action,xml_data,partner_id,secret):
           'xmldata':xml_data,
           'validation':validate
           }
-    
     req = urllib2.urlopen(qrcode_url+API_DICT[action], urllib.urlencode(params))
     rep = req.read()       
-    
+    print 'debug resp:', params, action, rep
     if action == REPRINT:
         return rep
         
@@ -259,7 +258,7 @@ def create_order(ids,session=None,partner_id=PARTNER_ID,secret=SECRET):
     objs   = get_objs_from_trade(trades,session=session)
     
     order_xml = gen_orders_xml(objs)
-    
+    print 'debug created:',order_xml
     tree = handle_demon(RECEIVE_MAILNO,order_xml,partner_id,secret)
             
     return parseTreeID2MailnoMap(tree)
@@ -275,7 +274,7 @@ def modify_order(ids,session=None,partner_id=PARTNER_ID,secret=SECRET):
     if not objs:
         return 
     order_xml = gen_orders_xml(objs)
-    
+    print 'debug modify:',order_xml
     tree = handle_demon(MODIFY,order_xml,partner_id,secret)
     
     return tree
