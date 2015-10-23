@@ -341,7 +341,7 @@ def print_order(ids,partner_id=PARTNER_ID,secret=SECRET):
 def getYDCustomerByTradeId(trade_id,session=None):
     
     trade   = session.query(MergeTrade).filter_by(id=trade_id).first()
-    return session.query(YundaCustomer).filter_by(code=trade.user.user_code.strip()).one()
+    return session.query(YundaCustomer).filter_by(code=trade.user.user_code.strip(),ware_by=trade.ware_by).one()
 
 
 def printYUNDAService(trade_ids,session=None):

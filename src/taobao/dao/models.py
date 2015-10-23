@@ -463,6 +463,7 @@ class YundaCustomer(Base):
     company_name = Column(String(32)) 
     company_trade = Column(String(32)) 
     cus_id       = Column(String(32)) 
+    ware_by      = Column(Integer)
     
     qr_id       = Column(String(32)) 
     qr_code     = Column(String(32)) 
