@@ -178,7 +178,7 @@ def get_objs_from_trade(trades,session=None):
         if yd_customes_dict.has_key(user_code):
             yd_customer = yd_customes_dict[user_code]
         else:
-            yd_customer = session.query(YundaCustomer).filter_by(code=trade.user.user_code).one()
+            yd_customer = getYDCustomerByTradeId(trade,session=session)
             yd_customes_dict[user_code] = yd_customer
         
         objs.append({"id":trade.id,
@@ -339,8 +339,9 @@ def print_order(ids,partner_id=PARTNER_ID,secret=SECRET):
 
 ################################ 打印韵达pdf文档方法  ####################################
 def getYDCustomerByTradeId(trade_id,session=None):
-    
-    trade   = session.query(MergeTrade).filter_by(id=trade_id).first()
+    trade = trade_id
+    if not isinstance(trade,MergeTrade):
+        trade   = session.query(MergeTrade).filter_by(id=trade_id).first()
     return session.query(YundaCustomer).filter_by(code=trade.user.user_code.strip(),ware_by=trade.ware_by).one()
 
 

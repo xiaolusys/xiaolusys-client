@@ -467,10 +467,6 @@ class GridPanel(wx.Panel):
             self.static_button_down.SetLabel('^------------^')
             self.itempanel.Hide()
         self.Layout()    
-    
-    def getYundaCustomerByUserCode(self,user_code,session=None):
-        
-        return session.query(YundaCustomer).filter_by(code=user_code).one()
         
     def isCompanyConsistent(self):
         
