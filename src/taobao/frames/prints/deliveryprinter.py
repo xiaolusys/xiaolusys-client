@@ -229,7 +229,6 @@ class DeliveryPrinter(wx.Frame):
                 trade_data['payment']      = 0
                 trade_data['buyer_prompt']  = ''
                 trade_data['juhuasuan']  = trade.trade_from&JUHUASUAN_CODE == JUHUASUAN_CODE
-                
                 trade_data['receiver_name']     = trade.receiver_name
                 trade_data['receiver_phone']    = trade.receiver_phone
                 trade_data['receiver_mobile']   = trade.receiver_mobile
