@@ -80,11 +80,12 @@ def get_zone_by_code(code,session=None):
 
 def get_classify_zone(state,city,district,address='',session=None):
     """ 根据地址获取分拨中心   """
-    
     config = getconfig()
+    open_branch = config.get('yunda','open_branch')
     web_host   = config.get('url','web_host')
     branchzone_url = config.get('yunda','branchzone_url')%web_host
-        
+    if open_branch.lower() != 'y':
+        return {}
     params = {'province':state.encode('utf8'),
               'city':city.encode('utf8'),
               'district':district.encode('utf8')}
