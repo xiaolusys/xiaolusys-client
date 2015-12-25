@@ -1,4 +1,5 @@
-﻿<html>
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <title>邮政小包快递打印模板</title>
@@ -22,7 +23,8 @@ div {
 .trade-indent{
 	height:30px;
 	width:100%;
-	text-align:center;
+	margin-left:20px;
+	text-align:left;
 }
 .head-panel {
 	width: 100%;
@@ -35,7 +37,7 @@ div {
 	height: 160px;
 	text-align: left;
 	display: inline;
-	margin-left:60px;
+	margin-left:20px;
 }
 .right-panel {
 	float: right;
@@ -52,11 +54,15 @@ div {
 	display:inline;
 	float:left;
 }
+.receiver-mobile {
+	float: left;
+	display: inline;
+}
 .receiver-addr {
 	height: 30px;
 	width: 100%;
 	margin-top: 10px;
-	margin-left: 60px;
+	margin-left: 15px;
 	clear:both;
 }
 .receiver-info {
@@ -64,15 +70,17 @@ div {
 	width: 100%;
 	margin-left: 15px;
 }
-.left-panel-bottom {
+.left-panel-top{
 	height: 30px;
 	width: 100%;
 	margin-top: 30px;
 	margin-left: 15px;
 }
-.receiver-mobile {
-	float: right;
-	display: inline;
+.left-panel-bottom {
+	height: 30px;
+	width: 100%;
+	margin-top: 30px;
+	margin-left: 15px;
 }
 .post-code {
 	float: right;
@@ -121,20 +129,24 @@ div {
 		<div class="trade-indent">{{ trade.trade_id }}</div>
 		<div class='head-panel'>
 			<div class='left-panel'>
-				<div class="empty-fill"></div>
-				<div class="base-info">
-					<div class="receiver-name">{{ trade.receiver_name }}</div>
-					<div class="receiver-mobile">{% if trade.receiver_mobile %}{{ trade.receiver_mobile }}{% else %}{{ trade.receiver_phone }}{% endif %}</div>
-				</div>
-				<div class="receiver-addr">
-					<span>{{ trade.receiver_state }}  {{trade.receiver_city }} {{ trade.receiver_district }}
-					<br/> {{ trade.receiver_address }}
-					</span>
+				<div class="left-panel-top">
+					<div>
+							 <div class="name">{{ trade.seller_nick }}</div>
+						   <div class='phone'>{{ trade.seller_phone }}</div>
+					</div>
+					<div class="address">{{ trade.seller_location }}</div>
+					<div class="post-code">{{ trade.seller_area_code }}</div>
 				</div>
 				<div class="left-panel-bottom">
-					<div><div class='name'>{{ trade.seller_nick }}</div><div class='phone'>{{ trade.seller_phone }}</div></div>
-					<div class='address'>{{ trade.seller_location }}</div>
-					<div class="post-code">{{ trade.seller_area_code }}</div>
+					<div>
+						<div class="receiver-name">{{ trade.receiver_name }}</div>
+						<div class="receiver-mobile">{{ trade.receiver_mobile }}/{{ trade.receiver_phone }}</div>
+					</div>
+					<div class="receiver-addr">
+						<span>{{ trade.receiver_state }}  {{trade.receiver_city }} {{ trade.receiver_district }}
+						<br/> {{ trade.receiver_address }}
+						</span>
+					</div>
 				</div>
 			</div>
 			<div class='right-panel'>	
