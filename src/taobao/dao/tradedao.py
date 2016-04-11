@@ -7,7 +7,7 @@ Created on 2012-6-4
 import sqlalchemy 
 from sqlalchemy import func
 from taobao.dao.dbsession import get_session
-from taobao.dao.models import SystemConfig,MergeOrder,MergeTrade,ProductLocation
+from taobao.dao.models import SystemConfig,ProductLocation, PackageOrder, PackageSkuItem
 from taobao.dao import configparams as pcfg
 from taobao.common.utils import getconfig
 
@@ -59,14 +59,16 @@ def get_or_create_model(session,model_class,**kwargs):
         return model
 
 def get_used_orders(session,trade_id):
-    orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,
-                                                 sys_status=pcfg.IN_EFFECT).filter(
-                MergeOrder.gift_type!=pcfg.RETURN_GOODS_GIT_TYPE)
+    orders = session.query(PackageOrder).filter_by(merge_trade_id=trade_id,sys_status=pcfg.IN_EFFECT
+                            ).filter(PackageOrder.gift_type!=pcfg.RETURN_GOODS_GIT_TYPE)
+    # orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,
+    #                                              sys_status=pcfg.IN_EFFECT).filter(
+    #             MergeOrder.gift_type!=pcfg.RETURN_GOODS_GIT_TYPE)
     return orders
 
 def get_return_orders(session,trade_id):
-    orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,
-                                gift_type=pcfg.RETURN_GOODS_GIT_TYPE,sys_status=pcfg.IN_EFFECT)
+    orders = session.query(PackageSkuItem).filter_by(merge_trade_id=trade_id,
+                                                 gift_type=pcfg.RETURN_GOODS_GIT_TYPE, sys_status=pcfg.IN_EFFECT)
     return orders
 
 def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,session=None):
@@ -75,13 +77,13 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
     if not session:
         session = get_session()
         
-    datasource       = session.query(MergeTrade)
-    counter          = session.query(func.count(MergeTrade.id))
+    datasource       = session.query(PackageOrder)
+    counter          = session.query(func.count(PackageOrder.id))
 
     seller_ids = get_seller_ids()
     if seller_ids:
-        datasource = datasource.filter(MergeTrade.user_id.in_(seller_ids))
-        counter    = counter.filter(MergeTrade.user_id.in_(seller_ids))
+        datasource = datasource.filter(PackageOrder.seller_id.in_(seller_ids))
+        counter    = counter.filter(PackageOrder.seller_id.in_(seller_ids))
         
     ware_id = get_ware_id()
     if ware_id:
@@ -92,29 +94,11 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         datasource = datasource.filter_by(sys_status=status_type)
         counter    = counter.filter_by(sys_status=status_type)
     print 'debug:',ware_id,seller_ids
-    if print_mode == pcfg.DIVIDE_MODE:
-        operator         = get_oparetor()
-        per_request_num  = get_per_request_num(session)
-        locked_num       = 0
+
         
-        unfinish_divid_source     = session.query(MergeTrade).filter(MergeTrade.sys_status.in_(
-            (pcfg.SYS_STATUS_PREPARESEND,pcfg.SYS_STATUS_WAITSCANCHECK,pcfg.SYS_STATUS_WAITSCANWEIGHT)))\
-            .filter_by(is_locked=True,operator=operator,reason_code='')
-        if status_type == pcfg.SYS_STATUS_PREPARESEND and unfinish_divid_source.count() == 0:
-            for trade in datasource.filter_by(is_locked=False).order_by(
-                            'priority desc',sqlalchemy.func.date(MergeTrade.pay_time),'logistics_company_id'):
-                if locked_num >= per_request_num:
-                    break
-                row = session.query(MergeTrade).filter_by(id=trade.id,is_locked=False).update(
-                     {'is_locked':True,'operator':operator},synchronize_session='fetch')
-                if row >0:
-                    locked_num += 1
-        datasource = datasource.filter_by(is_locked=True,operator=operator)  
-        counter    = counter.filter_by(sys_status=status_type)
-        
-    else:
-        datasource     = datasource.order_by(sqlalchemy.func.date(MergeTrade.pay_time),
-                                             'priority desc','shop_trades_mergetrade.pay_time asc')
+
+    datasource     = datasource.order_by(sqlalchemy.func.date(PackageOrder.created),
+                                             'priority desc','flashsale_package.created asc')
     
     return datasource,counter
             
@@ -124,10 +108,10 @@ def locking_trade(trade_id,operator,session=None):
         session = get_session()
     
     is_locked = False
-    trade = session.query(MergeTrade).filter_by(id=trade_id).first()
+    trade = session.query(PackageOrder).filter_by(pid=trade_id).first()
 
     if not trade.is_locked:
-        updaterows = session.query(MergeTrade).filter_by(id=trade_id,is_locked=False).update(
+        updaterows = session.query(PackageOrder).filter_by(pid=trade_id,is_locked=False).update(
                     {'is_locked':True,'operator':operator},synchronize_session='fetch')
         if updaterows == 1:
             is_locked = True

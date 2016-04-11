@@ -111,20 +111,22 @@ class MainFrame(wx.Frame):
     
 #sys.setdefaultencoding('utf8') 
 app = wx.PySimpleApp()
-try:
-    config = getconfig()
-    db_host = config.get('db','db_host')
-    if False and pinghost(db_host):
-        dial = wx.MessageDialog(None, u'数据库连接失败(host:%s)'%db_host, 
-                                u'数据库连接失败提示', wx.OK | wx.ICON_EXCLAMATION)
-        dial.ShowModal()
-    else:     
-        wx.InitAllImageHandlers()
-        frm = MainFrame(None)
-        frm.Show()
-except Exception,exc:
-    dial = wx.MessageDialog(None, u'程序错误：%s'%exc.message,
-                             u'错误提示', wx.OK | wx.ICON_EXCLAMATION)
+# try:
+config = getconfig()
+db_host = config.get('db','db_host')
+print db_host
+if False and pinghost(db_host):
+    dial = wx.MessageDialog(None, u'数据库连接失败(host:%s)'%db_host,
+                            u'数据库连接失败提示', wx.OK | wx.ICON_EXCLAMATION)
     dial.ShowModal()
+else:
+    wx.InitAllImageHandlers()
+    frm = MainFrame(None)
+    frm.Show()
+# except Exception,exc:
+#     dial = wx.MessageDialog(None, u'程序错误：%s'%exc.message,
+#                              u'错误提示', wx.OK | wx.ICON_EXCLAMATION)
+#     dial.ShowModal()
+#     raise exc
     
 app.MainLoop()    

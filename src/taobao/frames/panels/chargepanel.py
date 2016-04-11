@@ -10,7 +10,7 @@ import weakref
 import datetime
 import wx,wx.grid
 from taobao.common.utils import create_session,MEDIA_ROOT
-from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
+from taobao.dao.models import LogisticsCompany,Product,ProductSku, PackageOrder, PackageSkuItem
 from taobao.frames.panels.gridpanel import ChargeGridPanel
 from taobao.dao.tradedao import get_used_orders,get_return_orders
 from taobao.common.utils import getconfig,pydate2wxdate,wxdate2pydate
@@ -116,8 +116,11 @@ class ScanChargePanel(wx.Panel):
                                 wx.OK | wx.ICON_EXCLAMATION)
                 dial.ShowModal()
                 return
-            charge_trades = session.query(MergeTrade).filter_by(is_picking_print=True,is_express_print=True,
-                        logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_FINISHED,is_charged=True)
+            charge_trades = session.query(PackageOrder).filter_by(is_picking_print=True, is_express_print=True,
+                                                                logistics_company_id=logistics_company.id,
+                                                                sys_status=cfg.SYS_STATUS_FINISHED, is_charged=True)
+            # charge_trades = session.query(MergeTrade).filter_by(is_picking_print=True,is_express_print=True,
+            #             logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_FINISHED,is_charged=True)
             
             if charge_start_date:
                 charge_trades = charge_trades.filter("charge_time >=:start").params(start=charge_start_date)
@@ -132,42 +135,43 @@ class ScanChargePanel(wx.Panel):
             
     def onOutsidTextChange(self,evt):
         company_name = self.company_select.GetValue().strip()
-        out_sid      = self.out_sid_text.GetValue().strip() 
-        trades = None
-        with create_session(self.Parent) as session:
-            if company_name and out_sid:
-                logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
-                trades = session.query(MergeTrade).filter_by(out_sid=out_sid,is_picking_print=True,
-                        is_express_print=True,logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_FINISHED)
-                 
-        count = trades.count() if trades else 0 
-        if count>1 :
-            dial = wx.MessageDialog(None, u'快递单号有重单，请联系管理员', u'快递揽件信息确认提示', 
-                            wx.OK | wx.ICON_EXCLAMATION)
-            dial.ShowModal()
-        elif count == 1:
-            trade = trades.first()
-            self.save_charge_to_trade(trade)
-            self.out_sid_text.Clear()
-            self.out_sid_text.SetFocus()
-#            winsound.PlaySound(MEDIA_ROOT+'success.wav',winsound.SND_FILENAME)
-        else:
-            dial = wx.MessageDialog(None, u'未找到该物流单对应的订单，请查验该单号', u'快递揽件信息确认提示', 
-                            wx.OK | wx.ICON_EXCLAMATION)
-            dial.ShowModal()
-#            winsound.PlaySound(MEDIA_ROOT+'wrong.wav',winsound.SND_FILENAME)
+        out_sid      = self.out_sid_text.GetValue().strip()
+        wx.MessageDialog(None, u'已删除此事件',
+                         trades = None)
+        #         with create_session(self.Parent) as session:
+        #             if company_name and out_sid:
+        #                 logistics_company = session.query(LogisticsCompany).filter_by(name=company_name).first()
+        #                 trades = session.query(PackageOrder).filter_by(out_sid=out_sid,is_picking_print=True,
+        #                         is_express_print=True,logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_FINISHED)
+        #
+        #         count = trades.count() if trades else 0
+        #         if count>1 :
+        #             dial = wx.MessageDialog(None, u'快递单号有重单，请联系管理员', u'快递揽件信息确认提示',
+        #                             wx.OK | wx.ICON_EXCLAMATION)
+        #             dial.ShowModal()
+        #         elif count == 1:
+        #             trade = trades.first()
+        #             # self.save_charge_to_trade(trade)
+        #             self.out_sid_text.Clear()
+        #             self.out_sid_text.SetFocus()
+        # #            winsound.PlaySound(MEDIA_ROOT+'success.wav',winsound.SND_FILENAME)
+        #         else:
+        #             dial = wx.MessageDialog(None, u'未找到该物流单对应的订单，请查验该单号', u'快递揽件信息确认提示',
+        #                             wx.OK | wx.ICON_EXCLAMATION)
+        #             dial.ShowModal()
+        # #            winsound.PlaySound(MEDIA_ROOT+'wrong.wav',winsound.SND_FILENAME)
         
         self.out_sid_text.Clear()
         self.out_sid_text.SetFocus()
         evt.Skip()
            
         
-    def save_charge_to_trade(self,trade):
-        
-        with create_session(self.Parent) as session:
-            session.query(MergeTrade).filter_by(id=trade.id).update({'is_charged':True,'charge_time':datetime.datetime.now()})
-
-        self.gridpanel.InsertChargeRows(trade)
+    # def save_charge_to_trade(self,trade):
+    #
+    #     with create_session(self.Parent) as session:
+    #         session.query(MergeTrade).filter_by(id=trade.id).update({'is_charged':True,'charge_time':datetime.datetime.now()})
+    #
+    #     self.gridpanel.InsertChargeRows(trade)
         
                  
     def set_datasource(self,datasource):

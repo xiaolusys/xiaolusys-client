@@ -11,7 +11,6 @@ import datetime
 import wx,wx.grid
 from MySQLdb import IntegrityError
 from taobao.common.utils import create_session,MEDIA_ROOT
-from taobao.dao.models import MergeTrade,LogisticsCompany,MergeOrder,Product,ProductSku
 from taobao.frames.panels.gridpanel import WeightGridPanel
 from taobao.dao.tradedao import get_used_orders,get_return_orders,get_oparetor
 from taobao.common.utils import getconfig

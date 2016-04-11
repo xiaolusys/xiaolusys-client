@@ -9,10 +9,13 @@ import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Table, Column, Integer, BigInteger,Float , String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
-from . import configparams as cfg 
-
+from . import configparams as cfg
+from sqlalchemy import func
 Base = declarative_base()
+
 #memo_compile = re.compile('^\((?P<key>\w+),(?P<value>[\w\W]+),(?P<memo>[\w\W]+)\)$')
+from taobao.dao.dbsession import get_session, SessionProvider
+
 
 class SystemConfig(Base):
     __tablename__ = 'shop_monitor_systemconfig'
@@ -24,7 +27,7 @@ class SystemConfig(Base):
     normal_print_limit = Column(Boolean, default=False)
     per_request_num = Column(Integer)
     client_num = Column(Integer)
-    
+
     def __repr__(self):
         return "<SystemConfig('%s')>" % (str(self.id))
     
@@ -215,11 +218,187 @@ class MergeOrder(Base):
         
     def __repr__(self):
         return "<Order('%s','%s','%s')>" % (str(self.id), self.seller_nick, self.buyer_nick)
-        
+
+
+class SaleOrder(Base):
+    __tablename__ = 'flashsale_order'
+    id    = Column(BigInteger, primary_key=True)
+    oid   = Column(String(40))
+    sale_trade_id = Column(BigInteger,ForeignKey('flashsale_trade.id'))
+    item_id = Column(String(64))
+    title  =  Column(String(128))
+    price  = Column(Float)
+    sku_id = Column(String(20))
+    num = Column(Integer)
+    outer_id = Column(String(64))
+    outer_sku_id = Column(String(20))
+    total_fee    = Column(Float)
+    payment      = Column(Float)
+    discount_fee = Column(Float)
+    sku_name = Column(String(256))
+    pic_path = Column(String(512))
+    pay_time      =  Column(DateTime)
+    consign_time  =  Column(DateTime)
+    sign_time     =  Column(DateTime)
+    refund_id     = Column(BigInteger)
+    refund_fee    = Column(Float)
+    refund_status = Column(Integer)
+    status = Column(Integer)
+    package_order_id = Column(String(100))
+    assign_status = Column(Integer)
+
+
+class PackageSkuItem(Base):
+    __tablename__ = 'flashsale_package_sku_item'
+    id = Column(BigInteger, primary_key=True)
+    sale_order_id = Column(BigInteger)
+    num = Column(Integer)
+    package_order_id = Column(String(100))
+    gift_type = Column(Integer)
+    assign_status = Column(Integer)
+    status = Column(String(32))
+    sys_status = Column(String(32))
+    refund_status = Column(Integer)
+    cid = Column(BigInteger)
+    title = Column(String(128))
+    price = Column(Float)
+    sku_id = Column(String(20))
+    #num = Column(BigInteger)
+    out_id = Column(String(20))
+    out_sku_id = Column(String(20))
+    total_fee = Column(Float)
+    payment = Column(Float)
+    discount_fee = Column(Float)
+    sku_properties_name = Column(String(256))
+
+
+class PackageOrder(Base):
+    __tablename__ = 'flashsale_package'
+    id = Column(String(100), primary_key=True)
+    pid = Column(BigInteger)
+    tid = Column(String(32))
+    ware_by = Column(Integer)
+    status = Column(String(32),index=True)
+    sys_status     =  Column(String(32),index=True)
+    receiver_name    = Column(String(25))
+    receiver_state   =  Column(String(16))
+    receiver_city    =  Column(String(16))
+    receiver_district  =  Column(String(16))
+    receiver_address   =  Column(String(128))
+    receiver_zip       =  Column(String(160))
+    receiver_mobile    =  Column(String(24))
+    receiver_phone     = Column(String(20))
+    seller_id    = Column(BigInteger, ForeignKey('shop_users_user.id'), index=True)
+    buyer_id    = Column(BigInteger)
+    buyer_nick = Column(String(64))
+    user_address_id = Column(BigInteger)
+    post_cost     = Column(Float)
+    buyer_message = Column(String(1000))
+    seller_memo = Column(String(1000))
+    sys_memo = Column(String(1000))
+    seller_flag = Column(Integer)
+    is_lgtype      = Column(Boolean)
+    lg_aging       = Column(DateTime)
+    lg_aging_type  = Column(String(20))
+    gift_type = Column(Integer)
+    out_sid         = Column(String(64),index=True)
+    logistics_company_id  = Column(Integer,ForeignKey('shop_logistics_company.id'))
+    weight        = Column(String(10))
+    is_qrcode        = Column(Boolean)
+    qrcode_msg       = Column(String(32))
+    can_review       = Column(Boolean)
+    priority       =  Column(Integer)
+    operator       =  Column(String(32))
+    scanner        =  Column(String(64))
+    weighter       =  Column(String(64))
+    is_locked      =  Column(Boolean)
+    is_picking_print     =  Column(Boolean)
+    is_express_print = Column(Boolean)
+    is_send_sms = Column(Boolean)
+    has_refund = Column(Boolean)
+    created      = Column(DateTime)
+    merged     = Column(DateTime)
+    send_time    = Column(DateTime)
+    weight_time  = Column(DateTime)
+    charge_time  = Column(DateTime)
+    remind_time      = Column(DateTime)
+    consign_time = Column(DateTime)
+    reason_code = Column(String(100))
+    redo_sign = Column(Boolean)
+    merge_trade_id = Column(BigInteger)
+
+    post_fee = 0
+    adjust_fee = 0
+    refund_num = 0
+    @property
+    def prod_num(self):
+        #todo
+        return 1
+        #return session.query(ProductSku)
+
+
+    def __repr__(self):
+        return "<Trade('%s','%s')>" % (str(self.id), self.user)
+
+    @property
+    def buyer(self):
+        session = SessionProvider.session
+        user = session.query(User).filter_by(id=self.buyer_id).one()
+        return user
+
+    @property
+    def seller(self):
+        if not hasattr(self, '_seller_'):
+            self._seller_ = SELLER_DICT[self.seller_id]
+        return self._seller_
+
+    @property
+    def logistics_company(self):
+        if not hasattr(self, '_logistics_company_'):
+            if self.logistics_company_id:
+                session = SessionProvider.session
+                self._logistics_company_ = session.query(LogisticsCompany).filter_by(id=self.logistics_company_id).one()
+            else:
+                self._logistics_company_ = None
+        return self._logistics_company_
+
+
+    @property
+    def total_num(self):
+        total_nums = 0
+        for order in self.merge_orders:
+            total_nums += order.num
+        return total_nums
+
+    @property
+    def pay_time(self):
+        return self.created
+    @property
+    def prod_num(self):
+        session = SessionProvider.session
+        num = session.query(func.count(PackageSkuItem.id)).filter_by(package_order_id=self.id).count()
+        return num
+
+    @property
+    def payment(self):
+        #TODO
+        return 100
+
+    @property
+    def total_fee(self):
+        #TODO
+        return 105
+
+    @property
+    def discount_fee(self):
+        return 98
+
+    def isPrepareSend(self):
+        return self.sys_status == cfg.SYS_STATUS_PREPARESEND
 
 class MergeTrade(Base):
     __tablename__ = 'shop_trades_mergetrade'
-    
+
     id = Column(BigInteger, primary_key=True)
     tid = Column(String(32), index=True)
     merge_orders = relationship("MergeOrder", backref="merge_trade")
@@ -231,7 +410,7 @@ class MergeTrade(Base):
     type = Column(String(32), nullable=True)
     shipping_type = Column(String(12), default='')
     trade_from    = Column(Integer)
-    
+
     prod_num   = Column(Integer)
     refund_num = Column(Integer)
     payment = Column(Float)
@@ -239,7 +418,7 @@ class MergeTrade(Base):
     adjust_fee = Column(Float)
     post_fee = Column(Float)
     total_fee = Column(Float)
-    
+
     seller_cod_fee = Column(Float)
     buyer_cod_fee  = Column(Float)
     cod_fee        = Column(Float)
@@ -251,11 +430,11 @@ class MergeTrade(Base):
     consign_time = Column(DateTime, index=True, nullable=True)
     weight_time  = Column(DateTime, index=True, nullable=True)
     charge_time  = Column(DateTime, index=True, nullable=True)
-    
+
     buyer_message = Column(String(1000))
     seller_memo   = Column(String(1000))
     sys_memo      = Column(String(500))
-    
+
     out_sid       = Column(String(64),index=True)
     weight        = Column(String(10))
     post_cost     = Column(Float)
@@ -264,22 +443,22 @@ class MergeTrade(Base):
     receiver_state = Column(String(8), default='')
     receiver_city = Column(String(8), default='')
     receiver_district = Column(String(16), default='')
-    
+
     receiver_address = Column(String(64), default='')
     receiver_zip = Column(String(10), default='')
     receiver_mobile = Column(String(24), default='')
     receiver_phone = Column(String(24), default='')
-    
+
     reason_code = Column(String(100), nullable=True)
     status      = Column(String(32) ,index=True ,nullable=True)
-        
+
     is_picking_print = Column(Boolean)
     is_express_print = Column(Boolean)
     is_send_sms      = Column(Boolean)
     has_refund       = Column(Boolean)
     has_memo         = Column(Boolean)
     remind_time      = Column(DateTime)
-    
+
     can_review       = Column(Boolean)
     priority         = Column(Integer,index=True)
     operator         = Column(String(32))
@@ -288,15 +467,15 @@ class MergeTrade(Base):
     is_locked        = Column(Boolean)
     is_charged       = Column(Boolean)
     has_merge        = Column(Boolean)
-    sys_status       = Column(String(32),index=True)  
+    sys_status       = Column(String(32),index=True)
     is_qrcode        = Column(Boolean)
     qrcode_msg       = Column(String(32))
     ware_by          = Column(Integer,index=True)
-    
-    reserveo       =  Column(String(32))       
-    reservet       =  Column(String(32)) 
+
+    reserveo       =  Column(String(32))
+    reservet       =  Column(String(32))
     reserveh       =  Column(String(32))
-    
+
     def __repr__(self):
         return "<Trade('%s','%s')>" % (str(self.id), self.buyer_nick)
     
@@ -488,3 +667,7 @@ class YundaCustomer(Base):
     def __repr__(self):
         return "<YundaCustomer('%s','%s')>" %(self.code,self.name)
     
+session = SessionProvider.session
+SELLER_DICT = {}
+for seller in session.query(User):
+    SELLER_DICT[seller.id] = seller
