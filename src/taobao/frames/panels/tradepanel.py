@@ -18,10 +18,10 @@ scan_weight_id = wx.NewId()
 wait_delivery_id = wx.NewId()
 sync_status_id = wx.NewId()
 has_send_id   = wx.NewId()
-audit_fail_id = wx.NewId()
+#audit_fail_id = wx.NewId()
 invalid_id   = wx.NewId()
-merge_rule_id = wx.NewId()
-regular_remain_id = wx.NewId()
+#merge_rule_id = wx.NewId()
+#regular_remain_id = wx.NewId()
 expand_id = wx.NewId()
 fold_id = wx.NewId()
 class TradePanel(wx.Panel):
@@ -54,20 +54,18 @@ class TradePanel(wx.Panel):
         self.__set_properties()
         self.__do_layout()   
         self.__evt_bind()
-     
+
     @property 
     def buttons_tuple(self):
         return ((all_trade_id,u'全部',1),#1表示显示，0表示在隐藏域
                 (prapare_send_id,u'待发货准备',1),
                 (check_barcode_id,u'待扫描验货',1),
                 (scan_weight_id,u'待扫描称重',1),
-                (expand_id,'>>',2),
-                (merge_rule_id,u'合并规则区',0),
-                (regular_remain_id,u'定时处理区',0),
-                (audit_fail_id,u'问题单',0),
-                (has_send_id,u'已完成',0),
+                (expand_id, '>>', 2),
+                (wait_delivery_id,u'待收货',0),
+                (has_send_id,u'已到货',0),
                 (invalid_id,u'已作废',0),
-                (fold_id,'<<',2),
+                (fold_id, '<<', 2),
                 )
            
         
@@ -141,17 +139,21 @@ class TradePanel(wx.Panel):
             
     def onClickGridBtn(self,evt):
         eventid = evt.GetId()
-        if eventid == all_trade_id:
-            package_status_type = cfg.SYS_STATUS_ALL
-        elif eventid == prapare_send_id:
+        if eventid == prapare_send_id:
             package_status_type = cfg.PKG_WAIT_PREPARE_SEND_STATUS
         elif eventid == check_barcode_id:
             package_status_type = cfg.PKG_WAIT_CHECK_BARCODE_STATUS
         elif eventid == scan_weight_id:
             package_status_type = cfg.PKG_WAIT_SCAN_WEIGHT_STATUS
+        elif eventid == wait_delivery_id:
+            package_status_type = cfg.PKG_WAIT_CUSTOMER_RECEIVE
         elif eventid == has_send_id:
             package_status_type = cfg.PKG_FINISHED_STATUS
-            
+        elif eventid == invalid_id:
+            package_status_type = cfg.PKG_DELETE
+        else:
+            package_status_type = cfg.SYS_STATUS_ALL
+
         for button in self.buttons:
             button.Enable(not eventid==button.GetId())
         # self.grid.setDataSource(trades_status_type)

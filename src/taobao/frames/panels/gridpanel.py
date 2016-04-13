@@ -17,7 +17,7 @@ from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session, TEMP_FILE_ROOT
 from taobao.dao.models import LogisticsCompany, Product, ProductSku, YundaCustomer
 # MergeOrder,MergeTrade
-from taobao.dao.models import PackageOrder, LogisticsCompany
+from taobao.dao.models import PackageOrder, LogisticsCompany, PackageSkuItem
 from taobao.dao.webapi import WebApi
 from taobao.dao.tradedao import get_used_orders, get_oparetor, get_datasource_by_type_and_mode, locking_trade
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter
@@ -219,22 +219,22 @@ class GridPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onBtnPrevClick, self.btnPrev)
         self.Bind(wx.EVT_BUTTON, self.onBtnNextClick, self.btnNext)
 
-        # self.Bind(wx.EVT_BUTTON, self.onChangeFlexSizer,self.fill_sid_btn)
-        #
-        # self.Bind(wx.EVT_BUTTON, self.onClickRollBackBtn,self.fill_sid_btn3 )
-        # self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_down)
-        # self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell,self.preview_btn)
-        #
-        # #分页栏，订单操作事件
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn2)
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn4)
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.picking_print_btn)
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.express_print_btn)
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.post_print_btn)
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.review_orders_btn)
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_check_btn)
-        # self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
+        self.Bind(wx.EVT_BUTTON, self.onChangeFlexSizer,self.fill_sid_btn)
+
+        self.Bind(wx.EVT_BUTTON, self.onClickRollBackBtn,self.fill_sid_btn3 )
+        self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_down)
+        self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell,self.preview_btn)
+
+        #分页栏，订单操作事件
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn2)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn4)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.picking_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.express_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.post_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.review_orders_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_check_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
 
     @property
     def logisticMapping(self):
@@ -261,16 +261,22 @@ class GridPanel(wx.Panel):
         self.paginator = paginator = Paginator(self.datasource, self.page_size, counter=self.counter)
         self.page = paginator.page(1)
 
-        self.fill_sid_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
-        self.picking_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
-        self.express_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
-        self.post_print_btn.Show(status_type in (cfg.SYS_STATUS_PREPARESEND))
-        self.review_orders_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK,
-                                                    cfg.SYS_STATUS_WAITSCANWEIGHT,
-                                                    cfg.SYS_STATUS_FINISHED))
-        self.scan_check_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANCHECK))
-        self.scan_weight_btn.Show(status_type in (cfg.SYS_STATUS_WAITSCANWEIGHT))
-
+        self.fill_sid_btn.Show(status_type in (cfg.PKG_WAIT_PREPARE_SEND_STATUS))
+        self.picking_print_btn.Show(status_type in (cfg.PKG_WAIT_PREPARE_SEND_STATUS))
+        self.express_print_btn.Show(status_type in (cfg.PKG_WAIT_PREPARE_SEND_STATUS))
+        self.post_print_btn.Show(status_type in (cfg.PKG_WAIT_PREPARE_SEND_STATUS))
+        self.review_orders_btn.Show(status_type in (cfg.PKG_WAIT_CHECK_BARCODE_STATUS,
+                                                    cfg.PKG_WAIT_SCAN_WEIGHT_STATUS,
+                                                    cfg.PKG_FINISHED_STATUS))
+        self.scan_check_btn.Show(status_type in (cfg.PKG_WAIT_CHECK_BARCODE_STATUS))
+        self.scan_weight_btn.Show(status_type in (cfg.PKG_WAIT_SCAN_WEIGHT_STATUS))
+        # self.fill_sid_btn.Show(False)
+        # self.picking_print_btn.Show(False)
+        # self.express_print_btn.Show(False)
+        # self.post_print_btn.Show(False)
+        # self.review_orders_btn.Show(False)
+        # self.scan_check_btn.Show(False)
+        # self.scan_weight_btn.Show(False)
         self.updateTableAndPaginator()
         self.Layout()
 
@@ -597,8 +603,9 @@ class GridPanel(wx.Panel):
                         if not im_map.has_key(trade_id):
                             continue
                         out_sid = im_map[trade_id]['mailno'].strip()
+                        is_qrode = False #ＴＯＤＯ
                         qr_msg = im_map[trade_id]['msg']
-                        WebApi.express_order(trade_id, out_sid, qr_msg)
+                        WebApi.express_order(trade_id, out_sid, is_qrode, qr_msg)
                         if im_map[trade_id]['status']:
                             self.grid.SetCellValue(row, cfg.OUT_SID_CELL_COL, out_sid)
                         else:
@@ -695,7 +702,7 @@ class GridPanel(wx.Panel):
                         #                            id_compile = re.compile(company_regex)
                         #                            is_match_pass = id_compile.match(out_sid)
                         #                        if is_match_pass:
-                        WebApi.express_order(trade_id, out_sid, )
+                        WebApi.express_order(trade_id, out_sid, False, '')
                         self.grid.SetCellValue(row, cfg.OUT_SID_CELL_COL, out_sid)
                         self.grid.SetCellValue(row, cfg.OPERATOR_CELL_COL, operator)
                         effect_row += 1
@@ -1006,6 +1013,7 @@ class SimpleGridPanel(wx.Panel):
 
     def setData(self, trade, grid_table_type=SimpleGridTable):
         object_list = self.parseObjectToList(trade)
+        print 'debug detial list:',object_list
         gridtable = weakref.ref(grid_table_type(object_list,
                                                 self.rowLabels,
                                                 self.colLabels))
@@ -1029,14 +1037,13 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
             return array_object
 
         with create_session(self.Parent) as session:
-            # orders = session.query(MergeOrder).filter_by(merge_trade_id=trade.id,
-            #                                              sys_status=cfg.IN_EFFECT)
-            orders = session.query(PackageOrder).filter_by(merge_trade_id=trade.id,
+            orders = session.query(PackageSkuItem).filter_by(package_order_id=trade.id,
                                                            sys_status=cfg.IN_EFFECT)
             array_object = []
             for order in orders:
                 object_array = []
-                object_array.append(order.pic_path)
+                #object_array.append(order.pic_path)
+                object_array.append(u'图片地址')
                 object_array.append(order.id)
                 object_array.append(order.outer_id or order.num_iid)
                 object_array.append(order.title)
@@ -1051,6 +1058,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(cfg.TRADE_STATUS.get(order.status, u'其他'))
                 object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status, u'其他'))
                 array_object.append(object_array)
+        print 'order detail:',array_object
         return array_object
 
 

@@ -13,8 +13,7 @@ logger = get_sentry_logger()
 from taobao.common.utils import logtime
 
 
-@logtime(tag="get_session")
-def get_session():
+def get_sesssion2():
     try:
         cf = getconfig()
         db_host = cf.get('db', 'db_host')
@@ -33,4 +32,9 @@ def get_session():
 
 
 class SessionProvider(object):
-    session = get_session()
+    session = get_sesssion2()
+
+
+@logtime(tag="get_session")
+def get_session():
+    return SessionProvider.session

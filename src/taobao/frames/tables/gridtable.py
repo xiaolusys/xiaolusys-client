@@ -141,7 +141,7 @@ class SimpleGridTable(grd.PyGridTableBase):
         self.rowLabels = rowLabels
         self.rows=len(datasource)#行数
         self.cols=len(self.colLabels)#行数
-         
+        print 'cols=',len(self.colLabels),'label cols=',self.cols
         i=0
         for row in datasource:
             j = 0
@@ -149,7 +149,7 @@ class SimpleGridTable(grd.PyGridTableBase):
                 self.data[(i,j)]=v#给每一个单元格赋值的方法
                 j+=1
             i+=1
-            
+        print 'data:',self.data
         self.cell=grd.GridCellAttr()
         self.cell.SetOverflow(False)
         

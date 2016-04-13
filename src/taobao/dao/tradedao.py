@@ -97,8 +97,8 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
 
         
 
-    datasource     = datasource.order_by(sqlalchemy.func.date(PackageOrder.created),
-                                             'priority desc','flashsale_package.created asc')
+    datasource     = datasource.order_by(PackageOrder.pid,
+                                             'priority desc','pid asc')
     
     return datasource,counter
             

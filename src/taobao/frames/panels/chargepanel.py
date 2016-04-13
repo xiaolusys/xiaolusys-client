@@ -48,7 +48,6 @@ class ScanChargePanel(wx.Panel):
     
     def __set_properties(self):
         self.SetName('charge panel')
-        
         with create_session(self.Parent) as session: 
             logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
         self.company_select.AppendItems([company.name for company in logistics_companies])

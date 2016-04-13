@@ -1,18 +1,18 @@
 [db]
-db_host = staging.xiaolumm.com
+db_host = youni.huyi.so
 db_port = 30001
 db_name = shopmgr
-db_user = xiaoludev
-db_pwd = xiaolu_test123
+db_user = qiyue
+db_pwd = youni_2014qy
 
 [user]
-username = huangyan
+username = zuofei
 #seller_ids = 1,2,3,4,5,6,7,8,9,12
 seller_ids = 
 ware_id  = 1
 
 [url]
-web_host = 192.168.1.56:8000
+web_host = youni.huyi.so
 post_url = http://%s/admin/trades/mergetrade/?operator__exact=%s&ware_by=%s&is_express_print__exact=1&is_picking_print__exact=1&sys_status=WAIT_PREPARE_SEND
 review_url = http://%s/trades/revieworder/%s/
 

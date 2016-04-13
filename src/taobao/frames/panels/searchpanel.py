@@ -48,8 +48,8 @@ class SearchPanel(wx.Panel):
                                                  style=wx.DP_DROPDOWN | wx.DP_SHOWCENTURY | wx.DP_ALLOWNONE)
         self.logistics_label = wx.StaticText(self, -1, u'物流单号')
         self.logistics_text = wx.TextCtrl(self, -1, style=wx.TE_PROCESS_ENTER, size=(90, -1))
-        self.trade_type_label = wx.StaticText(self, -1, u'订单类型')
-        self.trade_type_select = wx.ComboBox(self, -1, size=(90, -1))
+        #self.trade_type_label = wx.StaticText(self, -1, u'订单类型')
+        #self.trade_type_select = wx.ComboBox(self, -1, size=(90, -1))
         self.logistics_company_label = wx.StaticText(self, -1, u'快递公司')
         self.logistics_company_select = wx.ComboBox(self, -1, size=(90, -1))
         self.weight_start_label = wx.StaticText(self, -1, u'称重日期起')
@@ -78,7 +78,7 @@ class SearchPanel(wx.Panel):
         self.logistics_company_select.AppendItems([company.name for company in logistics_companies])
 
         self.taobao_status_select.AppendItems([v for k, v in cfg.TRADE_STATUS.items()])
-        self.trade_type_select.AppendItems([v for k, v in cfg.TRADE_TYPE.items()])
+        #self.trade_type_select.AppendItems([v for k, v in cfg.TRADE_TYPE.items()])
 
     def __do_layout(self):
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)
@@ -109,8 +109,8 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.start_time_select, pos=(1, 1), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.end_time_label, pos=(1, 2), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.end_time_select, pos=(1, 3), span=(1, 1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.trade_type_label, pos=(1, 4), span=(1, 1), flag=wx.EXPAND)
-        gridbagsizer.Add(self.trade_type_select, pos=(1, 5), span=(1, 1), flag=wx.EXPAND)
+        #gridbagsizer.Add(self.trade_type_label, pos=(1, 4), span=(1, 1), flag=wx.EXPAND)
+        #gridbagsizer.Add(self.trade_type_select, pos=(1, 5), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_company_label, pos=(1, 6), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_company_select, pos=(1, 7), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.weight_start_label, pos=(1, 8), span=(1, 1), flag=wx.EXPAND)
@@ -139,7 +139,7 @@ class SearchPanel(wx.Panel):
 
         self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.taobao_status_select)
         self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.seller_select)
-        self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.trade_type_select)
+        # self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.trade_type_select)
         self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.logistics_company_select)
 
         self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.start_time_select)
@@ -168,7 +168,7 @@ class SearchPanel(wx.Panel):
         self.end_time_select.SetValue(wx.DefaultDateTime)
 
         self.logistics_text.Clear()
-        self.trade_type_select.SetValue('')
+        #self.trade_type_select.SetValue('')
         self.logistics_company_select.SetValue('')
         self.delivery_pick_check.SetValue(False)
         self.logistics_pick_check.SetValue(False)
@@ -199,7 +199,7 @@ class SearchPanel(wx.Panel):
         start_time = wxdate2pydate(start_time)
         end_time = wxdate2pydate(end_time)
         logistics_id = self.logistics_text.GetValue()
-        trade_type = self.trade_type_select.GetValue()
+        trade_type = 'sale'#self.trade_type_select.GetValue()
         logistics_company = self.logistics_company_select.GetValue()
         pick_print_state = self.delivery_pick_check.Get3StateValue()
         express_print_state = self.logistics_pick_check.Get3StateValue()
@@ -224,7 +224,7 @@ class SearchPanel(wx.Panel):
         def appendFilter(datasource):
 
             if trade_id:
-                datasource = datasource.filter(or_(PackageOrder.id == trade_id, PackageOrder.id == trade_id))
+                datasource = datasource.filter(or_(PackageOrder.pid == trade_id, PackageOrder.id == trade_id))
                 # datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
             elif logistics_id:
                 datasource = datasource.filter_by(out_sid=getSid(logistics_id))
@@ -237,7 +237,7 @@ class SearchPanel(wx.Panel):
                 if seller_id:
                     datasource = datasource.join(User).filter(User.nick == seller_id.strip())
 
-                #                if operator:
+                # if operator:
                 #                    datasource = datasource.filter(or_(MergeTrade.operator.like('%'+operator.strip()+'%'),
                 #                                                       MergeTrade.scanner.like('%'+operator.strip()+'%'),
                 #                                                       MergeTrade.weighter.like('%'+operator.strip()+'%')))
@@ -249,9 +249,6 @@ class SearchPanel(wx.Panel):
                     datasource = datasource.filter("weight_time >=:start").params(start=weight_start_time)
                 if weight_end_time:
                     datasource = datasource.filter("weight_time <=:end").params(end=weight_end_time)
-                if trade_type:
-                    trade_type_dict = dict([(v, k) for k, v in cfg.TRADE_TYPE.items()])
-                    datasource = datasource.filter_by(type=trade_type_dict.get(trade_type.strip(), None))
                 if logistics_company:
                     with create_session(self.Parent) as session:
                         log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()

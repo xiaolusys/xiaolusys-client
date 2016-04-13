@@ -264,8 +264,11 @@ class PackageSkuItem(Base):
     price = Column(Float)
     sku_id = Column(String(20))
     #num = Column(BigInteger)
-    out_id = Column(String(20))
-    out_sku_id = Column(String(20))
+    outer_id = Column(String(20))
+    outer_sku_id = Column(String(20))
+    num_iid = 'num_iid'
+    refund_id = None
+    refund_status = False
     total_fee = Column(Float)
     payment = Column(Float)
     discount_fee = Column(Float)
@@ -311,6 +314,7 @@ class PackageOrder(Base):
     operator       =  Column(String(32))
     scanner        =  Column(String(64))
     weighter       =  Column(String(64))
+    is_charged = Column(Boolean)
     is_locked      =  Column(Boolean)
     is_picking_print     =  Column(Boolean)
     is_express_print = Column(Boolean)
@@ -327,9 +331,14 @@ class PackageOrder(Base):
     redo_sign = Column(Boolean)
     merge_trade_id = Column(BigInteger)
 
+    is_cod = False
     post_fee = 0
     adjust_fee = 0
     refund_num = 0
+    seller_cod_fee = 0
+    buyer_cod_fee = 0
+    cod_fee = 0
+    cod_status = ''
     @property
     def prod_num(self):
         #todo
@@ -338,7 +347,7 @@ class PackageOrder(Base):
 
 
     def __repr__(self):
-        return "<Trade('%s','%s')>" % (str(self.id), self.user)
+        return "<Trade('%s','%s')>" % (str(self.id), self.seller_id)
 
     @property
     def buyer(self):
@@ -381,20 +390,25 @@ class PackageOrder(Base):
 
     @property
     def payment(self):
-        #TODO
-        return 100
+        if not hasattr(self, '_sku_items_'):
+            self._sku_items_ = SessionProvider.session.query(PackageSkuItem).filter_by(package_order_id=self.id)
+        return sum([item.payment for item in self._sku_items_])
 
     @property
     def total_fee(self):
-        #TODO
-        return 105
+        if not hasattr(self, '_sku_items_'):
+            self._sku_items_ = SessionProvider.session.query(PackageSkuItem).filter_by(package_order_id=self.id)
+        return sum([item.total_fee for item in self._sku_items_])
 
     @property
     def discount_fee(self):
-        return 98
+        if not hasattr(self, '_sku_items_'):
+            self._sku_items_ = SessionProvider.session.query(PackageSkuItem).filter_by(package_order_id=self.id)
+        return sum([item.discount_fee for item in self._sku_items_])
 
     def isPrepareSend(self):
-        return self.sys_status == cfg.SYS_STATUS_PREPARESEND
+        return self.sys_status == cfg.PKG_WAIT_PREPARE_SEND_STATUS
+
 
 class MergeTrade(Base):
     __tablename__ = 'shop_trades_mergetrade'
