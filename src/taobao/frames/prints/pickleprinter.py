@@ -10,7 +10,7 @@
 import wx
 import wx.lib.iewin as iewin
 from taobao.common.utils import getconfig
-
+ 
 FONTSIZE = 10
   
  

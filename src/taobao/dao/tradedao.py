@@ -61,9 +61,6 @@ def get_or_create_model(session,model_class,**kwargs):
 def get_used_orders(session,trade_id):
     orders = session.query(PackageOrder).filter_by(merge_trade_id=trade_id,sys_status=pcfg.IN_EFFECT
                             ).filter(PackageOrder.gift_type!=pcfg.RETURN_GOODS_GIT_TYPE)
-    # orders = session.query(MergeOrder).filter_by(merge_trade_id=trade_id,
-    #                                              sys_status=pcfg.IN_EFFECT).filter(
-    #             MergeOrder.gift_type!=pcfg.RETURN_GOODS_GIT_TYPE)
     return orders
 
 def get_return_orders(session,trade_id):

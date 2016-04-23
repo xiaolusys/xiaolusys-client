@@ -118,8 +118,6 @@ class ScanChargePanel(wx.Panel):
             charge_trades = session.query(PackageOrder).filter_by(is_picking_print=True, is_express_print=True,
                                                                 logistics_company_id=logistics_company.id,
                                                                 sys_status=cfg.SYS_STATUS_FINISHED, is_charged=True)
-            # charge_trades = session.query(MergeTrade).filter_by(is_picking_print=True,is_express_print=True,
-            #             logistics_company_id=logistics_company.id,sys_status=cfg.SYS_STATUS_FINISHED,is_charged=True)
             
             if charge_start_date:
                 charge_trades = charge_trades.filter("charge_time >=:start").params(start=charge_start_date)
@@ -163,15 +161,7 @@ class ScanChargePanel(wx.Panel):
         self.out_sid_text.Clear()
         self.out_sid_text.SetFocus()
         evt.Skip()
-           
-        
-    # def save_charge_to_trade(self,trade):
-    #
-    #     with create_session(self.Parent) as session:
-    #         session.query(MergeTrade).filter_by(id=trade.id).update({'is_charged':True,'charge_time':datetime.datetime.now()})
-    #
-    #     self.gridpanel.InsertChargeRows(trade)
-        
+
                  
     def set_datasource(self,datasource):
         self.gridpanel.setData(datasource)

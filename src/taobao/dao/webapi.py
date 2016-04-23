@@ -43,8 +43,41 @@ class WebApi(object):
         return True
 
     @staticmethod
+    def print_express(package_order_ids):
+        uri = '/warehouse/print_express/'
+        params = {'package_order_ids': ','.join([str(p) for p in package_order_ids])}
+        url = getFullWebUrl(uri, params)
+        req = urllib.urlopen(url)
+        resp = json.loads(req.read())
+        if not resp['isSuccess']:
+            raise Exception(resp['response_error'])
+        return True
+
+    @staticmethod
+    def print_picking(package_order_ids):
+        uri = '/warehouse/print_picking/'
+        params = {'package_order_ids': ','.join([str(p) for p in package_order_ids])}
+        url = getFullWebUrl(uri, params)
+        req = urllib.urlopen(url)
+        resp = json.loads(req.read())
+        if not resp['isSuccess']:
+            raise Exception(resp['response_error'])
+        return True
+
+    @staticmethod
+    def print_post(package_order_ids):
+        uri = '/warehouse/print_post/'
+        params = {'package_order_ids': ','.join([str(p) for p in package_order_ids])}
+        url = getFullWebUrl(uri, params)
+        req = urllib.urlopen(url)
+        resp = json.loads(req.read())
+        if not resp['isSuccess']:
+            raise Exception(resp['response_error'])
+        return True
+
+    @staticmethod
     def revert_packages(package_order_ids):
-        uri = '/warehouse/operate/revert_package/'
+        uri = '/warehouse/revert/'
 
         params = {'package_order_ids': ','.join([str(p) for p in package_order_ids])}
 
@@ -59,39 +92,50 @@ class WebApi(object):
         return True
 
     @staticmethod
-    def scan_check(package_no):
-
-        uri = '/trades/scancheck/'
-
-        params = {'package_no':package_no}
-
-        url  = getFullWebUrl(uri,params)
-
+    def begin_scan_check(package_no):
+        uri = '/warehouse/scancheck/'
+        params = {'package_no': package_no}
+        url = getFullWebUrl(uri, params)
         req = urllib.urlopen(url)
         resp = json.loads(req.read())
-
         if resp['code'] == 1:
             raise Exception(resp['response_error'])
+        return resp['response_content']
 
+    @staticmethod
+    def complete_scan_check(package_no):
+        uri = '/warehouse/scancheck/'
+        params = {'package_no': package_no}
+        url = getFullWebUrl(uri)
+        req = urllib.urlopen(url, urllib.urlencode(params))
+        resp = json.loads(req.read())
+        if resp['code'] == 1:
+            raise Exception(resp['response_error'])
         return True
 
     @staticmethod
-    def scan_weight(package_no, weight):
-
+    def begin_scan_weight(package_no):
         uri = '/warehouse/scanweight/'
-
-        params = {'package_no': package_no,
-                  'package_weight': weight}
-
+        params = {'package_no': package_no}
         url = getFullWebUrl(uri, params)
-
-        req = urllib2.urlopen(url, urllib.urlencode(params))
+        req = urllib2.urlopen(url)
         resp = json.loads(req.read())
-
         if resp['code'] == 1:
             raise Exception(resp['response_error'])
-
         return resp['response_content']
+
+    @staticmethod
+    def complete_scan_weight(package_no, weight):
+        uri = '/warehouse/scanweight/'
+        params = {'package_no': package_no,
+                  'package_weight': weight}
+        url = getFullWebUrl(uri, params)
+        req = urllib2.urlopen(url, urllib.urlencode(params))
+        resp = json.loads(req.read())
+        if resp['code'] == 1:
+            raise Exception(resp['response_error'])
+        return resp['response_content']
+
 
 def getFullWebUrl(uri,params={}):
 
@@ -99,73 +143,6 @@ def getFullWebUrl(uri,params={}):
     web_host = conf.get('url', 'web_host')
     
     return 'http://%s%s?%s'%(web_host,uri,urllib.urlencode(params))
-
-def getTradeScanCheckInfo(package_no):
-
-    uri = '/trades/scancheck/'
-
-    params = {'package_no':package_no}
-
-    url  = getFullWebUrl(uri,params)
-
-    req = urllib.urlopen(url)
-    resp = json.loads(req.read())
-
-    if resp['code'] == 1:
-        raise Exception(resp['response_error'])
-
-    return True
-
-
-def completeScanCheck(package_no):
-    
-    uri = '/trades/scancheck/'
-    
-    params = {'package_no':package_no}
-    
-    url  = getFullWebUrl(uri)
-    
-    req = urllib.urlopen(url,urllib.urlencode(params))
-    resp = json.loads(req.read())
-    
-    if resp['code'] == 1:
-        raise Exception(resp['response_error'])
-    
-    return True
-
-
-def getWeightTradeInfo(package_no):
-    
-    uri = '/warehouse/scanweight/'
-    
-    params = {'package_no':package_no}
-    
-    url  = getFullWebUrl(uri,params)
-    
-    req = urllib2.urlopen(url)
-    resp = json.loads(req.read())
-    
-    if resp['code'] == 1:
-        raise Exception(resp['response_error'])
-    
-    return resp['response_content']
-
-def saveWeight2Trade(package_no,weight):
-    
-    uri = '/warehouse/scanweight/'
-    
-    params = {'package_no':package_no,
-              'package_weight':weight}
-    
-    url  = getFullWebUrl(uri,params)
-    
-    req = urllib2.urlopen(url,urllib.urlencode(params))
-    resp = json.loads(req.read())
-    
-    if resp['code'] == 1:
-        raise Exception(resp['response_error'])
-    
-    return resp['response_content']
 
 
 if __name__ == '__main__':

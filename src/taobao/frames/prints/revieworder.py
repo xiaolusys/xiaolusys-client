@@ -15,7 +15,8 @@ from taobao.common.utils import getconfig
 from taobao.common.utils import create_session
 from taobao.common.environment import get_template
 from taobao.common.regedit import updatePageSetupRegedit
-from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku,LogisticsCompany
+from taobao.dao.models import PackageOrder,Product,ProductSku,LogisticsCompany
+from taobao.dao.webapi import WebApi
 from taobao.dao.tradedao import get_used_orders,get_product_locations
 from taobao.dao.yundao import (get_classify_zone,
                                get_zone_by_code,
@@ -85,7 +86,7 @@ class OrderReview(wx.Frame):
     def getTradeUserCode(self,trade_ids):
         
         with create_session(self.Parent) as session: 
-            trade_user_code = session.query(MergeTrade).filter_by(id=trade_ids[0])\
+            trade_user_code = session.query(PackageOrder).filter_by(pid=trade_ids[0])\
                 .one().user.user_code.lower()
         return trade_user_code
     
@@ -108,7 +109,7 @@ class OrderReview(wx.Frame):
     def onExpressPreview(self,event):
         """ """
         with create_session(self.Parent) as session:
-            trade = session.query(MergeTrade).filter_by(id=self.trade_id).first()
+            trade = session.query(PackageOrder).filter_by(pid=self.trade_id).first()
             session.expire(trade)
             
             if trade.logistics_company and trade.logistics_company.code.endswith('_QR'):
@@ -135,9 +136,8 @@ class OrderReview(wx.Frame):
                 updatePageSetupRegedit(self.getExPageSetup())
                 
                 self.html.PrintPreview()
-            session.query(MergeTrade).filter_by(id=self.trade_id).update(
-                                    {MergeTrade.is_express_print:True,
-                                     MergeTrade.is_qrcode:trade.is_qrcode})
+
+            WebApi.express_order(self.trade_id, None, trade.is_qrcode, '')
         event.Skip()
         
     #----------------------------------------------------------------------
@@ -152,9 +152,8 @@ class OrderReview(wx.Frame):
         
             updatePageSetupRegedit(self.getDePageSetup())
             self.html.PrintPreview()
-        
-        with create_session(self.Parent) as session:
-            session.query(MergeTrade).filter_by(id=self.trade_id).update({MergeTrade.is_picking_print:True})
+
+        WebApi.print_picking(self.trade_id)
         event.Skip()
  
     #----------------------------------------------------------------------
@@ -185,7 +184,7 @@ class OrderReview(wx.Frame):
         that contains the information to display the snapshot
         '''
         with create_session(self.Parent) as session: 
-            trade_user_code = session.query(MergeTrade).filter_by(id=trade_ids[0])\
+            trade_user_code = session.query(PackageOrder).filter_by(pid=trade_ids[0])\
                 .one().user.user_code.lower()
                 
         trades = self.getTradePickingData(trade_ids)
@@ -203,14 +202,14 @@ class OrderReview(wx.Frame):
     def getTradePickingData(self ,trade_ids=[]):
         
         with create_session(self.Parent) as session: 
-            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
+            send_trades  = session.query(PackageOrder).filter(PackageOrder.id.in_(trade_ids)).order_by('out_sid')
         
             picking_data_list = []
             for trade in send_trades[0:1]:
                 trade_data = {}
                 dt         = datetime.datetime.now() 
                         
-                trade_data['trade_id']     = trade.id
+                trade_data['trade_id']     = trade.pid
                 trade_data['seller_nick']  = trade.user.nick
                 trade_data['post_date']    = dt
                 trade_data['pay_time']    = trade.pay_time
@@ -293,9 +292,8 @@ class OrderReview(wx.Frame):
     #----------------------------------------------------------------------
     def getLogisticsData(self ,trade_ids=[]):
         
-        with create_session(self.Parent) as session: 
-            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
-            
+        with create_session(self.Parent) as session:
+            send_trades = session.query(PackageOrder).filter(PackageOrder.pid.in_(trade_ids)).order_by('out_sid')
             dt         = datetime.datetime.now() 
         
             express_data_list = []

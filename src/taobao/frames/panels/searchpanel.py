@@ -6,7 +6,6 @@ Created on 2012-7-19
 '''
 import wx
 from   sqlalchemy import or_
-# from taobao.dao.models import MergeTrade,MergeOrder,User,LogisticsCompany
 from taobao.dao.models import PackageOrder, PackageSkuItem, User, LogisticsCompany
 from taobao.common.utils import wxdate2pydate, create_session
 from taobao.dao import configparams as cfg
@@ -225,7 +224,6 @@ class SearchPanel(wx.Panel):
 
             if trade_id:
                 datasource = datasource.filter(or_(PackageOrder.pid == trade_id, PackageOrder.id == trade_id))
-                # datasource = datasource.filter(or_(MergeTrade.tid==trade_id,MergeTrade.id==trade_id))
             elif logistics_id:
                 datasource = datasource.filter_by(out_sid=getSid(logistics_id))
             else:
@@ -237,10 +235,6 @@ class SearchPanel(wx.Panel):
                 if seller_id:
                     datasource = datasource.join(User).filter(User.nick == seller_id.strip())
 
-                # if operator:
-                #                    datasource = datasource.filter(or_(MergeTrade.operator.like('%'+operator.strip()+'%'),
-                #                                                       MergeTrade.scanner.like('%'+operator.strip()+'%'),
-                #                                                       MergeTrade.weighter.like('%'+operator.strip()+'%')))
                 if start_time:
                     datasource = datasource.filter("pay_time >=:start").params(start=start_time)
                 if end_time:

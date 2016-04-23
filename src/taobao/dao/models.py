@@ -303,7 +303,6 @@ class PackageOrder(Base):
     is_lgtype      = Column(Boolean)
     lg_aging       = Column(DateTime)
     lg_aging_type  = Column(String(20))
-    gift_type = Column(Integer)
     out_sid         = Column(String(64),index=True)
     logistics_company_id  = Column(Integer,ForeignKey('shop_logistics_company.id'))
     weight        = Column(String(10))
@@ -360,6 +359,8 @@ class PackageOrder(Base):
         if not hasattr(self, '_seller_'):
             self._seller_ = SELLER_DICT[self.seller_id]
         return self._seller_
+
+    user = seller
 
     @property
     def logistics_company(self):

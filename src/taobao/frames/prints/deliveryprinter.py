@@ -18,12 +18,12 @@ from wx.html import HtmlEasyPrinting,HtmlWindow
 from taobao.common.environment import get_template
 from taobao.common.utils import create_session,format_datetime,getconfig
 from taobao.common.regedit import updatePageSetupRegedit
-from taobao.dao.models import MergeTrade,MergeOrder,Product,ProductSku
+from taobao.dao.models import PackageOrder, Product,ProductSku
 from taobao.dao.tradedao import get_used_orders,get_product_locations
 from taobao.dao.configparams import SYS_STATUS_PREPARESEND,NO_REFUND,REFUND_CLOSED,SELLER_REFUSE_BUYER,\
     IN_EFFECT,EXPRESS_CELL_COL,PICKLE_CELL_COL,TRADE_ID_CELL_COL,JUHUASUAN_CODE
 from taobao.common.utils import IMAGE_ROOT,TEMP_FILE_ROOT
-
+from taobao.dao.webapi import WebApi
 FONTSIZE = 10
  
 class HtmlPrinter(HtmlEasyPrinting):
@@ -43,7 +43,7 @@ class HtmlPrinter(HtmlEasyPrinting):
     def PreviewText(self, text, doc_name):
         self.SetHeader(doc_name)
         HtmlEasyPrinting.SetStandardFonts(self,FONTSIZE)
-        self.SetFooter('@PAGENUM@/@PAGESCNT@')
+        self.SetFooter('@PAGENUM@/@PAGESCNFT@')
         return HtmlEasyPrinting.PreviewText(self, self.GetHtmlText(text))
   
  
@@ -112,8 +112,8 @@ class DeliveryPrinter(wx.Frame):
     def getTradeUserCode(self,trade_ids):
         
         with create_session(self.Parent) as session: 
-            trade_user_code = session.query(MergeTrade).filter_by(id=trade_ids[0])\
-                .one().user.user_code.lower()
+            trade_user_code = session.query(PackageOrder).filter_by(pid=trade_ids[0])\
+                .one().seller.user_code.lower()
         return trade_user_code
         
     #----------------------------------------------------------------------
@@ -123,7 +123,7 @@ class DeliveryPrinter(wx.Frame):
         that contains the information to display the snapshot
         '''
         with create_session(self.Parent) as session: 
-            trade_user_code = session.query(MergeTrade).filter_by(id=trade_ids[0])\
+            trade_user_code = session.query(PackageOrder).filter_by(pid=trade_ids[0])\
                 .one().user.user_code.lower()
         
         trades = self.getTradePickingData(trade_ids)
@@ -137,7 +137,7 @@ class DeliveryPrinter(wx.Frame):
     def printPromptOk(self):
         
         with create_session(self.Parent) as session: 
-            trades = session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids)).filter_by(is_picking_print=True)
+            trades = session.query(PackageOrder).filter(PackageOrder.pid.in_(self.trade_ids)).filter_by(is_picking_print=True)
             rept_num = trades.count()
             if rept_num > 0:
                 dial = wx.MessageDialog(None, u'该批订单有（%d）单已打印发货单，还要继续吗？'%rept_num, u'发货单重打提示', 
@@ -149,7 +149,7 @@ class DeliveryPrinter(wx.Frame):
                 if result != wx.ID_OK:
                     return False
                     
-            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
+            session.query(PackageOrder).filter(PackageOrder.pid.in_(self.trade_ids))\
                 .update({'is_picking_print':True},synchronize_session='fetch')
             self.printed = True
             
@@ -166,11 +166,7 @@ class DeliveryPrinter(wx.Frame):
     
     #----------------------------------------------------------------------
     def onPrint(self, event):
-        
-        with create_session(self.Parent) as session: 
-            session.query(MergeTrade).filter(MergeTrade.id.in_(self.trade_ids))\
-                .update({'is_picking_print':True},synchronize_session='fetch') 
-                
+        WebApi.print_picking(self.trade_ids)
         self.html.Print(True)
         event.Skip() 
  
@@ -210,7 +206,7 @@ class DeliveryPrinter(wx.Frame):
     def getTradePickingData(self ,trade_ids=[]):
         
         with create_session(self.Parent) as session: 
-            send_trades  = session.query(MergeTrade).filter(MergeTrade.id.in_(trade_ids)).order_by('out_sid')
+            send_trades  = session.query(PackageOrder).filter(PackageOrder.pid.in_(trade_ids)).order_by('out_sid')
             dt         = datetime.datetime.now() 
             picking_data_list = []
             for trade in send_trades:

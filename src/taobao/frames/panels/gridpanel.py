@@ -15,11 +15,9 @@ from taobao.frames.tables.gridtable import CheckGridTable
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session, TEMP_FILE_ROOT
-from taobao.dao.models import LogisticsCompany, Product, ProductSku, YundaCustomer
-# MergeOrder,MergeTrade
 from taobao.dao.models import PackageOrder, LogisticsCompany, PackageSkuItem
 from taobao.dao.webapi import WebApi
-from taobao.dao.tradedao import get_used_orders, get_oparetor, get_datasource_by_type_and_mode, locking_trade
+from taobao.dao.tradedao import get_oparetor, get_datasource_by_type_and_mode, locking_trade
 from taobao.frames.prints.deliveryprinter import DeliveryPrinter
 from taobao.frames.prints.expressprinter import ExpressPrinter
 from taobao.frames.prints.pickleprinter import PicklePrinter
@@ -598,8 +596,6 @@ class GridPanel(wx.Panel):
                     # 将运单号填入系统订单，并标记订单为二维码订单
                     for row in self._selectedRows:
                         trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
-                        # trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
-
                         if not im_map.has_key(trade_id):
                             continue
                         out_sid = im_map[trade_id]['mailno'].strip()
@@ -665,54 +661,15 @@ class GridPanel(wx.Panel):
             if eventid == fill_sid_btn2_id:
                 effect_row = 0
                 is_yunda_qrcode = self.fill_sid_checkbox1.IsChecked()
-                #                if is_yunda_qrcode:
-                #                    try:
-                #                        #对选中订单进行过滤
-                #                        yunda_ids = self.get_yunda_ids(session=session)
-                #                        if not yunda_ids:
-                #                            return
-                #                        yunda_ids = [int(yid) for yid in yunda_ids]
-                #                        #将运单号填入系统订单，并标记订单为二维码订单
-                #                        final_rows = set()
-                #                        for row in self._selectedRows:
-                #                            trade_id = self.grid.GetCellValue(row,cfg.TRADE_ID_CELL_COL)
-                #                            out_sid  = self.grid.GetCellValue(row,cfg.OUT_SID_CELL_COL).strip()
-                #
-                #                            if out_sid and locking_trade(trade_id,operator,session=session):
-                #                                final_rows.add(row)
-                #
-                #                        self._selectedRows = final_rows
-                #                        session.query(MergeTrade).filter(MergeTrade.id.in_(yunda_ids)).filter_by(is_locked=False).update(
-                #                                {'is_locked':True,'operator':operator},synchronize_session='fetch')
-                #                    except Exception,exc:
-                #                        dial = wx.MessageDialog(None, u'确认错误：'+exc.message, u'快递单号确认提示',
-                #                                                    wx.OK | wx.ICON_EXCLAMATION)
-                #                        dial.ShowModal()
-                #                        raise exc
 
                 for row in self._selectedRows:
                     try:
                         trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
                         out_sid = self.grid.GetCellValue(row, cfg.OUT_SID_CELL_COL)
-                        #                        trade    = session.query(MergeTrade).filter_by(id=trade_id).first()
-                        #                        company_regex = trade.logistics_company.reg_mail_no if trade else None
-                        #                        company_name  = trade.logistics_company.name
-                        #                        is_match_pass = True
-                        #                        if company_regex:
-                        #                            id_compile = re.compile(company_regex)
-                        #                            is_match_pass = id_compile.match(out_sid)
-                        #                        if is_match_pass:
                         WebApi.express_order(trade_id, out_sid, False, '')
                         self.grid.SetCellValue(row, cfg.OUT_SID_CELL_COL, out_sid)
                         self.grid.SetCellValue(row, cfg.OPERATOR_CELL_COL, operator)
                         effect_row += 1
-                    # elif not out_sid:
-                    #                            pass
-                    #                        else:
-                    #                            dial = wx.MessageDialog(None, u'快递单号(%s)不符合%s单号规则'%(out_sid,company_name), u'快递单打印提示',
-                    #                            wx.OK | wx.ICON_EXCLAMATION)
-                    #                            dial.ShowModal()
-                    #                            break
                     except Exception, exc:
                         dial = wx.MessageDialog(None, u'单号填充错误:' + exc.message, u'快递单打印提示',
                                                 wx.OK | wx.ICON_EXCLAMATION)
@@ -787,7 +744,6 @@ class GridPanel(wx.Panel):
                     sort_ids = [d[0] for d in sort_list]
                     trades = session.query(PackageOrder).filter(PackageOrder.id.in_(sort_ids)).filter_by(
                         is_express_print=True)
-                    # trades = session.query(MergeTrade).filter(MergeTrade.id.in_(sort_ids)).filter_by(is_express_print=True)
                     rept_num = trades.count()
                     if rept_num > 0:
                         dial = wx.MessageDialog(None, u'该批订单有（%d）单已打印快递单，还要继续吗？' % rept_num, u'快递单重打提示',

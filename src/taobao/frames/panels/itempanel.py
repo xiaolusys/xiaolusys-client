@@ -5,9 +5,8 @@ Created on 2012-7-16
 @author: user1
 '''
 import wx
-from taobao.common.utils import create_session, format_date, pydate2wxdate, wxdate2pydate
-# from taobao.dao.models import MergeTrade,LogisticsCompany
-from taobao.dao.models import PackageOrder, LogisticsCompany
+from taobao.common.utils import create_session
+from taobao.dao.models import PackageOrder
 from taobao.dao import configparams as cfg
 
 
@@ -186,7 +185,7 @@ class BasicPanel(wx.Panel):
         self.order_content1.SetValue(trade.seller.nick)
         self.order_content2.SetValue(cfg.TRADE_TYPE.get('sale', u'其他'))
         self.order_content3.SetValue(str(trade.tid))
-        self.order_content4.SetValue(trade.buyer_nick)
+        self.order_content4.SetValue(trade.buyer_nick or '')
         self.order_content5.SetValue(str(trade.pay_time or ''))
 
         self.order_content6.SetValue(trade.prod_num)
@@ -207,9 +206,9 @@ class BasicPanel(wx.Panel):
         self.order_content19.SetValue(cfg.SYS_STATUS.get(trade.sys_status, u'其他'))
         self.order_content20.SetValue(str(trade.created or ''))
 
-        self.order_content22.SetValue(trade.seller_memo)
-        self.order_content23.SetValue(trade.buyer_message)
-        self.order_content24.SetValue(trade.sys_memo)
+        self.order_content22.SetValue(trade.seller_memo or '')
+        self.order_content23.SetValue(trade.buyer_message or '')
+        self.order_content24.SetValue(trade.sys_memo or '')
 
         self.operator_text.SetValue(trade.operator)
         self.discount_fee_text.SetValue('%.2f' % trade.discount_fee)
@@ -422,7 +421,6 @@ class ItemPanel(wx.Panel):
         self.is_changeable = False
         with create_session(self.Parent) as session:
             self.selected_trade = session.query(PackageOrder).filter_by(pid=trade_id).first()
-            # self.selected_trade = session.query(MergeTrade).filter_by(id=trade_id).first()
         self.base_trade_panel.setData(self.selected_trade)
         self.detail_trade_panel.setData(self.selected_trade)
         self.receiver_trade_panel.setData(self.selected_trade)
