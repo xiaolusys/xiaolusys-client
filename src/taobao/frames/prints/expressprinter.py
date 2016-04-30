@@ -172,7 +172,7 @@ class ExpressPrinter(wx.Frame):
                 trade_data = {}
                 dt = datetime.datetime.now()
 
-                trade_data['trade_id'] = trade.id
+                trade_data['trade_id'] = trade.pid
                 trade_data['seller_nick'] = trade.user.nick
                 trade_data['seller_contacter'] = trade.user.contacter
                 trade_data['seller_phone'] = trade.user.phone
