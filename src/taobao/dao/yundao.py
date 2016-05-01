@@ -363,7 +363,10 @@ def printYUNDAService(trade_ids, session=None):
 
 def printYUNDAPDF(trade_ids, direct=False, session=None):
     yd_customer = getYDCustomerByTradeId(trade_ids[0], session=session)
-    pdfdoc = print_order(trade_ids,
+    trades = session.query(PackageOrder).filter(PackageOrder.pid.in_(trade_ids)).filter_by(
+        is_express_print=True)
+    to_yunda_ids = [t.id for t in trades]
+    pdfdoc = print_order(to_yunda_ids,
                          partner_id=yd_customer.qr_id,
                          secret=yd_customer.qr_code
                          )

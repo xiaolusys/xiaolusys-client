@@ -217,22 +217,22 @@ class GridPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onBtnPrevClick, self.btnPrev)
         self.Bind(wx.EVT_BUTTON, self.onBtnNextClick, self.btnNext)
 
-        self.Bind(wx.EVT_BUTTON, self.onChangeFlexSizer,self.fill_sid_btn)
+        self.Bind(wx.EVT_BUTTON, self.onChangeFlexSizer, self.fill_sid_btn)
 
-        self.Bind(wx.EVT_BUTTON, self.onClickRollBackBtn,self.fill_sid_btn3 )
-        self.Bind(wx.EVT_BUTTON,self.onClickStaticButton,self.static_button_down)
-        self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell,self.preview_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickRollBackBtn, self.fill_sid_btn3)
+        self.Bind(wx.EVT_BUTTON, self.onClickStaticButton, self.static_button_down)
+        self.Bind(wx.EVT_BUTTON, self.fillOutSidToCell, self.preview_btn)
 
-        #分页栏，订单操作事件
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn2)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.fill_sid_btn4)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.picking_print_btn)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.express_print_btn)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.post_print_btn)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.review_orders_btn)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_check_btn)
-        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton,self.scan_weight_btn)
+        # 分页栏，订单操作事件
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.fill_sid_btn2)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.fill_sid_btn4)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.scan_weight_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.picking_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.express_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.post_print_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.review_orders_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.scan_check_btn)
+        self.Bind(wx.EVT_BUTTON, self.onClickActiveButton, self.scan_weight_btn)
 
     @property
     def logisticMapping(self):
@@ -588,7 +588,8 @@ class GridPanel(wx.Panel):
                                         partner_id=yd_customer.qr_id,
                                         secret=yd_customer.qr_code)
                     # 创建韵达订单
-                    im_map = yundao.create_order(yunda_ids,
+                    yunda_online_ids = [i for i in yunda_ids]
+                    im_map = yundao.create_order(yunda_online_ids,
                                                  session=session,
                                                  partner_id=yd_customer.qr_id,
                                                  secret=yd_customer.qr_code)
@@ -599,7 +600,7 @@ class GridPanel(wx.Panel):
                         if not im_map.has_key(trade_id):
                             continue
                         out_sid = im_map[trade_id]['mailno'].strip()
-                        is_qrode = False #ＴＯＤＯ
+                        is_qrode = False #TODO
                         qr_msg = im_map[trade_id]['msg']
                         WebApi.express_order(trade_id, out_sid, is_qrode, qr_msg)
                         if im_map[trade_id]['status']:
@@ -742,7 +743,7 @@ class GridPanel(wx.Panel):
                 elif id_sid_map and is_yunda_qrcode:
                     sort_list = sorted(id_sid_map.items(), key=lambda d: d[1], reverse=False)
                     sort_ids = [d[0] for d in sort_list]
-                    trades = session.query(PackageOrder).filter(PackageOrder.id.in_(sort_ids)).filter_by(
+                    trades = session.query(PackageOrder).filter(PackageOrder.pid.in_(sort_ids)).filter_by(
                         is_express_print=True)
                     rept_num = trades.count()
                     if rept_num > 0:
@@ -969,7 +970,7 @@ class SimpleGridPanel(wx.Panel):
 
     def setData(self, trade, grid_table_type=SimpleGridTable):
         object_list = self.parseObjectToList(trade)
-        print 'debug detial list:',object_list
+        print 'debug detial list:', object_list
         gridtable = weakref.ref(grid_table_type(object_list,
                                                 self.rowLabels,
                                                 self.colLabels))
@@ -994,11 +995,11 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
 
         with create_session(self.Parent) as session:
             orders = session.query(PackageSkuItem).filter_by(package_order_id=trade.id,
-                                                           sys_status=cfg.IN_EFFECT)
+                                                             sys_status=cfg.IN_EFFECT)
             array_object = []
             for order in orders:
                 object_array = []
-                #object_array.append(order.pic_path)
+                # object_array.append(order.pic_path)
                 object_array.append(u'图片地址')
                 object_array.append(order.id)
                 object_array.append(order.outer_id or order.num_iid)
@@ -1014,7 +1015,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(cfg.TRADE_STATUS.get(order.status, u'其他'))
                 object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status, u'其他'))
                 array_object.append(object_array)
-        print 'order detail:',array_object
+        print 'order detail:', array_object
         return array_object
 
 
@@ -1262,3 +1263,4 @@ class CheckGridPanel(wx.Panel):
         self.ordergridpanel.setData(None)
         self.code_num_dict = {}
         self.ordergridpanel.Layout()
+
