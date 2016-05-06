@@ -11,7 +11,9 @@ from taobao.frames.panels.tradepanel import TradePanel
 from taobao.frames.panels.weightpanel import ScanWeightPanel
 from taobao.frames.panels.checkpanel import ScanCheckPanel
 from taobao.frames.panels.chargepanel import ScanChargePanel
-
+import sys
+reload(sys)
+sys.setdefaultencoding( "utf-8" )
 
 ID_TradeMainPage   = wx.NewId()
 ID_ScanCheck       = wx.NewId()

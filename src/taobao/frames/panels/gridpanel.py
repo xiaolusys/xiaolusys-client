@@ -593,16 +593,18 @@ class GridPanel(wx.Panel):
                                                  session=session,
                                                  partner_id=yd_customer.qr_id,
                                                  secret=yd_customer.qr_code)
-
+                    from taobao.dao.dbsession import SessionProvider
                     # 将运单号填入系统订单，并标记订单为二维码订单
                     for row in self._selectedRows:
-                        trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
+                        trade_pid = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
+                        package_order = SessionProvider.session.query(PackageOrder).filter_by(pid=trade_pid).one()
+                        trade_id = package_order.id
                         if not im_map.has_key(trade_id):
                             continue
                         out_sid = im_map[trade_id]['mailno'].strip()
                         is_qrode = False #TODO
                         qr_msg = im_map[trade_id]['msg']
-                        WebApi.express_order(trade_id, out_sid, is_qrode, qr_msg)
+                        WebApi.express_order(trade_pid, out_sid, is_qrode, qr_msg)
                         if im_map[trade_id]['status']:
                             self.grid.SetCellValue(row, cfg.OUT_SID_CELL_COL, out_sid)
                         else:
