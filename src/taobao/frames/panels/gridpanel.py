@@ -996,8 +996,9 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
             return array_object
 
         with create_session(self.Parent) as session:
-            orders = session.query(PackageSkuItem).filter_by(package_order_id=trade.id,
-                                                             sys_status=cfg.IN_EFFECT)
+            # datasource.filter(PackageOrder.seller_id.in_(seller_ids))
+            orders = session.query(PackageSkuItem).filter(PackageSkuItem.package_order_id==trade.id,
+                                                          PackageSkuItem.sys_status==cfg.IN_EFFECT)
             array_object = []
             for order in orders:
                 object_array = []
@@ -1014,7 +1015,8 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array.append(order.refund_id)
                 object_array.append(cfg.REFUND_STATUS.get(order.refund_status, ''))
                 object_array.append(cfg.ORDER_TYPE.get(order.gift_type, u'其他'))
-                object_array.append(cfg.TRADE_STATUS.get(order.status, u'其他'))
+                #object_array.append(cfg.TRADE_STATUS.get(order.status, u'其他'))
+                object_array.append(cfg.ASSIGN_STATUS.get(order.assign_status, u'其他'))
                 object_array.append(cfg.SYS_ORDERS_STATUS.get(order.sys_status, u'其他'))
                 array_object.append(object_array)
         print 'order detail:', array_object
@@ -1194,19 +1196,20 @@ class CheckGridPanel(wx.Panel):
         self.SetSizer(main_sizer)
 
     def getOrderCodeMapNumDict(self, trade):
-
+        from taobao.dao.dbsession import SessionProvider
         code_num_dict = {}
         for order in trade['order_items']:
-
-            barcode = order['barcode']
-            post_check = order['post_check']
-            order_num = order['num']
-            if code_num_dict.has_key(barcode):
-                code_num_dict[barcode]['rnums'] += order_num
-            else:
-                code_num_dict[barcode] = {'rnums': order_num,
-                                          'cnums': 0,
-                                          'post_check': post_check}
+            package_sku_item = SessionProvider.session.query(PackageSkuItem).filter_by(id=order['order_id']).one()
+            if package_sku_item.assign_status == 1:
+                barcode = order['barcode']
+                post_check = order['post_check']
+                order_num = order['num']
+                if code_num_dict.has_key(barcode):
+                    code_num_dict[barcode]['rnums'] += order_num
+                else:
+                    code_num_dict[barcode] = {'rnums': order_num,
+                                              'cnums': 0,
+                                              'post_check': post_check}
 
         return code_num_dict
 

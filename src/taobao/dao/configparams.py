@@ -126,7 +126,12 @@ REFUND_STATUS ={
     'CLOSED':u'退款关闭',
     'SUCCESS':u'退款成功',
 }
-
+ASSIGN_STATUS = {
+    0: u'未分配',
+    1: u'已分配',
+    2: u'已出货',
+    3: u'已取消'
+}
 REAL_ORDER_GIT_TYPE = 0 #实付
 CS_PERMI_GIT_TYPE   = 1 #赠送
 OVER_PAYMENT_GIT_TYPE = 2 #满就送
