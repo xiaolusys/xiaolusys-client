@@ -1199,17 +1199,15 @@ class CheckGridPanel(wx.Panel):
         from taobao.dao.dbsession import SessionProvider
         code_num_dict = {}
         for order in trade['order_items']:
-            package_sku_item = SessionProvider.session.query(PackageSkuItem).filter_by(id=order['order_id']).one()
-            if package_sku_item.assign_status == 1:
-                barcode = order['barcode']
-                post_check = order['post_check']
-                order_num = order['num']
-                if code_num_dict.has_key(barcode):
-                    code_num_dict[barcode]['rnums'] += order_num
-                else:
-                    code_num_dict[barcode] = {'rnums': order_num,
-                                              'cnums': 0,
-                                              'post_check': post_check}
+            barcode = order['barcode']
+            post_check = order['post_check']
+            order_num = order['num']
+            if code_num_dict.has_key(barcode):
+                code_num_dict[barcode]['rnums'] += order_num
+            else:
+                code_num_dict[barcode] = {'rnums': order_num,
+                                          'cnums': 0,
+                                          'post_check': post_check}
 
         return code_num_dict
 
@@ -1258,6 +1256,7 @@ class CheckGridPanel(wx.Panel):
         if not trade:
             return
         self.trade = trade
+        # self.trade =
         self.ordergridpanel.setData(trade, grid_table_type=CheckGridTable)
         self.code_num_dict = self.getOrderCodeMapNumDict(trade)
         self.ordergridpanel.Layout()

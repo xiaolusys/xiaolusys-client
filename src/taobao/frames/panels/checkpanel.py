@@ -88,6 +88,10 @@ class ScanCheckPanel(wx.Panel):
         try:
             # trade = api.getTradeScanCheckInfo(out_sid)
             trade = WebApi.begin_scan_check(out_sid)
+            po = out_sid
+            #if po.redo_sign:
+            if True:
+                
             self.trade = trade
             self.gridpanel.setData(self.trade)
 
