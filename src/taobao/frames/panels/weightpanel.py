@@ -132,7 +132,7 @@ class ScanWeightPanel(wx.Panel):
         try:
             from taobao.dao.dbsession import SessionProvider
             from taobao.dao.models import PackageOrder
-            trade = WebApi.begin_scan_check(out_sid)
+            trade = WebApi.begin_scan_weight(out_sid)
             po = SessionProvider.session.query(PackageOrder).filter(PackageOrder.out_sid==out_sid, PackageOrder.sys_status.in_([cfg.PKG_WAIT_PREPARE_SEND_STATUS, cfg.PKG_WAIT_CHECK_BARCODE_STATUS, cfg.PKG_WAIT_SCAN_WEIGHT_STATUS])).one()
 
             if po.redo_sign:
