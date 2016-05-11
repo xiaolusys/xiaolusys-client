@@ -64,7 +64,6 @@ class User(Base):
     def __repr__(self):
         return "<User('%s','%s','%s')>" % (str(self.id), self.visitor_id, self.nick)
     
-    
 
 class Category(Base):
     __tablename__ = 'shop_categorys_category'
@@ -83,8 +82,7 @@ class Category(Base):
     
     def __repr__(self):
         return "<Category('%s','%s','%s')>" % (str(self.cid), str(self.parent_cid), self.name)
- 
- 
+
  
 class Product(Base):
     __tablename__ = 'shop_items_product'

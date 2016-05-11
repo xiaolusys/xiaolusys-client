@@ -130,7 +130,21 @@ class ScanWeightPanel(wx.Panel):
         if not out_sid:
             return
         try:
-            trade = WebApi.begin_scan_weight(out_sid)
+            from taobao.dao.dbsession import SessionProvider
+            from taobao.dao.models import PackageOrder
+            trade = WebApi.begin_scan_check(out_sid)
+            po = SessionProvider.session.query(PackageOrder).filter(PackageOrder.out_sid==out_sid, PackageOrder.sys_status.in_([cfg.PKG_WAIT_PREPARE_SEND_STATUS, cfg.PKG_WAIT_CHECK_BARCODE_STATUS, cfg.PKG_WAIT_SCAN_WEIGHT_STATUS])).one()
+
+            if po.redo_sign:
+                dial = wx.MessageDialog(None, u'此包裹需要重打发货单，确认已经重打了吗', u'发货单重打提示',
+                                        wx.OK | wx.CANCEL | wx.ICON_EXCLAMATION)
+                result = dial.ShowModal()
+                dial.Destroy()
+                # 如果不继续，则退出
+                if result != wx.ID_OK:
+                    return False
+                elif result == wx.ID_OK:
+                    WebApi.clear_redo_sign(po.pid)
             self.trade = trade
             self.setTradeInfoPanel(trade)
             self.weight_text.SetFocus()

@@ -136,6 +136,16 @@ class WebApi(object):
             raise Exception(resp['response_error'])
         return resp['response_content']
 
+    @staticmethod
+    def clear_redo_sign(pid):
+        uri = '/warehouse/clear_redo_sign/'
+        params = {'package_order_pid': pid}
+        url = getFullWebUrl(uri, params)
+        req = urllib2.urlopen(url, urllib.urlencode(params))
+        resp = json.loads(req.read())
+        if resp['isSuccess']:
+            return True
+        return False
 
 def getFullWebUrl(uri,params={}):
 

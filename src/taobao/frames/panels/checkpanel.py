@@ -9,7 +9,7 @@ from taobao.frames.panels.gridpanel import CheckGridPanel
 # from taobao.dao import webapi as api
 from taobao.dao.webapi import WebApi
 from taobao.common.logger import get_sentry_logger, log_exception
-
+from taobao.dao import configparams
 logger = get_sentry_logger()
 RESET_CODE = '11110000'  # 验货框重置条码
 NOTSCAN_CODE = '00001111'  # 不需扫描条码
@@ -86,12 +86,21 @@ class ScanCheckPanel(wx.Panel):
             return
 
         try:
-            # trade = api.getTradeScanCheckInfo(out_sid)
+            from taobao.dao.dbsession import SessionProvider
+            from taobao.dao.models import PackageOrder
             trade = WebApi.begin_scan_check(out_sid)
-            po = out_sid
-            #if po.redo_sign:
-            if True:
-                
+            po = SessionProvider.session.query(PackageOrder).filter(PackageOrder.out_sid==out_sid, PackageOrder.sys_status.in_([configparams.PKG_WAIT_PREPARE_SEND_STATUS, configparams.PKG_WAIT_CHECK_BARCODE_STATUS, configparams.PKG_WAIT_SCAN_WEIGHT_STATUS])).one()
+
+            if po.redo_sign:
+                dial = wx.MessageDialog(None, u'此包裹需要重打发货单，确认已经重打了吗', u'发货单重打提示',
+                                        wx.OK | wx.CANCEL | wx.ICON_EXCLAMATION)
+                result = dial.ShowModal()
+                dial.Destroy()
+                # 如果不继续，则退出
+                if result != wx.ID_OK:
+                    return False
+                elif result == wx.ID_OK:
+                    WebApi.clear_redo_sign(po.pid)
             self.trade = trade
             self.gridpanel.setData(self.trade)
 
