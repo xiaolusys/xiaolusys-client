@@ -276,7 +276,7 @@ class SearchPanel(wx.Panel):
 
                 if locke_state:
                     datasource = datasource.filter_by(is_locked=locke_state == 1 and True or False)
-
+            datasource.order_by('merged')
             return datasource
 
         if outer_id:
