@@ -327,6 +327,7 @@ class PackageOrder(Base):
     reason_code = Column(String(100))
     redo_sign = Column(Boolean)
     merge_trade_id = Column(BigInteger)
+    ready_completion = Column(Boolean)
 
     is_cod = False
     post_fee = 0
