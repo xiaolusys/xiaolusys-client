@@ -83,10 +83,12 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         counter    = counter.filter(PackageOrder.seller_id.in_(seller_ids))
         
     ware_id = get_ware_id()
-    if ware_id:
+    if int(ware_id) == 1:
+        datasource = datasource.filter(PackageOrder.ware_by.in_([1, 3]))
+        counter = counter.filter(PackageOrder.ware_by.in_([1, 3]))
+    else:
         datasource = datasource.filter_by(ware_by=ware_id)
-        counter    = counter.filter_by(ware_by=ware_id)
-    
+        counter = counter.filter_by(ware_by=ware_id)
     if status_type and status_type != pcfg.SYS_STATUS_ALL:
         datasource = datasource.filter_by(sys_status=status_type)
         counter    = counter.filter_by(sys_status=status_type)
