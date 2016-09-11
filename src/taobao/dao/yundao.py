@@ -341,7 +341,12 @@ def getYDCustomerByTradeId(trade_id, session=None):
     trade = trade_id
     if not isinstance(trade, PackageOrder):
         trade = session.query(PackageOrder).filter_by(pid=trade_id).first()
-    return session.query(YundaCustomer).filter_by(code=trade.user.user_code.strip(), ware_by=trade.ware_by).one()
+    ware_bys = {
+        1: 1,
+        2: 2,
+        3: 1,
+    }
+    return session.query(YundaCustomer).filter_by(code=trade.user.user_code.strip(),ware_by=ware_bys[trade.ware_by]).one()
 
 
 def printYUNDAService(trade_ids, session=None):
