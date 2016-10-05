@@ -3,7 +3,8 @@ import json
 import urllib
 import urllib2
 from taobao.common.utils import getconfig
-
+from taobao.common.logger import *
+log = get_file_logger()
 
 class WebApi(object):
 
@@ -12,14 +13,20 @@ class WebApi(object):
 
     @staticmethod
     def operate_packages(package_order_ids, operator_id):
-        uri = '/warehouse/operate/operate_package_order/'
         uri = '/warehouse/operate/'
         params = {'package_order_ids': ','.join([str(p) for p in package_order_ids]),
                   'operator': operator_id}
-        url = getFullWebUrl(uri, params)
-        req = urllib.urlopen(url)
-        resp = json.loads(req.read())
-        if not resp['isSuccess']:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['isSuccess']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if not sign:
+            logging.error(r)
             raise Exception(resp['response_error'])
         return True
 
@@ -31,25 +38,35 @@ class WebApi(object):
                   'out_sid': out_sid,
                   'is_qrode': is_qrode,
                   'qrode_msg': qrode_msg}
-
-        url = getFullWebUrl(uri, params)
-
-        req = urllib.urlopen(url)
-        resp = json.loads(req.read())
-
-        if not resp['isSuccess']:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['isSuccess']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if not sign:
+            logging.error(r)
             raise Exception(resp['response_error'])
-
         return True
 
     @staticmethod
     def print_express(package_order_ids):
         uri = '/warehouse/print_express/'
         params = {'package_order_ids': ','.join([str(p) for p in package_order_ids])}
-        url = getFullWebUrl(uri, params)
-        req = urllib.urlopen(url)
-        resp = json.loads(req.read())
-        if not resp['isSuccess']:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['isSuccess']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if not sign:
+            logging.error(r)
             raise Exception(resp['response_error'])
         return True
 
@@ -57,10 +74,17 @@ class WebApi(object):
     def print_picking(package_order_ids):
         uri = '/warehouse/print_picking/'
         params = {'package_order_ids': ','.join([str(p) for p in package_order_ids])}
-        url = getFullWebUrl(uri, params)
-        req = urllib.urlopen(url)
-        resp = json.loads(req.read())
-        if not resp['isSuccess']:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['isSuccess']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if not sign:
+            logging.error(r)
             raise Exception(resp['response_error'])
         return True
 
@@ -68,10 +92,17 @@ class WebApi(object):
     def print_post(package_order_ids):
         uri = '/warehouse/print_post/'
         params = {'package_order_ids': ','.join([str(p) for p in package_order_ids])}
-        url = getFullWebUrl(uri, params)
-        req = urllib.urlopen(url)
-        resp = json.loads(req.read())
-        if not resp['isSuccess']:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['isSuccess']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if not sign:
+            logging.error(r)
             raise Exception(resp['response_error'])
         return True
 
@@ -80,25 +111,35 @@ class WebApi(object):
         uri = '/warehouse/revert/'
 
         params = {'package_order_ids': ','.join([str(p) for p in package_order_ids])}
-
-        url = getFullWebUrl(uri, params)
-
-        req = urllib.urlopen(url)
-        resp = json.loads(req.read())
-
-        if not resp['isSuccess']:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['isSuccess']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if not sign:
+            logging.error(r)
             raise Exception(resp['response_error'])
-
         return True
 
     @staticmethod
     def begin_scan_check(package_no):
         uri = '/warehouse/scancheck/'
         params = {'package_no': package_no}
-        url = getFullWebUrl(uri, params)
-        req = urllib.urlopen(url)
-        resp = json.loads(req.read())
-        if resp['code'] == 1:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['code']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if sign == 1:
+            logging.error(r)
             raise Exception(resp['response_error'])
         return resp['response_content']
 
@@ -106,21 +147,35 @@ class WebApi(object):
     def complete_scan_check(package_no):
         uri = '/warehouse/scancheck/'
         params = {'package_no': package_no}
-        url = getFullWebUrl(uri)
-        req = urllib.urlopen(url, urllib.urlencode(params))
-        resp = json.loads(req.read())
-        if resp['code'] == 1:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url, urllib.urlencode(params))
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['code']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if sign == 1:
+            logging.error(r)
             raise Exception(resp['response_error'])
-        return True
+        return resp['response_content']
 
     @staticmethod
     def begin_scan_weight(package_no):
         uri = '/warehouse/scanweight/'
         params = {'package_no': package_no}
-        url = getFullWebUrl(uri, params)
-        req = urllib2.urlopen(url)
-        resp = json.loads(req.read())
-        if resp['code'] == 1:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['code']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if sign == 1:
+            logging.error(r)
             raise Exception(resp['response_error'])
         return resp['response_content']
 
@@ -129,10 +184,17 @@ class WebApi(object):
         uri = '/warehouse/scanweight/'
         params = {'package_no': package_no,
                   'package_weight': weight}
-        url = getFullWebUrl(uri, params)
-        req = urllib2.urlopen(url, urllib.urlencode(params))
-        resp = json.loads(req.read())
-        if resp['code'] == 1:
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['code']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if sign == 1:
+            logging.error(r)
             raise Exception(resp['response_error'])
         return resp['response_content']
 
@@ -140,12 +202,20 @@ class WebApi(object):
     def clear_redo_sign(pid):
         uri = '/warehouse/clear_redo_sign/'
         params = {'package_order_pid': pid}
-        url = getFullWebUrl(uri, params)
-        req = urllib2.urlopen(url, urllib.urlencode(params))
-        resp = json.loads(req.read())
-        if resp['isSuccess']:
-            return True
-        return False
+        try:
+            url = getFullWebUrl(uri, params)
+            req = urllib.urlopen(url)
+            r = req.read()
+            resp = json.loads(r)
+            sign = resp['isSuccess']
+        except Exception, e:
+            logging.error(r)
+            raise Exception(resp['get response error:' + r])
+        if not sign:
+            logging.error(r)
+            raise Exception(resp['response_error'])
+        return True
+
 
 def getFullWebUrl(uri,params={}):
 
