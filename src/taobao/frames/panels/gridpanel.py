@@ -12,6 +12,7 @@ from taobao.dao import configparams as cfg
 from taobao.frames.tables.gridtable import GridTable, SimpleGridTable, WeightGridTable, ChargeGridTable
 from taobao.frames.panels.itempanel import ItemPanel
 from taobao.frames.tables.gridtable import CheckGridTable
+from taobao.frames.panels.searchpanel import SearchPanel
 from taobao.common.paginator import Paginator
 from taobao.exception.exception import NotImplement
 from taobao.common.utils import create_session, TEMP_FILE_ROOT
@@ -111,7 +112,7 @@ class GridPanel(wx.Panel):
         self.isSearchPanelShow = 1
 
         self.itempanel = ItemPanel(self, -1)
-
+        self.searchpanel = SearchPanel(self,-1)
         self.updateTableAndPaginator()
         self.__set_properties()
         self.__do_layout()
@@ -721,7 +722,11 @@ class GridPanel(wx.Panel):
                     .ShowFullScreen(True, style=wx.FULLSCREEN_NOBORDER)
 
             elif eventid == express_print_btn_id:
+                lgts_name = self.Parent.search_panel.logistics_company_select.GetValue()
+                print lgts_name
+                print self.fill_sid_checkbox1.IsChecked()
                 id_sid_map = {}
+                sto_out_sid = dict()
                 pre_company_id = ''
                 is_yunda_qrcode = self.fill_sid_checkbox1.IsChecked()
                 for row in self._selectedRows:
@@ -737,7 +742,40 @@ class GridPanel(wx.Panel):
                     pre_company_id = company_id
                     if out_sid and operator:
                         id_sid_map[trade_id] = out_sid
-
+                    sto_out_sid[trade_id] = out_sid
+                print sto_out_sid
+                import STO_extra
+                if lgts_name == u"申通快递" and is_yunda_qrcode and sto_out_sid:
+                    with create_session(self.Parent) as session:
+                        result = STO_extra.get_detail_info(session,*sto_out_sid.keys())
+                        if result == "success":
+                            self.refreshTable()
+                            print "success"
+                            dial = wx.MessageDialog(None, u'生成打印预览文件成功了', u'预览打印提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                            dial.ShowModal()
+                        elif result["error_code"] == 41:
+                            logger.warn({"error_code":result["error_code"]})
+                            print {"error_code":result["error_code"]}
+                            result = result['detail']
+                            addr_info = '省:%s,市:%s,区:%s,详细地址:%s,姓名:%s，手机号:%s,订单号:%s'
+                            print {"province":result['province']}
+                            error_addr_info = (result['province'],result['city'],result['district'],result['detail'],\
+                                               result['name'],\
+                                               result['mobile'],result['trade_id'])
+                            addr_info = addr_info % error_addr_info
+                            addr_info = addr_info + u'    =>   此地址有出入，导致无法申请到运单号'
+#                           error_addr_info = "你好".encode("GBK")
+                            dial = wx.MessageDialog(None, addr_info, u'生成错误', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                            dial.ShowModal()
+                            return 
+                        else:
+                            print 'cuole'
+                            print result
+                            dial = wx.MessageDialog(None, u'无法生成预览文件', u'生成错误', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                            dial.ShowModal()
                 if id_sid_map and not is_yunda_qrcode:
                     ExpressPrinter(parent=self, trade_ids=id_sid_map.keys()).ShowFullScreen(True,
                                                                                             style=wx.FULLSCREEN_NOBORDER)

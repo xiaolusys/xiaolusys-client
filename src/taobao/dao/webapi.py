@@ -1,13 +1,14 @@
-#-*- encoding:utf8 -*-
+# -*- encoding:utf8 -*-
 import json
 import urllib
 import urllib2
 from taobao.common.utils import getconfig
 from taobao.common.logger import *
+
 log = get_file_logger()
 
-class WebApi(object):
 
+class WebApi(object):
     conf = getconfig()
     web_host = conf.get('url', 'web_host')
 
@@ -186,7 +187,7 @@ class WebApi(object):
                   'package_weight': weight}
         try:
             url = getFullWebUrl(uri, params)
-            req = urllib.urlopen(url)
+            req = urllib2.urlopen(url, urllib.urlencode(params))
             r = req.read()
             resp = json.loads(r)
             sign = resp['code']
@@ -204,7 +205,7 @@ class WebApi(object):
         params = {'package_order_pid': pid}
         try:
             url = getFullWebUrl(uri, params)
-            req = urllib.urlopen(url)
+            req = urllib2.urlopen(url, urllib.urlencode(params))
             r = req.read()
             resp = json.loads(r)
             sign = resp['isSuccess']
@@ -217,14 +218,13 @@ class WebApi(object):
         return True
 
 
-def getFullWebUrl(uri,params={}):
-
+def getFullWebUrl(uri, params={}):
     conf = getconfig()
     web_host = conf.get('url', 'web_host')
-    
-    return 'http://%s%s?%s'%(web_host,uri,urllib.urlencode(params))
+
+    return 'http://%s%s?%s' % (web_host, uri, urllib.urlencode(params))
 
 
 if __name__ == '__main__':
-    WebApi.operate_packages(['8'],'huangyan')
+    WebApi.operate_packages(['8'], 'huangyan')
     WebApi.express_order()

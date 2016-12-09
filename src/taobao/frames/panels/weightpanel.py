@@ -125,8 +125,7 @@ class ScanWeightPanel(wx.Panel):
         return out_sid[13:17]
 
     def onOutsidTextChange(self, evt):
-
-        out_sid = self.out_sid_text.GetValue().strip()
+        out_sid = self.getSid()
         if not out_sid:
             return
         try:
