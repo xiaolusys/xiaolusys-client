@@ -148,9 +148,9 @@ class DeliveryPrinter(wx.Frame):
                 #如果不继续，则退出
                 if result != wx.ID_OK:
                     return False
-                    
-            session.query(PackageOrder).filter(PackageOrder.pid.in_(self.trade_ids))\
-                .update({'is_picking_print':True},synchronize_session='fetch')
+            WebApi.print_express(self.trade_ids)
+            # session.query(PackageOrder).filter(PackageOrder.pid.in_(self.trade_ids))\
+            #     .update({'is_picking_print':True},synchronize_session='fetch')
             self.printed = True
             
             return True

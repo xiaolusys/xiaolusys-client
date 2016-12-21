@@ -112,11 +112,11 @@ class ScanWeightPanel(wx.Panel):
         self.Bind(wx.EVT_TEXT_ENTER, self.onWeightTextChange, self.weight_text)
         self.Bind(wx.EVT_BUTTON, self.onClickCancelBtn, self.cancel_button)
 
-    def getSid(self, out_sid):
-
-        if len(out_sid) < 20:
-            return out_sid
-        return out_sid[0:13]
+    def getSid(self):
+        sid = self.out_sid_text.GetValue().strip()
+        if len(sid) < 20:
+            return sid
+        return sid[0:13]
 
     def getYDValidCode(self, out_sid):
 

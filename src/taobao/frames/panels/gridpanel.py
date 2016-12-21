@@ -519,15 +519,20 @@ class GridPanel(wx.Panel):
 
                 company_regex = None
                 start_out_sid = int(start_out_sid)
-                incr_value = 1
+                incr_value = None
                 trade_ids = []
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
-                    if not company_regex:
+                    if not company_regex or not incr_value:
                         package_order = session.query(PackageOrder).filter_by(pid=trade_id).first()
-                        company_regex_no = package_order.logistics_company.reg_mail_no
-                        company_regex = re.compile(company_regex_no)
-
+                        if not company_regex:
+                            company_regex_no = package_order.logistics_company.reg_mail_no
+                            company_regex = re.compile(company_regex_no)
+                        if not incr_value:
+                            if package_order.logistics_company.code == 'SF':
+                                incr_value = 9
+                            else:
+                                incr_value =1
                     out_sid = zero_head + str(start_out_sid)
                     if not company_regex.match(out_sid):
                         dial = wx.MessageDialog(None, u'物流单号快递不符', u'快递单号预览提示',

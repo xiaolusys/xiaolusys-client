@@ -101,17 +101,13 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
             
 def locking_trade(trade_id,operator,session=None):
     """ 锁定交易   """
+    from taobao.dao.webapi import WebApi
     if not session:
         session = get_session()
-    
     is_locked = False
     trade = session.query(PackageOrder).filter_by(pid=trade_id).first()
-
     if not trade.is_locked:
-        updaterows = session.query(PackageOrder).filter_by(pid=trade_id,is_locked=False).update(
-                    {'is_locked':True,'operator':operator},synchronize_session='fetch')
-        if updaterows == 1:
-            is_locked = True
+        WebApi.operate_packages([trade.id], operator)
     elif trade.operator == operator:
         is_locked = True
     
@@ -126,7 +122,7 @@ def get_product_locations(product_id,sku_id=None,opn=False,session=None):
     params = {'product_id':product_id}    
     if sku_id:
         params['sku_id'] = sku_id
-    
+
     locations = session.query(ProductLocation).filter_by(**params)
     
     sdict = {}
