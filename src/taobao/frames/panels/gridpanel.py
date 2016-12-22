@@ -722,7 +722,7 @@ class GridPanel(wx.Panel):
                                             wx.OK | wx.ICON_EXCLAMATION)
                     dial.ShowModal()
                     return
-
+                WebApi.print_picking(trade_ids)
                 DeliveryPrinter(parent=self, trade_ids=trade_ids) \
                     .ShowFullScreen(True, style=wx.FULLSCREEN_NOBORDER)
 
@@ -734,8 +734,10 @@ class GridPanel(wx.Panel):
                 sto_out_sid = dict()
                 pre_company_id = ''
                 is_yunda_qrcode = self.fill_sid_checkbox1.IsChecked()
+                trade_ids = []
                 for row in self._selectedRows:
                     trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
+                    trade_ids.append(trade_id)
                     company_id = self.grid.GetCellValue(row, cfg.LOG_COMPANY_CELL_COL)
                     out_sid = self.grid.GetCellValue(row, cfg.OUT_SID_CELL_COL)
 
@@ -748,6 +750,8 @@ class GridPanel(wx.Panel):
                     if out_sid and operator:
                         id_sid_map[trade_id] = out_sid
                     sto_out_sid[trade_id] = out_sid
+
+
                 print sto_out_sid
                 import STO_extra
                 if lgts_name == u"申通快递" and is_yunda_qrcode and sto_out_sid:

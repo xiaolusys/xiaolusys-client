@@ -1,9 +1,9 @@
 [db]
-db_host = d.xiaolumm.com
+db_host = dev.xiaolumm.com
 db_port = 30001
 db_name = xiaoludb
-db_user = qiyue
-db_pwd = youni_2016qy
+db_user = xiaoludev
+db_pwd = Xiaolu_test123
 
 [user]
 username = jiashuai.li
