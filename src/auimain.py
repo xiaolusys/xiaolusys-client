@@ -108,6 +108,8 @@ class MainFrame(wx.Frame):
         return charge_panel
     
     def OnExit(self,event):
+        self.Session.commit()
+        self.Session.close()
         self.Close()
     
     
