@@ -494,7 +494,6 @@ class GridPanel(wx.Panel):
 
     @log_exception
     def fillOutSidToCell(self, evt):
-
         if self._can_fresh:
             self.refreshTable()
 
@@ -503,13 +502,50 @@ class GridPanel(wx.Panel):
                                     wx.OK | wx.ICON_EXCLAMATION)
             dial.ShowModal()
             return
-
+        print "zuile"
         operator = get_oparetor()
         start_out_sid = self.fill_sid_text.GetValue()
         is_yunda_qrcode = self.fill_sid_checkbox1.IsChecked()
+#########################################################################
+        id_sid_map = {}
+        sto_out_sid = {}
+        lgts_name = self.Parent.search_panel.logistics_company_select.GetValue()
+        if lgts_name == u"申通快递" and is_yunda_qrcode:
+            for row in self._selectedRows:
+                trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
+                company_id = self.grid.GetCellValue(row, cfg.LOG_COMPANY_CELL_COL)
+                out_sid = self.grid.GetCellValue(row, cfg.OUT_SID_CELL_COL)
+                pre_company_id = ''
+                if pre_company_id and pre_company_id != company_id:
+                    dial = wx.MessageDialog(None, u'请确保批打订单快递相同', u'快递单打印提示',
+                                            wx.OK | wx.ICON_EXCLAMATION)
+                    dial.ShowModal()
+                    return
+                pre_company_id = company_id
+                if out_sid and operator:
+                    id_sid_map[trade_id] = out_sid
+                sto_out_sid[trade_id] = out_sid
+            print sto_out_sid
+            import STO_extra
+            out_sids = []
+            with create_session(self.Parent) as session:
+                result = STO_extra.get_detail_info_no_print(session,*sto_out_sid.keys())
+                print "STO"
+                print result
+                out_sids = result.values()
+            WebApi.operate_packages(result.keys(), operator)
+            for row in self._selectedRows:
+                self.grid.SetCellValue(row, cfg.OUT_SID_CELL_COL, out_sids[row])
+            self.preview_btn.Enable(False)
+            self.fill_sid_btn2.Enable(True)
+            self._can_fresh = False
+            self.fill_sid_text.Clear()
+            self.grid.ForceRefresh()
+            evt.Skip()
+ #############################################################################               
         with create_session(self.Parent) as session:
             # 单号为数字，则默认单号递增
-            if not is_yunda_qrcode and start_out_sid.isdigit():
+            if not is_yunda_qrcode and start_out_sid.isdigit() and lgts_name != u"申通快递":
                 self.start_sid = start_out_sid
                 zero_head = ''
                 zhregex = re.compile(ZERO_REGEX)
@@ -580,7 +616,8 @@ class GridPanel(wx.Panel):
                 self.preview_btn.Enable(False)
                 self.fill_sid_btn2.Enable(True)
             # 如果选择使用韵达二维码，则系统自动从韵达获取单号
-            elif is_yunda_qrcode:
+            elif is_yunda_qrcode and lgts_name != u"申通快递":
+                print 'zuile3'
                 # 对选中订单进行过滤
                 yunda_ids = self.get_yunda_ids(session=session)
                 if not yunda_ids:
@@ -664,6 +701,7 @@ class GridPanel(wx.Panel):
 
     @log_exception
     def onClickActiveButton(self, evt):
+        print "zuile4"
         eventid = evt.GetId()
         operator = get_oparetor()
         with create_session(self.Parent) as session:
@@ -754,6 +792,7 @@ class GridPanel(wx.Panel):
 
                 print sto_out_sid
                 import STO_extra
+                print "zuile2"
                 if lgts_name == u"申通快递" and is_yunda_qrcode and sto_out_sid:
                     with create_session(self.Parent) as session:
                         result = STO_extra.get_detail_info(session,*sto_out_sid.keys())
