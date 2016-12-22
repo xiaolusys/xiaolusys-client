@@ -796,10 +796,15 @@ class GridPanel(wx.Panel):
                 if lgts_name == u"申通快递" and is_yunda_qrcode and sto_out_sid:
                     with create_session(self.Parent) as session:
                         result = STO_extra.get_detail_info(session,*sto_out_sid.keys())
+                        print result
                         if result == "success":
                             self.refreshTable()
                             print "success"
                             dial = wx.MessageDialog(None, u'生成打印预览文件成功了', u'预览打印提示', 
+                            wx.OK | wx.ICON_EXCLAMATION)
+                            dial.ShowModal()
+                        elif result == "printer error":
+                            dial = wx.MessageDialog(None, u'打印机设置错误', u'无法生成预览文件', 
                             wx.OK | wx.ICON_EXCLAMATION)
                             dial.ShowModal()
                         elif result["error_code"] == 41:

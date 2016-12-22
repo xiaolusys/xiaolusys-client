@@ -119,8 +119,8 @@ def get_STOthermal(session=None,*receivers_info):
         url = json.loads(res)['previewURL']
     except Exception,exc:
         print exc
-        return exc
         ws.close()
+        return "printer error"
     print url 
     
     webbrowser.open(url=url,new=0,autoraise=True)   
