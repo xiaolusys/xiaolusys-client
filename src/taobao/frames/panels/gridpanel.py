@@ -532,10 +532,10 @@ class GridPanel(wx.Panel):
                 result = STO_extra.get_detail_info_no_print(session,*sto_out_sid.keys())
                 print "STO"
                 print result
-                out_sids = result.values()
             WebApi.operate_packages(result.keys(), operator)
             for row in self._selectedRows:
-                self.grid.SetCellValue(row, cfg.OUT_SID_CELL_COL, out_sids[row])
+                trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
+                self.grid.SetCellValue(row, cfg.OUT_SID_CELL_COL, result[int(trade_id)])
             self.preview_btn.Enable(False)
             self.fill_sid_btn2.Enable(True)
             self._can_fresh = False
@@ -804,7 +804,7 @@ class GridPanel(wx.Panel):
                             wx.OK | wx.ICON_EXCLAMATION)
                             dial.ShowModal()
                         elif result == "printer error":
-                            dial = wx.MessageDialog(None, u'打印机设置错误', u'无法生成预览文件', 
+                            dial = wx.MessageDialog(None, u'', u'无法生成预览文件', 
                             wx.OK | wx.ICON_EXCLAMATION)
                             dial.ShowModal()
                         elif result["error_code"] == 41:
