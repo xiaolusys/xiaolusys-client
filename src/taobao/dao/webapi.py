@@ -25,7 +25,7 @@ class WebApi(object):
             sign = resp['isSuccess']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if not sign:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -47,7 +47,7 @@ class WebApi(object):
             sign = resp['isSuccess']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:' + r)
         if not sign:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -65,7 +65,7 @@ class WebApi(object):
             sign = resp['isSuccess']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if not sign:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -83,7 +83,7 @@ class WebApi(object):
             sign = resp['isSuccess']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if not sign:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -101,7 +101,7 @@ class WebApi(object):
             sign = resp['isSuccess']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if not sign:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -120,7 +120,7 @@ class WebApi(object):
             sign = resp['isSuccess']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if not sign:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -138,7 +138,7 @@ class WebApi(object):
             sign = resp['code']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if sign == 1:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -148,6 +148,7 @@ class WebApi(object):
     def complete_scan_check(package_no):
         uri = '/warehouse/scancheck/'
         params = {'package_no': package_no}
+        resp = None
         try:
             url = getFullWebUrl(uri, params)
             req = urllib.urlopen(url, urllib.urlencode(params))
@@ -156,7 +157,7 @@ class WebApi(object):
             sign = resp['code']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if sign == 1:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -174,7 +175,7 @@ class WebApi(object):
             sign = resp['code']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if sign == 1:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -193,7 +194,7 @@ class WebApi(object):
             sign = resp['code']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if sign == 1:
             logging.error(r)
             raise Exception(resp['response_error'])
@@ -211,7 +212,7 @@ class WebApi(object):
             sign = resp['isSuccess']
         except Exception, e:
             logging.error(r)
-            raise Exception(resp['get response error:' + r])
+            raise Exception('get response error:'+r)
         if not sign:
             logging.error(r)
             raise Exception(resp['response_error'])

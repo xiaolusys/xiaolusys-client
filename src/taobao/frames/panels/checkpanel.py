@@ -133,7 +133,13 @@ class ScanCheckPanel(wx.Panel):
             checked = self.gridpanel.setBarCode(barcode)
             if barcode == NOTSCAN_CODE or checked:
                 if self.gridpanel.isCheckOver():
-                    WebApi.complete_scan_check(self.trade['package_no'])
+                    try:
+                        WebApi.complete_scan_check(self.trade['package_no'])
+                    except Exception, exc:
+                        dial = wx.MessageDialog(None, exc.message, u'扫描出错提示',
+                                                wx.OK | wx.CANCEL | wx.ICON_EXCLAMATION)
+                        dial.ShowModal()
+                        dial.Destroy()
                     self.gridpanel.clearTable()
                     self.out_sid_text.Clear()
                     self.barcode_text.Clear()

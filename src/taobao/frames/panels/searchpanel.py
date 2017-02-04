@@ -47,8 +47,8 @@ class SearchPanel(wx.Panel):
                                                  style=wx.DP_DROPDOWN | wx.DP_SHOWCENTURY | wx.DP_ALLOWNONE)
         self.logistics_label = wx.StaticText(self, -1, u'物流单号')
         self.logistics_text = wx.TextCtrl(self, -1, style=wx.TE_PROCESS_ENTER, size=(90, -1))
-        #self.trade_type_label = wx.StaticText(self, -1, u'订单类型')
-        #self.trade_type_select = wx.ComboBox(self, -1, size=(90, -1))
+        self.trade_type_label = wx.StaticText(self, -1, u'订单类型')
+        self.trade_type_select = wx.ComboBox(self, -1, size=(90, -1))
         self.logistics_company_label = wx.StaticText(self, -1, u'快递公司')
         self.logistics_company_select = wx.ComboBox(self, -1, size=(90, -1))
         self.weight_start_label = wx.StaticText(self, -1, u'称重日期起')
@@ -74,10 +74,11 @@ class SearchPanel(wx.Panel):
             users = session.query(User).all()
             logistics_companies = session.query(LogisticsCompany).filter_by(status=True).order_by('priority desc').all()
         self.seller_select.AppendItems([user.nick for user in users])
-        self.logistics_company_select.AppendItems([company.name for company in logistics_companies])
-
+        self.logistics_company_select.AppendItems([u'全部'] + [company.name for company in logistics_companies])
+        self.logistics_company_select.SetSelection(0)
         self.taobao_status_select.AppendItems([v for k, v in cfg.TRADE_STATUS.items()])
-        #self.trade_type_select.AppendItems([v for k, v in cfg.TRADE_TYPE.items()])
+        self.trade_type_select.AppendItems([v for k, v in cfg.TRADE_TYPE.items()])
+        self.trade_type_select.SetSelection(0)
 
     def __do_layout(self):
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)
@@ -108,8 +109,8 @@ class SearchPanel(wx.Panel):
         gridbagsizer.Add(self.start_time_select, pos=(1, 1), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.end_time_label, pos=(1, 2), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.end_time_select, pos=(1, 3), span=(1, 1), flag=wx.EXPAND)
-        #gridbagsizer.Add(self.trade_type_label, pos=(1, 4), span=(1, 1), flag=wx.EXPAND)
-        #gridbagsizer.Add(self.trade_type_select, pos=(1, 5), span=(1, 1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.trade_type_label, pos=(1, 4), span=(1, 1), flag=wx.EXPAND)
+        gridbagsizer.Add(self.trade_type_select, pos=(1, 5), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_company_label, pos=(1, 6), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.logistics_company_select, pos=(1, 7), span=(1, 1), flag=wx.EXPAND)
         gridbagsizer.Add(self.weight_start_label, pos=(1, 8), span=(1, 1), flag=wx.EXPAND)
@@ -168,7 +169,7 @@ class SearchPanel(wx.Panel):
 
         self.logistics_text.Clear()
         #self.trade_type_select.SetValue('')
-        self.logistics_company_select.SetValue('')
+        self.logistics_company_select.SetValue('全部')
         self.delivery_pick_check.SetValue(False)
         self.logistics_pick_check.SetValue(False)
         self.outer_id_text.Clear()
@@ -198,7 +199,7 @@ class SearchPanel(wx.Panel):
         start_time = wxdate2pydate(start_time)
         end_time = wxdate2pydate(end_time)
         logistics_id = self.logistics_text.GetValue()
-        trade_type = 'sale'#self.trade_type_select.GetValue()
+        trade_type = self.trade_type_select.GetValue()
         logistics_company = self.logistics_company_select.GetValue()
         pick_print_state = self.delivery_pick_check.Get3StateValue()
         express_print_state = self.logistics_pick_check.Get3StateValue()
@@ -225,10 +226,13 @@ class SearchPanel(wx.Panel):
             if trade_id:
                 datasource = datasource.filter(or_(PackageOrder.pid == trade_id, PackageOrder.id == trade_id))
             elif logistics_id:
-                datasource = datasource.filter_by(out_sid=getSid(logistics_id))
+                datasource = datasource.filter_by(out_sid=getSid(logistics_id), action_type=trade_type.strip())
             else:
-                #                if receiver_name:
-                #                    datasource = datasource.filter_by(receiver_name=receiver_name)
+                if trade_type:
+                    if trade_type == u'特殊':
+                        datasource = datasource.filter_by(action_type=1)
+                    else:
+                        datasource = datasource.filter_by(action_type=0)
                 if trade_status:
                     status_dict = dict([(v, k) for k, v in cfg.TRADE_STATUS.items()])
                     datasource = datasource.filter_by(status=status_dict.get(trade_status.strip(), None))
@@ -244,9 +248,10 @@ class SearchPanel(wx.Panel):
                 if weight_end_time:
                     datasource = datasource.filter("weight_time <=:end").params(end=weight_end_time)
                 if logistics_company:
-                    with create_session(self.Parent) as session:
-                        log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
-                    datasource = datasource.filter(PackageOrder.logistics_company_id == log_company.id)
+                    if logistics_company != u'全部':
+                        with create_session(self.Parent) as session:
+                            log_company = session.query(LogisticsCompany).filter_by(name=logistics_company.strip()).one()
+                        datasource = datasource.filter(PackageOrder.logistics_company_id == log_company.id)
                 if urgent_doc_state:
                     datasource = datasource.filter_by(priority=1)
                 if single_prod:

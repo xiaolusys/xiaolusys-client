@@ -259,6 +259,7 @@ class PackageSkuItem(Base):
     num = Column(Integer)
     package_order_id = Column(String(100))
     gift_type = Column(Integer)
+    type = Column(Integer)
     assign_status = Column(Integer)
     status = Column(String(32))
     sys_status = Column(String(32))
@@ -278,12 +279,24 @@ class PackageSkuItem(Base):
     discount_fee = Column(Float)
     sku_properties_name = Column(String(256))
 
+    def get_type_display(self):
+        type_dict = {
+            0: u'普通订单',
+            1: u'手工发件',
+            2: u'清库存',
+            3: u'退多货',
+            4: u'退次品',
+            5: u'天猫商城单',
+         }
+        return type_dict.get(self.type)
+
 
 class PackageOrder(Base):
     __tablename__ = 'flashsale_package'
     id = Column(String(100), primary_key=True)
     pid = Column(BigInteger)
     tid = Column(String(32))
+    action_type = Column(Integer)
     ware_by = Column(Integer)
     status = Column(String(32), index=True)
     sys_status = Column(String(32), index=True)

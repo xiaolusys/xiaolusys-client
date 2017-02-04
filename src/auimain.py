@@ -20,7 +20,7 @@ ID_ScanCheck       = wx.NewId()
 ID_ScanWeight      = wx.NewId()
 ID_ScanCharge      = wx.NewId()
 ID_Help            = wx.NewId()
-TITLE = u"小鹿特卖仓库客户端V2.10"
+TITLE = u"小鹿特卖仓库客户端V2.12"
 class MainFrame(wx.Frame):
     def __init__(self, parent, id=-1, title=TITLE, pos=wx.DefaultPosition,
                  size=(1300,700), style=wx.DEFAULT_FRAME_STYLE |wx.SUNKEN_BORDER |wx.CLIP_CHILDREN):

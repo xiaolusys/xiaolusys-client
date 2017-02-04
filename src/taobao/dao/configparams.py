@@ -41,17 +41,21 @@ TRADE_STATUS = {
 
 
 
+# TRADE_TYPE = {
+#     'fixed':u'淘宝&商城',
+#     'fenxiao':u'分销',
+#     'jd':u'京东',
+#     'dd':u'当当',
+#     'wx':u'微信',
+#     'yhd':u'一号店',
+#     'amz':u'亚马逊',
+#     'direct':u'内售',
+#     'exchange':u'退换货',
+#     'reissue':u'补发'
+# }
 TRADE_TYPE = {
-    'fixed':u'淘宝&商城',
-    'fenxiao':u'分销',
-    'jd':u'京东',
-    'dd':u'当当',
-    'wx':u'微信',
-    'yhd':u'一号店',
-    'amz':u'亚马逊',
-    'direct':u'内售',
-    'exchange':u'退换货',
-    'reissue':u'补发'
+    0: u'普通',
+    1: u'特殊'
 }
 
 SYS_STATUS_ALL     = 'ALL'

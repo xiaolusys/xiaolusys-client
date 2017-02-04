@@ -1095,6 +1095,7 @@ class SimpleOrdersGridPanel(SimpleGridPanel):
                 object_array = []
                 # object_array.append(order.pic_path)
                 object_array.append(u'图片地址')
+                object_array.append(order.get_type_display())
                 object_array.append(order.id)
                 object_array.append(order.outer_id or order.num_iid)
                 object_array.append(order.title)
