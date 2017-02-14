@@ -5,7 +5,7 @@ import urllib2
 from taobao.common.utils import getconfig
 from taobao.common.logger import *
 
-log = get_file_logger()
+logging = get_file_logger()
 
 
 class WebApi(object):
@@ -145,10 +145,10 @@ class WebApi(object):
         return resp['response_content']
 
     @staticmethod
-    def complete_scan_check(package_no):
-        uri = '/warehouse/scancheck/'
-        params = {'package_no': package_no}
-        resp = None
+    def complete_scan_check(package_no, serial_data):
+        uri = '/warehouse/scancheck'
+        r = None
+        params = {'package_no': package_no, 'serial_data': json.dumps(serial_data)}
         try:
             url = getFullWebUrl(uri, params)
             req = urllib.urlopen(url, urllib.urlencode(params))

@@ -120,7 +120,6 @@ class ScanCheckPanel(wx.Panel):
     def setBarCode(self):
 
         barcode = self.barcode_text.GetValue().strip()
-
         if barcode == RESET_CODE:
             self.out_sid_text.Clear()
             self.barcode_text.Clear()
@@ -134,6 +133,7 @@ class ScanCheckPanel(wx.Panel):
             if barcode == NOTSCAN_CODE or checked:
                 if self.gridpanel.isCheckOver():
                     try:
+                        serial_data = self.gridpanel.serial_data()
                         WebApi.complete_scan_check(self.trade['package_no'])
                     except Exception, exc:
                         dial = wx.MessageDialog(None, exc.message, u'扫描出错提示',

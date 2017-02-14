@@ -8,6 +8,7 @@ import re
 import datetime
 import weakref
 import wx, wx.grid as grd
+from collections import defaultdict
 from taobao.dao import configparams as cfg
 from taobao.frames.tables.gridtable import GridTable, SimpleGridTable, WeightGridTable, ChargeGridTable
 from taobao.frames.panels.itempanel import ItemPanel
@@ -26,6 +27,7 @@ from taobao.frames.prints.revieworder import OrderReview
 from taobao.dao import yundao
 from taobao.common.logger import log_exception
 from taobao.common.utils import logtime
+from taobao.common import barcode as barcodeutils
 
 ZERO_REGEX = '^[0]+'
 YUNDA_CODE = 'YUNDA'
@@ -1299,13 +1301,14 @@ class CheckGridPanel(wx.Panel):
             else:
                 code_num_dict[barcode] = {'rnums': order_num,
                                           'cnums': 0,
+                                          'sku_id': order['sku_id'],
+                                          'batch_nos': defaultdict(list),
                                           'post_check': post_check}
 
         return code_num_dict
 
     def isCheckOver(self):
         for key, value in self.code_num_dict.items():
-
             if value['rnums'] != value['cnums']:
                 return False
         return True
@@ -1316,10 +1319,13 @@ class CheckGridPanel(wx.Panel):
                 value['cnums'] = value['rnums']
             return True
 
+        barcode, batch_no = barcodeutils.decode(barcode)
         if self.code_num_dict.has_key(barcode):
             grid = self.ordergridpanel.grid
-            self.code_num_dict[barcode]['cnums'] += 1
-            cnum = self.code_num_dict[barcode]['cnums']
+            record = self.code_num_dict[barcode]
+            cnum = record['cnums'] = record['cnums'] + 1
+            record['batch_nos'][batch_no] += 1
+
             for row in xrange(0, grid.NumberRows):
                 code = grid.GetCellValue(row, cfg.BAR_CODE_COL)
 
@@ -1339,10 +1345,15 @@ class CheckGridPanel(wx.Panel):
                     break
 
             grid.ForceRefresh()
-
             if cnum == 0:
                 return True
         return False
+
+    def serial_data(self):
+        data = {}
+        for key, value in self.code_num_dict.items():
+            data[value['sku_id']] = value['batch_nos']
+        return data
 
     def setData(self, trade, grid_table_type=CheckGridTable):
         if not trade:
