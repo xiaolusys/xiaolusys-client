@@ -1302,7 +1302,7 @@ class CheckGridPanel(wx.Panel):
                 code_num_dict[barcode] = {'rnums': order_num,
                                           'cnums': 0,
                                           'sku_id': order['sku_id'],
-                                          'batch_nos': defaultdict(list),
+                                          'batch_nos': defaultdict(dict),
                                           'post_check': post_check}
 
         return code_num_dict
@@ -1324,7 +1324,7 @@ class CheckGridPanel(wx.Panel):
             grid = self.ordergridpanel.grid
             record = self.code_num_dict[barcode]
             cnum = record['cnums'] = record['cnums'] + 1
-            record['batch_nos'][batch_no] += 1
+            record['batch_nos'][batch_no] = record['batch_nos'].get(batch_no, 0) + 1
 
             for row in xrange(0, grid.NumberRows):
                 code = grid.GetCellValue(row, cfg.BAR_CODE_COL)
