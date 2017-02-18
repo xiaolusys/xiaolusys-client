@@ -48,6 +48,7 @@ def get_STOthermal_no_print(session=None,*receivers_info,**po_wb):
         try:
             print_data = result['print_data']
         except:
+            print u"此单不能申请申通热敏订单",i["trade_id"]
             print_data = dict()
             print_data['error_code'] = result['error_code']
             params={'detail':i['detail'],'province':i['province'],\
