@@ -512,7 +512,8 @@ class GridPanel(wx.Panel):
         id_sid_map = {}
         sto_out_sid = {}
         lgts_name = self.Parent.search_panel.logistics_company_select.GetValue()
-        if lgts_name == u"申通快递" and is_yunda_qrcode:
+        exp_info = {u"申通快递":"STO", u"邮政小包":"POSTB"}
+        if lgts_name in exp_info.keys() and is_yunda_qrcode:
             for row in self._selectedRows:
                 trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
                 company_id = self.grid.GetCellValue(row, cfg.LOG_COMPANY_CELL_COL)
@@ -531,9 +532,9 @@ class GridPanel(wx.Panel):
             import STO_extra
             out_sids = []
             with create_session(self.Parent) as session:
-                result = STO_extra.get_detail_info_no_print(session,*sto_out_sid.keys())
-                print "STO"
-                print result
+                cp_code = exp_info[lgts_name]
+                print u'物流编码',exp_info[lgts_name]
+                result = STO_extra.get_detail_info_no_print(session,cp_code,*sto_out_sid.keys())
             WebApi.operate_packages(result.keys(), operator)
             for row in self._selectedRows:
                 trade_id = self.grid.GetCellValue(row, cfg.TRADE_ID_CELL_COL)
@@ -547,7 +548,8 @@ class GridPanel(wx.Panel):
  #############################################################################               
         with create_session(self.Parent) as session:
             # 单号为数字，则默认单号递增
-            if not is_yunda_qrcode and start_out_sid.isdigit() and lgts_name != u"申通快递":
+            exp_info = {}
+            if not is_yunda_qrcode and start_out_sid.isdigit() and lgts_name not in exp_info.keys():
                 self.start_sid = start_out_sid
                 zero_head = ''
                 zhregex = re.compile(ZERO_REGEX)
@@ -618,7 +620,7 @@ class GridPanel(wx.Panel):
                 self.preview_btn.Enable(False)
                 self.fill_sid_btn2.Enable(True)
             # 如果选择使用韵达二维码，则系统自动从韵达获取单号
-            elif is_yunda_qrcode and lgts_name != u"申通快递":
+            elif is_yunda_qrcode and lgts_name not in [u'申通快递',u'邮政小包']:
                 print 'zuile3'
                 # 对选中订单进行过滤
                 yunda_ids = self.get_yunda_ids(session=session)
@@ -790,14 +792,14 @@ class GridPanel(wx.Panel):
                     if out_sid and operator:
                         id_sid_map[trade_id] = out_sid
                     sto_out_sid[trade_id] = out_sid
-
-
                 print sto_out_sid
                 import STO_extra
-                print "zuile2"
-                if lgts_name == u"申通快递" and is_yunda_qrcode and sto_out_sid:
+                exp_info = {u"申通快递":"STO", u"邮政小包":"POSTB"}
+                if lgts_name in exp_info.keys() and is_yunda_qrcode and sto_out_sid:
+                    cp_code = exp_info[lgts_name]
+                    print cp_code
                     with create_session(self.Parent) as session:
-                        result = STO_extra.get_detail_info(session,*sto_out_sid.keys())
+                        result = STO_extra.get_detail_info(session,cp_code,*sto_out_sid.keys())
                         print result
                         if result == "success":
                             self.refreshTable()
