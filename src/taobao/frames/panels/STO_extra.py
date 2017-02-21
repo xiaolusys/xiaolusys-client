@@ -34,15 +34,15 @@ def get_STOthermal_no_print(session=None,*receivers_info,**po_wb):
     auth = ('dev.huideng','yduk9s71')
     auth2 = ('hui.deng','139cnm')
     for i in receivers_info:
-        result = requests.get(url=url,params={'detail':i['detail'],'province':i['province'],\
+        result = requests.get(url=url,params={'cp_code':i['cp_code'], 'detail':i['detail'],'province':i['province'],\
                                              'name':i['name'],'mobile':i['mobile'],\
                                              'city':i['city'],'district':i['district'],\
                                              'trade_id':i['trade_id']},auth=auth)
-        params={'detail':i['detail'],'province':i['province'],\
+        params={'cp_code':i['cp_code'],'detail':i['detail'],'province':i['province'],\
                                              'name':i['name'],'mobile':i['mobile'],\
                                              'city':i['city'],'district':i['district'],\
                                              'trade_id':i['trade_id']}
-        print "发货人信息"+json.dumps(params)
+        print u"发货人信息"+json.dumps(params)
         result = json.loads(result.text)
         print result
         try:
@@ -64,7 +64,7 @@ def get_STOthermal_no_print(session=None,*receivers_info,**po_wb):
     return po_wb
 
 
-def get_STOthermal(session=None,*receivers_info):
+def get_STOthermal(session=None,cp_code=None,*receivers_info):
     url = "http://admin.xiaolumm.com/thermal/STOthermal/get_exp_number"
     url2 = "http://192.168.1.8:8005/thermal/STOthermal/get_exp_number"
     print_info['task']['documents'] = []
@@ -72,7 +72,7 @@ def get_STOthermal(session=None,*receivers_info):
     auth = ('dev.huideng','yduk9s71')
     auth2 = ('hui.deng','139cnm')
     for i in receivers_info:
-        result = requests.get(url=url,params={'detail':i['detail'],'province':i['province'],\
+        result = requests.get(url=url,params={'cp_code':cp_code,'detail':i['detail'],'province':i['province'],\
                                              'name':i['name'],'mobile':i['mobile'],\
                                              'city':i['city'],'district':i['district'],\
                                              'trade_id':i['trade_id']},auth=auth)
@@ -81,7 +81,11 @@ def get_STOthermal(session=None,*receivers_info):
                                              'city':i['city'],'district':i['district'],\
                                              'trade_id':i['trade_id']}
         print "发货人信息"+json.dumps(params)
-        result = json.loads(result.text)
+        if cp_code == "POSTB":
+            result = result.text.replace(u"标准快递",u"邮政小包")
+            result = json.loads(result)
+        else:
+            result = json.loads(result.text)
         print result
         try:
             print_data = result['print_data']
@@ -128,7 +132,7 @@ def get_STOthermal(session=None,*receivers_info):
     ws.close()       
     return "success"
 
-def get_detail_info(session=None,*trade_id):
+def get_detail_info(session=None,cp_code=None,*trade_id):
     receivers_info = []
     merge_orders = session.query(PackageOrder).filter(PackageOrder.pid.in_(trade_id))
     for i in merge_orders:
@@ -142,14 +146,15 @@ def get_detail_info(session=None,*trade_id):
         receiver_info['trade_id'] = i.pid
         receivers_info.append(receiver_info)
         #print i.receiver_address,i.receiver_mobile,i.receiver_name,i.receiver_state,i.pid
-    return get_STOthermal(session,*receivers_info)
+    return get_STOthermal(session,cp_code,*receivers_info)
     
-def get_detail_info_no_print(session=None,*trade_id):
+def get_detail_info_no_print(session=None,cp_code=None,*trade_id):
     receivers_info = []
     po_wb = {}
     merge_orders = session.query(PackageOrder).filter(PackageOrder.pid.in_(trade_id))
     for i in merge_orders:
         receiver_info = dict()
+        receiver_info['cp_code'] = cp_code
         receiver_info['detail']=i.receiver_address.encode("UTF-8")
         receiver_info['mobile'] = i.receiver_mobile.encode("UTF-8")
         receiver_info['name'] = i.receiver_name.encode("UTF-8")
