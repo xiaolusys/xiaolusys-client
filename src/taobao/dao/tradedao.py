@@ -93,7 +93,6 @@ def get_datasource_by_type_and_mode(status_type,print_mode=pcfg.NORMAL_MODE,sess
         datasource = datasource.filter_by(sys_status=status_type)
         counter    = counter.filter_by(sys_status=status_type)
     print 'debug:',ware_id,seller_ids
-
     datasource     = datasource.order_by(PackageOrder.pid,
                                              'priority desc','pid asc')
     
