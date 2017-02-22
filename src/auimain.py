@@ -6,7 +6,7 @@ Created on 2012-7-11
 '''
 import wx.aui
 from taobao.dao.dbsession import get_session
-from taobao.common.utils import pinghost,getconfig
+from taobao.common.utils import pinghost,getconfig,writeconfig
 from taobao.frames.panels.tradepanel import TradePanel
 from taobao.frames.panels.weightpanel import ScanWeightPanel
 from taobao.frames.panels.checkpanel import ScanCheckPanel
@@ -20,7 +20,7 @@ ID_ScanCheck       = wx.NewId()
 ID_ScanWeight      = wx.NewId()
 ID_ScanCharge      = wx.NewId()
 ID_Help            = wx.NewId()
-TITLE = u"小鹿特卖仓库客户端V2.12"
+TITLE = u"小鹿特卖仓库客户端V2.13"
 class MainFrame(wx.Frame):
     def __init__(self, parent, id=-1, title=TITLE, pos=wx.DefaultPosition,
                  size=(1300,700), style=wx.DEFAULT_FRAME_STYLE |wx.SUNKEN_BORDER |wx.CLIP_CHILDREN):
@@ -118,7 +118,27 @@ app = wx.PySimpleApp()
 # try:
 config = getconfig()
 db_host = config.get('db','db_host')
-print db_host
+
+
+dlg=wx.SingleChoiceDialog(None,u"请选择仓库!",
+                              "Single Choice",
+                              [u'上海仓',u'广州仓'])
+if dlg.ShowModal() == wx.ID_OK:
+    message = dlg.GetStringSelection()
+    if message == u"上海仓":
+        config.set('user','ware_id',1)
+        config.set('user','username','jiashuai.li')
+        writeconfig(config)
+        print message
+    if message == u"广州仓":
+        config.set('user','ware_id',2)
+        config.set('user','username','daijun.chen')
+        writeconfig(config)
+        print message
+
+config = getconfig()
+print config.get('user','ware_id')
+
 if False and pinghost(db_host):
     dial = wx.MessageDialog(None, u'数据库连接失败(host:%s)'%db_host,
                             u'数据库连接失败提示', wx.OK | wx.ICON_EXCLAMATION)

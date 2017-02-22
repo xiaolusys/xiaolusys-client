@@ -55,7 +55,8 @@ TRADE_STATUS = {
 # }
 TRADE_TYPE = {
     0: u'普通',
-    1: u'特殊'
+    1: u'特殊',
+    2: u'全部'
 }
 
 SYS_STATUS_ALL     = 'ALL'

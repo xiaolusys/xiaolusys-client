@@ -146,16 +146,18 @@ class WebApi(object):
 
     @staticmethod
     def complete_scan_check(package_no, serial_data):
-        uri = '/warehouse/scancheck'
+        uri = '/warehouse/scancheck/'
         r = None
         params = {'package_no': package_no, 'serial_data': json.dumps(serial_data)}
         try:
             url = getFullWebUrl(uri, params)
+            print url
             req = urllib.urlopen(url, urllib.urlencode(params))
             r = req.read()
             resp = json.loads(r)
             sign = resp['code']
         except Exception, e:
+            print r
             logging.error(r)
             raise Exception('get response error:'+r)
         if sign == 1:
@@ -186,6 +188,7 @@ class WebApi(object):
         uri = '/warehouse/scanweight/'
         params = {'package_no': package_no,
                   'package_weight': weight}
+        r = None
         try:
             url = getFullWebUrl(uri, params)
             req = urllib2.urlopen(url, urllib.urlencode(params))
@@ -222,8 +225,10 @@ class WebApi(object):
 def getFullWebUrl(uri, params={}):
     conf = getconfig()
     web_host = conf.get('url', 'web_host')
-
-    return 'http://%s%s?%s' % (web_host, uri, urllib.urlencode(params))
+    if not params:
+        return 'http://%s%s' % (web_host, uri)
+    else:
+        return 'http://%s%s?%s' % (web_host, uri, urllib.urlencode(params))
 
 
 if __name__ == '__main__':

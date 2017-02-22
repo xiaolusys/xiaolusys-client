@@ -78,7 +78,7 @@ class SearchPanel(wx.Panel):
         self.logistics_company_select.SetSelection(0)
         self.taobao_status_select.AppendItems([v for k, v in cfg.TRADE_STATUS.items()])
         self.trade_type_select.AppendItems([v for k, v in cfg.TRADE_TYPE.items()])
-        self.trade_type_select.SetSelection(0)
+        self.trade_type_select.SetSelection(2)
 
     def __do_layout(self):
         gridbagsizer = wx.GridBagSizer(hgap=5, vgap=5)
@@ -139,7 +139,7 @@ class SearchPanel(wx.Panel):
 
         self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.taobao_status_select)
         self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.seller_select)
-        # self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.trade_type_select)
+        self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.trade_type_select)
         self.Bind(wx.EVT_COMBOBOX, self.OnSearch, self.logistics_company_select)
 
         self.Bind(wx.EVT_DATE_CHANGED, self.OnSearch, self.start_time_select)
@@ -168,7 +168,7 @@ class SearchPanel(wx.Panel):
         self.end_time_select.SetValue(wx.DefaultDateTime)
 
         self.logistics_text.Clear()
-        #self.trade_type_select.SetValue('')
+        self.trade_type_select.SetValue('普通')
         self.logistics_company_select.SetValue('全部')
         self.delivery_pick_check.SetValue(False)
         self.logistics_pick_check.SetValue(False)
@@ -231,7 +231,7 @@ class SearchPanel(wx.Panel):
                 if trade_type:
                     if trade_type == u'特殊':
                         datasource = datasource.filter_by(action_type=1)
-                    else:
+                    elif trade_type == u'普通':
                         datasource = datasource.filter_by(action_type=0)
                 if trade_status:
                     status_dict = dict([(v, k) for k, v in cfg.TRADE_STATUS.items()])
